@@ -1,0 +1,59 @@
+{
+  "name": "notificationcenter",
+  "author": "matejdro",
+  "version": "0.50",
+  "keywords": [
+    "pebble-app"
+  ],
+  "private": false,
+  "dependencies": {},
+  "pebble": {
+    "displayName": "Notify Center",
+    "uuid": "1c5f3908-e3ea-419b-ae55-7f167ea8fafa",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "targetPlatforms": [
+      "basalt",
+      "diorite",
+      "emery"
+    ],
+    "watchapp": {
+      "watchface": false
+    },
+    "resources": {
+      "media": [
+        {
+          "type": "bitmap",
+          "name": "MENU_ICON",
+          "file": "launcher_icon.png",
+          "menuIcon": true
+        },
+        {
+          "type": "bitmap",
+          "name": "INDICATOR_BUSY",
+          "file": "busy.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "INDICATOR_DISCONNECTED",
+          "file": "disconnected.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "INDICATOR_ERROR",
+          "file": "error.png"
+        }
+      ]
+    },
+    "companionApp": {
+      "android": {
+        "url": "https://github.com/matejdro/PebbleNotificationCenter2",
+        "apps": [
+          {
+            "package": "com.matejdro.pebblenotificationcenter2"
+          }
+        ]
+      }
+    }
+  }
+}

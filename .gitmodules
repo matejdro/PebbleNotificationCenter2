@@ -1,0 +1,3 @@
+[submodule "PebbleCommons"]
+	path = PebbleCommons
+	url = https://github.com/matejdro/PebbleCommons.git

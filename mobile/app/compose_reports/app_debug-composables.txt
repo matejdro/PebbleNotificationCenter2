@@ -1,0 +1,7 @@
+restartable skippable scheme("[androidx.compose.ui.UiComposable]") fun com.matejdro.pebblenotificationcenter.MainActivity.NavigationRoot(
+  initialHistory: ImmutableList<ScreenKey>
+  unstable <this>: MainActivity
+)
+restartable skippable fun com.matejdro.pebblenotificationcenter.LogCurrentScreen(
+  stable backstack: Backstack
+)

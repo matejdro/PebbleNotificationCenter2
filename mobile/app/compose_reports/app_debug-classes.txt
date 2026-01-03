@@ -1,0 +1,53 @@
+stable class MyRootModuleCodegen {
+  <runtime stability> = Stable
+}
+stable class Schema {
+  <runtime stability> = Stable
+}
+unstable class MainActivity {
+  unstable var navigationInjectionFactory: Factory
+  runtime var mainDeepLinkHandler: MainDeepLinkHandler
+  unstable var navigationContext: NavigationContext
+  stable var dateFormatter: AndroidDateTimeFormatter
+  runtime var mainViewModelFactory: Factory
+  unstable val viewModel$delegate: Lazy<MainViewModel>
+  stable var initComplete: Boolean
+  <runtime stability> = Unstable
+}
+unstable class MainViewModel {
+  unstable val loginRepository: LoginRepository
+  unstable val startIntent: Intent
+  unstable val _startingScreen: MutableStateFlow<ScreenKey?>
+  unstable val startingScreen: StateFlow<ScreenKey?>
+  <runtime stability> = Unstable
+}
+unstable class MyApplication {
+  unstable var errorReporter: Provider<ErrorReporter>
+  unstable var defaultScope: DefaultCoroutineScope
+  unstable val applicationComponent$delegate: Lazy<MainApplicationComponent>
+  <runtime stability> = Unstable
+}
+stable class AppModule {
+  <runtime stability> = Stable
+}
+stable class CoroutinesModule {
+  <runtime stability> = Stable
+}
+stable class ErrorReportingModule {
+  <runtime stability> = Stable
+}
+stable class NetworkUrlModule {
+  <runtime stability> = Stable
+}
+stable class DemoActionLogger {
+  <runtime stability> = Stable
+}
+stable class ShowkaseLauncherImpl {
+  <runtime stability> = Stable
+}
+stable class MyRootModule {
+  <runtime stability> = Stable
+}
+stable class SubcomponentModule {
+  <runtime stability> = Stable
+}

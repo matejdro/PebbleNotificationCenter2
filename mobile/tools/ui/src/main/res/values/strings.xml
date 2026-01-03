@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="permissions">Permissions</string>
+    <string name="version">Notification Center version %1$s</string>
+    <string name="save_logs">Save logs</string>
+</resources>
