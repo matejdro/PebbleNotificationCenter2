@@ -1,4 +1,10 @@
 <resources>
     <string name="channel_background_work">Background work</string>
     <string name="channel_errors">Errors</string>
+    <string name="service_not_running">Service not running</string>
+    <string name="cancel">Cancel</string>
+    <string name="notification_service_is_not_running_you_must_enable_it_to_get_this_app_to_work">Notification service is not
+        running. You must enable it to get this app to work!
+    </string>
+    <string name="open_settings">Open Settings</string>
 </resources>

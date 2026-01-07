@@ -65,12 +65,20 @@ Sent from the watch when the app is opened.
 
 # Buckets
 
-Watch can store up to 15 of them, up to 256 bytes each
+Watch can store up to 15 of them, up to 255 bytes each.    
+Every bucket is stored in the `2001` - `2015` storage keys.
 
-Data in every bucket:
-TODO
+## Bucket 1
 
-Every bucket is stored in the `2001` - `2015` storage keys
+User's preferences
+TBD
+
+## Buckets 2-15
+
+* Notification receive timestamp, in unix time (uint32)
+* Notification title (string, up to 20 bytes + null terminator)
+* Notification subtitle (string, up to 20 bytes + null terminator)
+* Notification text (string, up to 249 bytes, depending on how much space was already taken by the title and the subtitle). No null terminator (end of bucket functions as the end of string)
 
 # Non-bucket storage on the watch
 

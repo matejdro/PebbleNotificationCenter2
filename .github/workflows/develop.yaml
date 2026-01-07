@@ -1,0 +1,283 @@
+name: develop-build
+run-name: Develop build of the app
+on:
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+env:
+  BUILD_NUMBER: ${{ github.run_number }}
+jobs:
+  build-app:
+    concurrency:
+      group: "develop-build"
+      cancel-in-progress: true
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          submodules: recursive
+          fetch-depth: 0
+
+      # Determine new version
+
+      - name: Get current branch
+        shell: bash
+        run: |
+          echo "CURRENT_BRANCH=$(git branch --show)" >> $GITHUB_ENV
+      - name: Collect old version
+        shell: bash
+        run: |
+          OLD_VERSION=$(cat version.txt)
+          echo "OLD_VERSION=$OLD_VERSION" >> $GITHUB_ENV
+          echo "OLD_VERSION_REF=$(git rev-list -n 1 $OLD_VERSION)" >> $GITHUB_ENV
+      - name: Check if there were any new fix or feature commits
+        id: version-check
+        uses: inovait/actions-common/bump-version@v11
+        with:
+          version: '0.0.0'
+          from: '${{ env.OLD_VERSION_REF }}'
+          to: HEAD
+          increment: "auto"
+      - run: "echo \"No feature or fix commits. Skipping build...\""
+        if: "${{ steps.version-check.outputs.version == '0.0.0' }}"
+      - uses: andymckay/cancel-action@0.3
+        if: "${{ steps.version-check.outputs.version == '0.0.0' }}"
+      - name: "Wait for cancel to stick"
+        run: "sleep 99999"
+        if: "${{ steps.version-check.outputs.version == '0.0.0' }}"
+      - name: Determine new version prerequisites
+        shell: bash
+        run: |
+          set -x
+          # Due to limitations of the PebbleOS versioning, Pebble apps cannot use semantic versioning, they can only have
+          # two version numbers
+          # Because of this, we use a modified versioning system: MAJOR.MINORPATCH, where MINOR is of MINOR * 10 + PATCH.
+          # Since PebbleOS also limits every number to 255, we also increment MAJOR whenever MINORPATCH goes over 100 
+          # (and subtract it by 100) 
+          
+          VERSION_MAJOR=${OLD_VERSION%%.*}
+          VERSION_MINORPATCH=${OLD_VERSION##*.}
+          
+          # Temporarily disable major and minor release
+          VERSION_CHANGE_AFTER_FIRST_DOT="${VERSION_BUMP#*.}"
+          #if [[ "${VERSION_BUMP%%.*}" == "1" ]] then
+          if false; then
+            # Major version change
+            VERSION_MAJOR=$(($VERSION_MAJOR+1))
+          #elif [[ false && "${VERSION_CHANGE_AFTER_FIRST_DOT%%.*}" == "1" ]] then
+          elif false; then
+            # Minor version change
+            VERSION_MINORPATCH=$(($VERSION_MINORPATCH+10))
+          else
+            # Patch version change
+            VERSION_MINORPATCH=$(($VERSION_MINORPATCH+1))          
+          fi
+          
+          if [[ $VERSION_MINORPATCH -ge 100 ]] then
+            VERSION_MAJOR=$(($VERSION_MAJOR+1))
+            VERSION_MINORPATCH=$((VERSION_MINORPATCH-100))
+          fi
+          
+          VERSION="$VERSION_MAJOR.$VERSION_MINORPATCH"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Releasing $VERSION"
+          
+          OLD_MOBILE_VERSION=$(cat mobile/version.txt)
+          echo "OLD_MOBILE_VERSION=$OLD_MOBILE_VERSION" >> $GITHUB_ENV
+          OLD_WATCH_VERSION=$(cat watch/version.txt)
+          echo "OLD_WATCH_VERSION=$OLD_WATCH_VERSION" >> $GITHUB_ENV
+          PREV_MOBILE_VERSION_REF=$(git rev-list -n 1 $OLD_MOBILE_VERSION)
+          PREV_WATCH_VERSION_REF=$(git rev-list -n 1 $OLD_WATCH_VERSION)
+          
+          if [[ $(git log --oneline "$PREV_MOBILE_VERSION_REF..HEAD" -p mobile | wc -l) == "0" ]] then
+            echo "BUILD_MOBILE=false" >> $GITHUB_ENV
+          else
+            echo "BUILD_MOBILE=true" >> $GITHUB_ENV
+          fi
+          if [[ $(git log --oneline "$PREV_WATCH_VERSION_REF..HEAD" -p watch | wc -l) == "0" ]] then
+            echo "BUILD_WATCH=false" >> $GITHUB_ENV
+          else
+            echo "BUILD_WATCH=true" >> $GITHUB_ENV
+          fi
+          
+          echo "$VERSION" > version.txt
+        env:
+          VERSION_BUMP: "${{ steps.version-check.outputs.version }}"
+      - run: "cp version.txt mobile/version.txt"
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
+      - name: "Set watchapp version"
+        shell: bash
+        run: |
+          echo "$VERSION" > watch/version.txt
+          cat watch/package.json | jq ".version = \"$VERSION\"" > tmp.json
+          cp tmp.json watch/package.json
+          cat tmp.json
+        if: "${{ env.BUILD_WATCH == 'true' }}"
+      - run: "echo \"# Release version ${{ env.VERSION }}\" > $GITHUB_STEP_SUMMARY"
+
+      # Preparation
+
+      - name: Install screenshot test dependencies
+        run: "sudo apt-get install -y libfreetype6 fontconfig fonts-dejavu"
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        if: "${{ env.BUILD_WATCH == 'true' }}"
+       # Newest version of Python is not supported by the Pebble SDK yet
+      - name: Downgrade python to 3.13
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+        if: "${{ env.BUILD_WATCH == 'true' }}"
+        # Sometimes SDK installation exits with exit code 1, but still succeeds. 
+        # We can just ignore failures here, as watchapp build will fail anyway even if the SDK is faulty
+      - name: Install pebble SDK
+        run: "uv tool install pebble-tool && (pebble sdk install latest || true)"
+        if: "${{ env.BUILD_WATCH == 'true' }}"
+      - name: Globally enable build cache and parallel execution
+        run: "mkdir -p ~/.gradle && echo -e 'org.gradle.caching=true\norg.gradle.parallel=true' >> ~/.gradle/gradle.properties"
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
+      - uses: android-actions/setup-android@7c5672355aaa8fde5f97a91aa9a99616d1ace6bc
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
+      # Install extra android platform needed for Paparazzi
+      - run: sdkmanager "platforms;android-33" "platforms;android-34"
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
+
+      # Build mobile app
+
+      - name: Compile app
+        uses: burrunan/gradle-cache-action@v3.0.1
+        with:
+          arguments: "compileDebugKotlin assembleRelease --daemon"
+          build-root-directory: mobile
+          daemon: false
+          debug: false
+          concurrent: true
+          read-only: ${{ github.ref != 'refs/heads/master' }}
+        env:
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
+      - name: "Upload proguard mappings"
+        uses: actions/upload-artifact@v4
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
+        with:
+          name: mapping-app-develop-release.txt
+          path: mobile/app/build/outputs/mapping/release/mapping.txt
+
+      # Tests
+
+      - name: Lint
+        uses: burrunan/gradle-cache-action@v3.0.1
+        with:
+          arguments: "lintRelease detektMain detektTest -x detektDebug -x detektDebugUnitTest assertModuleGraph buildHealth detectTooManyFiles debugComposeCompilerCheck :app:verifyDebugDatabaseMigration reportMerge --continue --daemon"
+          build-root-directory: mobile
+          debug: false
+          concurrent: true
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
+      - name: Double check db with generated schema
+        uses: burrunan/gradle-cache-action@v3.0.1
+        with:
+          arguments: ":app:generateDebugDatabaseSchema :app:verifyDebugDatabaseMigration --daemon"
+          build-root-directory: mobile
+          debug: false
+          concurrent: true
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
+      - name: Compile Unit Tests
+        uses: burrunan/gradle-cache-action@v3.0.1
+        with:
+          arguments: "compileDebugUnitTestSources compileReleaseUnitTestSources --daemon"
+          build-root-directory: mobile
+          debug: false
+          concurrent: true
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
+      - name: Run Unit Tests
+        uses: burrunan/gradle-cache-action@v3.0.1
+        with:
+          arguments: "test -x :app-screenshot-tests:testDebugUnitTest -x :app-screenshot-tests:testReleaseUnitTest --daemon"
+          build-root-directory: mobile
+          debug: false
+          concurrent: true
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
+      - name: "Generate new Screenshot Tests"
+        run: "config/generate-screenshots.sh master"
+        working-directory: mobile
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
+      - name: "Run Screenshot Tests"
+        uses: burrunan/gradle-cache-action@v3.0.1
+        with:
+          arguments: "--continue verifyPaparazziDebug --daemon"
+          build-root-directory: mobile
+          debug: false
+          concurrent: true
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
+      - name: "Upload Screenshot test failures"
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: failed-screenshot-tests
+          path: mobile/app-screenshot-tests/build/paparazzi/failures
+
+      # Build watchapp
+
+      - name: Build watchapp
+        run: pebble build && mv build/watch.pbw build/notificatoin-center.pbw
+        working-directory: watch
+        if: "${{ env.BUILD_WATCH == 'true' }}"
+
+      - name: Generate Changelog
+        id: changelog
+        uses: inovait/actions-common/git-changelog-generator@v8
+        with:
+          git_commit_url_prefix: 'https://github.com/matejdro/PebbleNotificationCenter2/commit/'
+          jira_url: 'https://github.com/matejdro/PebbleNotificationCenter2'
+          from: '${{ env.OLD_VERSION_REF }}'
+          to: HEAD
+      - name: Add counterpart link to the changelog
+        run: |
+          CHANGELOG_EXTRA=""
+          if [[ "$BUILD_WATCH" == "false" ]] then
+            CHANGELOG_EXTRA="$CHANGELOG_EXTRA\n\nFor the watchapp, download the [$OLD_WATCH_VERSION](https://github.com/matejdro/PebbleNotificationCenter2/releases/tag/$OLD_WATCH_VERSION) version."
+          fi
+          if [[ "$BUILD_MOBILE" == "false" ]] then
+            CHANGELOG_EXTRA="$CHANGELOG_EXTRA\n\nFor the phone app, download the [$OLD_MOBILE_VERSION](https://github.com/matejdro/PebbleNotificationCenter2/releases/tag/$OLD_MOBILE_VERSION) version."
+          fi
+
+          echo "CHANGELOG_EXTRA<<DELIMITERXXXX" >> $GITHUB_ENV
+          echo -e $CHANGELOG_EXTRA >> $GITHUB_ENV
+          echo "DELIMITERXXXX" >> $GITHUB_ENV
+      - name: 'Add version'
+        run: 'git add version.txt mobile/version.txt watch/version.txt watch/package.json'
+      - run: 'git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"'
+      - run: 'git config --global user.name "github-actions[bot]"'
+      - name: 'Commit version'
+        run: 'git commit -m "chore: release ${{ env.VERSION }}"'
+      - name: 'Push version'
+        run: 'git push'
+      - name: Tag build
+        run: |
+          git tag ${{ env.VERSION }}
+          git push origin ${{ env.VERSION }}
+      - name: "Publish arficats to action"
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            mobile/app/build/outputs/apk/release/notificationcenter-mobile.apk
+            watch/build/notificatoin-center.pbw
+      - name: Create a Release
+        uses: ncipollo/release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: ${{ env.VERSION }}
+          tag: ${{ env.VERSION }}
+          body: ${{ steps.changelog.outputs.changelog }}${{env.CHANGELOG_EXTRA}}
+          artifacts: "mobile/app/build/outputs/apk/release/notificationcenter-mobile.apk,watch/build/notificatoin-center.pbw"
+          generateReleaseNotes: false

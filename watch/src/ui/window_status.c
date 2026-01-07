@@ -1,5 +1,6 @@
 #include "window_status.h"
 #include "pebble.h"
+#include "window_notification.h"
 #include "layers/status_bar.h"
 #include "commons/connection/bucket_sync.h"
 
@@ -11,10 +12,10 @@ static bool auto_switch = false;
 
 static void on_bucket_data_update(BucketMetadata bucket_metadata, void* context)
 {
-    if (auto_switch && bucket_metadata.id == 1)
+    if (auto_switch && bucket_metadata.id != 1)
     {
         window_stack_pop(true);
-        // TODO
+        window_notification_show();
     }
 }
 

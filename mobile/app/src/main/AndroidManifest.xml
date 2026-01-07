@@ -11,10 +11,8 @@
     <uses-permission android:name="io.rebble.pebblekit2.permission.SEND_DATA_TO_WATCH" />
     <uses-permission android:name="io.rebble.pebblekit2.permission.READ_PROVIDER" />
 
-    <queries>
-        <package android:name="net.dinglisch.android.tasker" />
-        <package android:name="net.dinglisch.android.taskerm" />
-    </queries>
+    <!-- To get names of all applications and to allow for rules -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
 
     <application
         android:name=".NotificationCenterApplication"
@@ -68,9 +66,18 @@
 
         <service android:name=".receiving.PebbleListenerService"
                  android:exported="true"
-                 android:permission="io.rebble.pebblekit2.permission.RECEIVE_DATA_FROM_WATCH">
+                 tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="io.rebble.pebblekit2.RECEIVE_DATA_FROM_WATCH" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".notification.NotificationService"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
 

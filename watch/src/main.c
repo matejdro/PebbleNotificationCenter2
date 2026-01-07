@@ -3,6 +3,8 @@
 #include "commons/connection/bucket_sync.h"
 #include "connection/packets.h"
 #include "ui/window_status.h"
+#include "ui/window_notification.h"
+#include "utils/bucket_utils.h"
 
 int main(void)
 {
@@ -12,16 +14,15 @@ int main(void)
 
     send_watch_welcome();
 
-    uint8_t tmp[PERSIST_DATA_MAX_LENGTH];
-    const bool loaded = bucket_sync_load_bucket(1, tmp);
+    const BucketList* buckets = bucket_sync_get_bucket_list();
 
-    if (!loaded || tmp[0] == 0)
+    if (is_any_notification_bucket_active(buckets))
     {
-        window_status_show_empty();
+        window_notification_show();
     }
     else
     {
-        // TODO
+        window_status_show_empty();
     }
 
     app_event_loop();

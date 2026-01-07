@@ -114,6 +114,8 @@ dependencies {
    implementation(projects.logging.crashreport)
    implementation(projects.logging.data)
    implementation(projects.navigationImpl)
+   implementation(projects.notification.api)
+   implementation(projects.notification.data)
    implementation(projects.bucketsync.api)
    implementation(projects.bucketsync.data)
    implementation(projects.tools.ui)
