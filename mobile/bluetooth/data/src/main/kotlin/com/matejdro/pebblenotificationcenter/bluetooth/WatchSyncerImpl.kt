@@ -39,12 +39,30 @@ class WatchSyncerImpl(
 
       val epochSecond = notification.timestamp.epochSecond
       buffer.writeUInt(epochSecond.toUInt())
-      buffer.write(utf8Encoder.encodeSizeLimited(notification.title, MAX_TITLE_TEXT_LENGTH, true))
+      buffer.write(
+         utf8Encoder.encodeSizeLimited(
+            notification.title,
+            MAX_TITLE_TEXT_LENGTH,
+            true
+         ).encodedString
+      )
       buffer.writeUByte(0u)
-      buffer.write(utf8Encoder.encodeSizeLimited(notification.subtitle, MAX_TITLE_TEXT_LENGTH, true))
+      buffer.write(
+         utf8Encoder.encodeSizeLimited(
+            notification.subtitle,
+            MAX_TITLE_TEXT_LENGTH,
+            true
+         ).encodedString
+      )
       buffer.writeUByte(0u)
       val leftoverSize = BucketSyncRepository.MAX_BUCKET_SIZE_BYTES - buffer.size.toInt()
-      buffer.write(utf8Encoder.encodeSizeLimited(notification.body, leftoverSize, true))
+      buffer.write(
+         utf8Encoder.encodeSizeLimited(
+            notification.body,
+            leftoverSize,
+            true
+         ).encodedString
+      )
 
       bucketSyncRepository.updateBucketDynamic(notification.key, buffer.readByteArray(), sortKey = -epochSecond)
 
