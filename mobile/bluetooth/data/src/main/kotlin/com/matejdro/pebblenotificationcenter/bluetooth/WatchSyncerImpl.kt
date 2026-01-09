@@ -1,6 +1,7 @@
 package com.matejdro.pebblenotificationcenter.bluetooth
 
 import com.matejdro.bucketsync.BucketSyncRepository
+import com.matejdro.bucketsync.BucketSyncRepository.Companion.MAX_BUCKET_ID
 import com.matejdro.pebble.bluetooth.common.util.LimitingStringEncoder
 import com.matejdro.pebble.bluetooth.common.util.writeUByte
 import com.matejdro.pebble.bluetooth.common.util.writeUInt
@@ -22,7 +23,10 @@ class WatchSyncerImpl(
    private val mutex = Mutex()
 
    override suspend fun init() {
-      val reloadAllData = !bucketSyncRepository.init(PROTOCOL_VERSION.toInt())
+      val reloadAllData = !bucketSyncRepository.init(
+         PROTOCOL_VERSION.toInt(),
+         dynamicPool = 2..MAX_BUCKET_ID
+      )
       if (reloadAllData) {
          logcat { "Got different protocol version, resetting all data" }
       }
@@ -31,7 +35,7 @@ class WatchSyncerImpl(
    override suspend fun syncNotification(notification: ParsedNotification) = mutex.withLock {
       val buffer = Buffer()
 
-      logcat { "Syncing notification ${notification.title}" }
+      logcat { "Syncing notification ${notification.key} ${notification.title}" }
 
       val epochSecond = notification.timestamp.epochSecond
       buffer.writeUInt(epochSecond.toUInt())
