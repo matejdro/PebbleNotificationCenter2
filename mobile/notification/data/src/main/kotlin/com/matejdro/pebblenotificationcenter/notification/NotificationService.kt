@@ -69,6 +69,7 @@ class NotificationService : NotificationListenerService() {
    }
 
    override fun onNotificationPosted(sbn: StatusBarNotification) {
+      logcat { "Notification ${sbn.key} posted" }
       coroutineScope.launch {
          if (sbn.shouldShow()) {
             val parsed = notificationParser.parse(sbn)
@@ -84,6 +85,8 @@ class NotificationService : NotificationListenerService() {
    }
 
    override fun onNotificationRemoved(sbn: StatusBarNotification) {
+      logcat { "Notification ${sbn.key} removed" }
+
       coroutineScope.launch {
          notificationProcessor.onNotificationDismissed(sbn.key)
       }

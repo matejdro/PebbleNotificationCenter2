@@ -8,6 +8,8 @@ import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotificati
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import logcat.logcat
 import okio.Buffer
 
@@ -17,6 +19,7 @@ class WatchSyncerImpl(
    private val bucketSyncRepository: BucketSyncRepository,
 ) : WatchSyncer {
    private val utf8Encoder = LimitingStringEncoder()
+   private val mutex = Mutex()
 
    override suspend fun init() {
       val reloadAllData = !bucketSyncRepository.init(PROTOCOL_VERSION.toInt())
@@ -25,7 +28,7 @@ class WatchSyncerImpl(
       }
    }
 
-   override suspend fun syncNotification(notification: ParsedNotification) {
+   override suspend fun syncNotification(notification: ParsedNotification) = mutex.withLock {
       val buffer = Buffer()
 
       logcat { "Syncing notification ${notification.title}" }
@@ -40,14 +43,17 @@ class WatchSyncerImpl(
       buffer.write(utf8Encoder.encodeSizeLimited(notification.body, leftoverSize, true))
 
       bucketSyncRepository.updateBucketDynamic(notification.key, buffer.readByteArray(), sortKey = -epochSecond)
+
+      logcat { "Synced" }
    }
 
-   override suspend fun clearAllNotifications() {
+   override suspend fun clearAllNotifications() = mutex.withLock {
       bucketSyncRepository.clearAllDynamic()
    }
 
-   override suspend fun clearNotification(key: String) {
+   override suspend fun clearNotification(key: String) = mutex.withLock {
       bucketSyncRepository.deleteBucketDynamic(key)
+      logcat { "Notification $key from the store" }
    }
 }
 
