@@ -257,8 +257,8 @@ static void window_load(Window* window)
         GRect(
             HORIZONTAL_TEXT_PADDING,
             dots_bounds.size.h,
-            screen_bounds.size.w,
-            screen_bounds.size.h - dots_bounds.size.h - HORIZONTAL_TEXT_PADDING * 2
+            screen_bounds.size.w - HORIZONTAL_TEXT_PADDING * 2,
+            screen_bounds.size.h - dots_bounds.size.h
         )
     );
 
@@ -276,7 +276,7 @@ static void window_load(Window* window)
     layer_add_child(window_layer, dots_layer->layer);
     layer_add_child(window_layer, scroll_layer_get_layer(scroll_layer));
     scroll_layer_add_child(scroll_layer, scroll_content_layer);
-    scroll_layer_set_content_size(scroll_layer, GSize(screen_bounds.size.w, 0));
+    scroll_layer_set_content_size(scroll_layer, GSize(screen_bounds.size.w - HORIZONTAL_TEXT_PADDING * 2, 0));
 
     window_set_click_config_provider(window, buttons_config);
 
