@@ -75,7 +75,7 @@ class WatchSyncerImpl(
 
    override suspend fun clearNotification(key: String) = mutex.withLock {
       bucketSyncRepository.deleteBucketDynamic(key)
-      logcat { "Notification $key from the store" }
+      logcat { "Deleting Notification $key from the store" }
    }
 }
 
