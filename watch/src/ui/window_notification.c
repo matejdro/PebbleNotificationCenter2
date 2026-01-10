@@ -154,7 +154,10 @@ static void redraw_scroller()
         GTextOverflowModeWordWrap,
         GTextAlignmentLeft
     );
-    y += subtitle.bounds.size.h + MID_TEXT_VERTICAL_PADDING;
+    if (subtitle.bounds.size.h > 0)
+    {
+        y += subtitle.bounds.size.h + MID_TEXT_VERTICAL_PADDING;
+    }
 
     body.bounds.origin = GPoint(0, y);
     body.bounds.size = graphics_text_layout_get_content_size(
