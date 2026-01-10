@@ -80,18 +80,6 @@ custom {
    enableEmulatorTests.set(true)
 }
 
-sqldelight {
-   databases {
-      create("Database") {
-         packageName.set("com.matejdro.pebblenotificationcenter")
-         schemaOutputDirectory.set(file("src/main/sqldelight/databases"))
-
-         // Use project() wrapper as a workaround for the https://github.com/sqldelight/sqldelight/pull/5801
-         dependency(project(projects.bucketsync.data.path))
-      }
-   }
-}
-
 dependencyAnalysis {
    issues {
       onUnusedDependencies {

@@ -24,7 +24,7 @@ class WatchSyncerImpl(
 
    override suspend fun init() {
       val reloadAllData = !bucketSyncRepository.init(
-         PROTOCOL_VERSION.toInt(),
+         BUCKET_DATA_VERSION.toInt(),
          dynamicPool = 2..MAX_BUCKET_ID
       )
       if (reloadAllData) {
