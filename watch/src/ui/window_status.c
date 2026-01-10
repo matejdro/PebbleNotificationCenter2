@@ -1,8 +1,8 @@
 #include "window_status.h"
 #include "pebble.h"
-#include "window_notification.h"
 #include "layers/status_bar.h"
 #include "commons/connection/bucket_sync.h"
+#include "window_notification/window_notification.h"
 
 static TextLayer* main_text;
 static TextLayer* app_name_text;

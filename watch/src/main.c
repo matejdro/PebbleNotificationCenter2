@@ -3,7 +3,7 @@
 #include "commons/connection/bucket_sync.h"
 #include "connection/packets.h"
 #include "ui/window_status.h"
-#include "ui/window_notification.h"
+#include "ui/window_notification/window_notification.h"
 #include "utils/bucket_utils.h"
 
 int main(void)

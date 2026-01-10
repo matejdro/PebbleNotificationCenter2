@@ -1,0 +1,128 @@
+#include "data_loading.h"
+#include "window_notification.h"
+#include "commons/connection/bucket_sync.h"
+#include "ui/window_status.h"
+
+static BucketList* buckets;
+
+static void reload_data_for_current_bucket()
+{
+    uint8_t bucket_data[256];
+
+    if (!bucket_sync_load_bucket(window_notification_data.currently_selected_bucket, bucket_data))
+    {
+        // Bucket is not on the device yet. Show blank for now and wait for the buckets to load.
+        strcpy(window_notification_data.title_text, "");
+        strcpy(window_notification_data.subtitle_text, "");
+        strcpy(window_notification_data.body_text, "");
+    }
+    else
+    {
+        uint8_t size = bucket_sync_get_bucket_size(window_notification_data.currently_selected_bucket);
+
+        uint8_t position = 4;
+        strcpy(window_notification_data.title_text, (char*)&bucket_data[position]);
+        position += strlen(window_notification_data.title_text) + 1;
+        strcpy(window_notification_data.subtitle_text, (char*)&bucket_data[position]);
+        position += strlen(window_notification_data.subtitle_text) + 1;
+        const uint8_t body_bytes = size - position;
+        strncpy(window_notification_data.body_text, (char*)&bucket_data[position], body_bytes);
+        window_notification_data.body_text[body_bytes] = '\0';
+    }
+
+    window_notification_ui_redraw_scroller_content();
+}
+
+void window_notification_data_select_bucket_on_index(uint8_t target_index)
+{
+    uint8_t index_without_settings = 0;
+
+    for (int i = 0; i < buckets->count; i++)
+    {
+        const uint8_t id = buckets->data[i].id;
+
+        if (id != 1)
+        {
+            if (index_without_settings == target_index)
+            {
+                window_notification_data.currently_selected_bucket = id;
+                window_notification_data.currently_selected_bucket_index = target_index;
+
+                reload_data_for_current_bucket();
+                window_notification_ui_on_bucket_selected();
+                return;
+            }
+
+            index_without_settings++;
+        }
+    }
+
+    // If target_index was out of bounds, just select current bucket
+    window_notification_data_select_bucket_on_index(window_notification_data.bucket_count - 1);
+}
+
+void notification_window_ingest_bucket_metadata()
+{
+    uint8_t count_without_settings = 0;
+    int16_t current_bucket_index = -1;
+    for (int i = 0; i < buckets->count; i++)
+    {
+        const uint8_t id = buckets->data[i].id;
+
+        if (id != 1)
+        {
+            count_without_settings++;
+        }
+
+        if (id == window_notification_data.currently_selected_bucket)
+        {
+            current_bucket_index = i;
+        }
+    }
+
+    if (count_without_settings == 0)
+    {
+        window_stack_pop(true);
+        window_status_show_empty();
+        return;
+    }
+
+    window_notification_data.bucket_count = count_without_settings;
+
+    if (current_bucket_index != -1)
+    {
+        window_notification_data_select_bucket_on_index(current_bucket_index);
+    }
+    else
+    {
+        window_notification_data_select_bucket_on_index(window_notification_data.currently_selected_bucket_index);
+    }
+}
+
+static void on_buckets_changed()
+{
+    buckets = bucket_sync_get_bucket_list();
+    notification_window_ingest_bucket_metadata();
+}
+
+static void on_bucket_updated(const BucketMetadata bucket_metadata, void* context)
+{
+    if (bucket_metadata.id == window_notification_data.currently_selected_bucket)
+    {
+        reload_data_for_current_bucket();
+    }
+}
+
+
+void window_notification_data_init()
+{
+    on_buckets_changed();
+    bucket_sync_set_bucket_list_change_callback(on_buckets_changed);
+    bucket_sync_set_bucket_data_change_callback(on_bucket_updated, NULL);
+}
+
+void window_notification_data_deinit()
+{
+    bucket_sync_set_bucket_list_change_callback(NULL);
+    bucket_sync_clear_bucket_data_change_callback(on_bucket_updated, NULL);
+}
