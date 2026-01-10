@@ -42,21 +42,24 @@ static void reload_data_for_current_bucket()
 
     if (!bucket_sync_load_bucket(currently_selected_bucket, bucket_data))
     {
-        window_status_show_error("Missing bucket\n\nReport Bug");
-        return;
+        // Bucket is not on the device yet. Show blank for now and wait for the buckets to load.
+        strcpy(title_text, "");
+        strcpy(subtitle_text, "");
+        strcpy(body_text, "");
     }
-    uint8_t size = bucket_sync_get_bucket_size(currently_selected_bucket);
+    else
+    {
+        uint8_t size = bucket_sync_get_bucket_size(currently_selected_bucket);
 
-    uint8_t position = 4;
-    strcpy(title_text, (char*)&bucket_data[position]);
-    position += strlen(title_text) + 1;
-    strcpy(subtitle_text, (char*)&bucket_data[position]);
-    position += strlen(subtitle_text) + 1;
-    const uint8_t body_bytes = size - position;
-    strncpy(body_text, (char*)&bucket_data[position], body_bytes);
-    body_text[body_bytes] = '\0';
-
-    APP_LOG(APP_LOG_LEVEL_INFO, "Got title %s %d %s", title_text, body_bytes, body_text);
+        uint8_t position = 4;
+        strcpy(title_text, (char*)&bucket_data[position]);
+        position += strlen(title_text) + 1;
+        strcpy(subtitle_text, (char*)&bucket_data[position]);
+        position += strlen(subtitle_text) + 1;
+        const uint8_t body_bytes = size - position;
+        strncpy(body_text, (char*)&bucket_data[position], body_bytes);
+        body_text[body_bytes] = '\0';
+    }
 
     redraw_scroller();
 }
@@ -243,6 +246,14 @@ static void on_buckets_changed()
     ingest_bucket_metadata();
 }
 
+static void on_bucket_updated(const BucketMetadata bucket_metadata, void* context)
+{
+    if (bucket_metadata.id == currently_selected_bucket)
+    {
+        reload_data_for_current_bucket();
+    }
+}
+
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 static void window_load(Window* window)
 {
@@ -284,11 +295,13 @@ static void window_load(Window* window)
 
     on_buckets_changed();
     bucket_sync_set_bucket_list_change_callback(on_buckets_changed);
+    bucket_sync_set_bucket_data_change_callback(on_bucket_updated, NULL);
 }
 
 static void window_unload(Window* window)
 {
     bucket_sync_set_bucket_list_change_callback(NULL);
+    bucket_sync_clear_bucket_data_change_callback(on_bucket_updated, NULL);
     custom_status_bar_set_active(status_bar_layer, false);
     custom_status_bar_layer_destroy(status_bar_layer);
     scroll_layer_destroy(scroll_layer);
