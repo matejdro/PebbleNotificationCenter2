@@ -80,6 +80,9 @@ class NotificationService : NotificationListenerService() {
             notificationProcessor.onNotificationPosted(parsed)
          } else {
             logcat { "Skipping notification ${sbn.key} ${sbn.key}" }
+            // When notification is being skipped, we should remove it from the store, to ensure any previous notification
+            // with that id is removed
+            onNotificationRemoved(sbn)
          }
       }
    }
