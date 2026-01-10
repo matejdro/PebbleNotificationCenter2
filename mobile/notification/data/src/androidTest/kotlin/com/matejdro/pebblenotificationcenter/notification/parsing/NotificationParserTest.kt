@@ -133,6 +133,24 @@ class NotificationParserTest {
          Instant.ofEpochMilli(1234L)
       )
    }
+
+   @Test
+   fun parseNotificationWithLongSubtitleIntoText() {
+      val notification = NotificationCompat.Builder(context, "FAKE_CHANNEL")
+         .setContentTitle("A very very long long title title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .build()
+
+      notificationParser.parse(notification.toSbn()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "",
+         "A very very long long title title\nDescription",
+         Instant.ofEpochMilli(0L)
+      )
+   }
 }
 
 private fun Notification.toSbn(id: Int = 0, tag: String? = null, timestamp: Long = 0): StatusBarNotification {

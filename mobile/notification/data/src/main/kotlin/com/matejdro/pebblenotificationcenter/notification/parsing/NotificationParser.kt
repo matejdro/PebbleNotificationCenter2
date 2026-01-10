@@ -28,12 +28,22 @@ class NotificationParser(
             ?: extras.getCharSequence(NotificationCompat.EXTRA_SUB_TEXT)
             ?: extras.getCharSequence(NotificationCompat.EXTRA_INFO_TEXT)
 
+      val updatedSubtitle: CharSequence
+      val updatedText: CharSequence?
+      if (subtitle.length > MAX_TITLE_LENGTH) {
+         updatedSubtitle = ""
+         updatedText = if (text != null) "$subtitle\n$text" else subtitle
+      } else {
+         updatedSubtitle = subtitle
+         updatedText = text
+      }
+
       return ParsedNotification(
          sbn.key,
          sbn.packageName,
          title,
-         subtitle.toString(),
-         text?.toString().orEmpty(),
+         updatedSubtitle.toString(),
+         updatedText?.toString().orEmpty(),
          Instant.ofEpochMilli(sbn.postTime),
       )
    }
@@ -60,3 +70,5 @@ class NotificationParser(
       return textLines.joinToString("\n")
    }
 }
+
+private const val MAX_TITLE_LENGTH = 20
