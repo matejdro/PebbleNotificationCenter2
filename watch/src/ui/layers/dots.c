@@ -57,7 +57,7 @@ static void dots_layer_paint(Layer* layer, GContext* ctx)
     }
 }
 
-DotsLayer* dots_layer_create(GRect bounds)
+DotsLayer* dots_layer_create(const GRect bounds)
 {
     DotsLayer* dots = malloc(sizeof(DotsLayer));
 
@@ -72,13 +72,13 @@ DotsLayer* dots_layer_create(GRect bounds)
     return dots;
 }
 
-void dots_layer_set_selected_dot(DotsLayer* layer, uint8_t selected_dot)
+void dots_layer_set_selected_dot(DotsLayer* layer, const uint8_t selected_dot)
 {
     layer->selected_dot = selected_dot;
     layer_mark_dirty(layer->layer);
 }
 
-void dots_layer_set_number_of_dots(DotsLayer* layer, uint8_t number_of_dots)
+void dots_layer_set_number_of_dots(DotsLayer* layer, const uint8_t number_of_dots)
 {
     layer->number_of_dots = number_of_dots;
     layer_mark_dirty(layer->layer);

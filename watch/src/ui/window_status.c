@@ -10,7 +10,7 @@ static CustomStatusBarLayer* status_bar;
 static const char* status_text;
 static bool auto_switch = false;
 
-static void on_bucket_data_update(BucketMetadata bucket_metadata, void* context)
+static void on_bucket_data_update(const BucketMetadata bucket_metadata, void* context)
 {
     if (auto_switch && bucket_metadata.id != 1)
     {

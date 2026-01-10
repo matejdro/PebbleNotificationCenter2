@@ -14,7 +14,7 @@ static void button_down_single(ClickRecognizerRef recognizer, void* context)
     window_notification_ui_scroll_by(-SINGLE_SCROLL_HEIGHT);
 }
 
-static void button_up_repeating(ClickRecognizerRef recognizer, void* context)
+static void button_up_repeating(const ClickRecognizerRef recognizer, void* context)
 {
     if (click_recognizer_is_repeating(recognizer))
     {
@@ -22,7 +22,7 @@ static void button_up_repeating(ClickRecognizerRef recognizer, void* context)
     }
 }
 
-static void button_down_repeating(ClickRecognizerRef recognizer, void* context)
+static void button_down_repeating(const ClickRecognizerRef recognizer, void* context)
 {
     if (click_recognizer_is_repeating(recognizer))
     {
@@ -30,7 +30,7 @@ static void button_down_repeating(ClickRecognizerRef recognizer, void* context)
     }
 }
 
-static void button_up_multi(ClickRecognizerRef recognizer, void* context)
+static void button_up_multi(const ClickRecognizerRef recognizer, void* context)
 {
     if (click_number_of_clicks_counted(recognizer) != 2)
     {
@@ -48,7 +48,7 @@ static void button_up_multi(ClickRecognizerRef recognizer, void* context)
     }
 }
 
-static void button_down_multi(ClickRecognizerRef recognizer, void* context)
+static void button_down_multi(const ClickRecognizerRef recognizer, void* context)
 {
     if (click_number_of_clicks_counted(recognizer) != 2)
     {

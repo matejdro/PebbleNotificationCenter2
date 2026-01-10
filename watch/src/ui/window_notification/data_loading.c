@@ -33,7 +33,7 @@ static void reload_data_for_current_bucket()
     window_notification_ui_redraw_scroller_content();
 }
 
-void window_notification_data_select_bucket_on_index(uint8_t target_index)
+void window_notification_data_select_bucket_on_index(const uint8_t target_index)
 {
     uint8_t index_without_settings = 0;
 
