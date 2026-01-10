@@ -177,21 +177,37 @@ static void redraw_scroller()
     layer_mark_dirty(scroll_content_layer);
 }
 
-static void button_up(ClickRecognizerRef recognizer, void* context)
+static void button_up_single(ClickRecognizerRef recognizer, void* context)
 {
     scroll_layer_scroll_up_click_handler(recognizer, scroll_layer);
 }
 
-static void button_down(ClickRecognizerRef recognizer, void* context)
+static void button_down_single(ClickRecognizerRef recognizer, void* context)
 {
     scroll_layer_scroll_down_click_handler(recognizer, scroll_layer);
+}
+
+static void button_up_repeating(ClickRecognizerRef recognizer, void* context)
+{
+    if (click_recognizer_is_repeating(recognizer))
+    {
+        button_up_single(recognizer, context);
+    }
+}
+
+static void button_down_repeating(ClickRecognizerRef recognizer, void* context)
+{
+    if (click_recognizer_is_repeating(recognizer))
+    {
+        button_down_single(recognizer, context);
+    }
 }
 
 static void button_up_multi(ClickRecognizerRef recognizer, void* context)
 {
     if (click_number_of_clicks_counted(recognizer) != 2)
     {
-        button_up(recognizer, context);
+        button_up_single(recognizer, context);
         return;
     }
 
@@ -209,7 +225,7 @@ static void button_down_multi(ClickRecognizerRef recognizer, void* context)
 {
     if (click_number_of_clicks_counted(recognizer) != 2)
     {
-        button_down(recognizer, context);
+        button_down_single(recognizer, context);
         return;
     }
 
@@ -228,8 +244,8 @@ static void buttons_config(void* context)
     window_multi_click_subscribe(BUTTON_ID_UP, 1, 2, 150, false, button_up_multi);
     window_multi_click_subscribe(BUTTON_ID_DOWN, 1, 2, 150, false, button_down_multi);
 
-    window_single_repeating_click_subscribe(BUTTON_ID_UP, 100, button_up);
-    window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 100, button_down);
+    window_single_repeating_click_subscribe(BUTTON_ID_UP, 100, button_up_repeating);
+    window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 100, button_down_repeating);
 }
 
 static void scroll_content_paint(Layer* layer, GContext* ctx)
