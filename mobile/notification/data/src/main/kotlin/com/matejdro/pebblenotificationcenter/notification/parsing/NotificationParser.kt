@@ -53,13 +53,16 @@ class NotificationParser(
 
       val messages = (messagingStyle.messages + messagingStyle.historicMessages).sortedByDescending { it.timestamp }
 
+      var lastName: CharSequence? = null
       return messages.joinToString("\n") {
          val person = it.person
          val text = it.text?.toString().orEmpty()
-         if (person != null) {
+         if (person != null && lastName != person.name) {
             "${person.name}: $text"
          } else {
             text
+         }.also {
+            lastName = person?.name
          }
       }
    }

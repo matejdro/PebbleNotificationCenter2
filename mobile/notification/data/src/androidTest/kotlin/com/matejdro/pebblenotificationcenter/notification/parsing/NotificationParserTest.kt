@@ -92,6 +92,31 @@ class NotificationParserTest {
    }
 
    @Test
+   fun doNotRepeatNameOfTheSamePerson() {
+      val notification = NotificationCompat.Builder(context, "FAKE_CHANNEL")
+         .setStyle(
+            NotificationCompat.MessagingStyle(Person.Builder().setName("Group Chat A").build())
+               .setConversationTitle("Group Chat A")
+               .addMessage("Message 1", 1L, Person.Builder().setName("Alice").build())
+               .addMessage("Message 2", 2L, Person.Builder().setName("Alice").build())
+               .addMessage("Message 3", 3L, Person.Builder().setName("Bob").build())
+         )
+         .setSmallIcon(0)
+         .build()
+
+      notificationParser.parse(notification.toSbn()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Group Chat A: Bob",
+         "Bob: Message 3\n" +
+            "Alice: Message 2\n" +
+            "Message 1",
+         Instant.ofEpochMilli(0L),
+      )
+   }
+
+   @Test
    fun parseInboxStyle() {
       val notification = NotificationCompat.Builder(context, "FAKE_CHANNEL")
          .setStyle(
