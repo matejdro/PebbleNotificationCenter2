@@ -27,6 +27,7 @@ class WatchappConnectionImpl(
    private val watchappOpenController: WatchappOpenController,
    private val packetQueue: PacketQueue,
    private val bucketSyncWatchLoop: BucketSyncWatchLoop,
+   private val notificationDetailsPusher: NotificationDetailsPusher,
 ) : WatchAppConnection {
    private var watchBufferSize: Int = 0
 
@@ -40,11 +41,20 @@ class WatchappConnectionImpl(
       val id = (data.get(0u) as PebbleDictionaryItem.UInt32?)?.value
       logcat { "Received packet ${id ?: "null"}" }
 
-      return if (id == 0u) {
-         processWatchWelcomePacket(data)
-      } else {
-         logcat { "Unknown packet ID. Nacking..." }
-         ReceiveResult.Nack
+      return when (id) {
+         0u -> {
+            processWatchWelcomePacket(data)
+         }
+
+         4u -> {
+            notificationDetailsPusher.pushNotificationDetails(data.requireUint(1u).toInt(), watchBufferSize)
+            ReceiveResult.Ack
+         }
+
+         else -> {
+            logcat { "Unknown packet ID. Nacking..." }
+            ReceiveResult.Nack
+         }
       }
    }
 
@@ -88,6 +98,8 @@ class WatchappConnectionImpl(
       }
    }
 }
+
+internal const val PRIORITY_WATCH_TEXT = 1
 
 private fun <K, V> mapOfNotNull(vararg pairs: Pair<K, V>?): Map<K, V> =
    pairs.filterNotNull().toMap()

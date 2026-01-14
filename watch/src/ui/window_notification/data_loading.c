@@ -1,6 +1,9 @@
 #include "data_loading.h"
+
 #include "window_notification.h"
+#include "commons/math.h"
 #include "commons/connection/bucket_sync.h"
+#include "connection/notification_details_fetcher.h"
 #include "ui/window_status.h"
 
 static BucketList* buckets;
@@ -28,6 +31,8 @@ static void reload_data_for_current_bucket()
         const uint8_t body_bytes = size - position;
         strncpy(window_notification_data.body_text, (char*)&bucket_data[position], body_bytes);
         window_notification_data.body_text[body_bytes] = '\0';
+
+        notification_details_fetcher_fetch(window_notification_data.currently_selected_bucket);
     }
 
     window_notification_ui_redraw_scroller_content();
@@ -111,6 +116,20 @@ static void on_bucket_updated(const BucketMetadata bucket_metadata, void* contex
     {
         reload_data_for_current_bucket();
     }
+}
+
+void window_notification_data_receive_more_text(const uint8_t bucket_id, const uint8_t* data, const size_t data_size)
+{
+    if (window_notification_data.active == false || bucket_id != window_notification_data.currently_selected_bucket)
+    {
+        return;
+    }
+
+    const size_t max_text_size = MIN(MAX_BODY_TEXT_SIZE, data_size);
+    strncpy(window_notification_data.body_text, (char*)data, max_text_size);
+    window_notification_data.body_text[max_text_size] = '\0';
+
+    window_notification_ui_redraw_scroller_content();
 }
 
 

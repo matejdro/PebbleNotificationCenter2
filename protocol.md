@@ -52,6 +52,13 @@ Optionally sent to the watch after packets 1 or 2. Can be repeated until data fo
     * Bucket size in bytes (uint8)
     * Bucket data (bytes)
 
+### Larger notification text (packet 5)
+
+Sent from the phone after the packet 4
+
+* `1` - Data (byte array)
+  * Notification (Bucket) ID to apply that to (uint8)
+  * Text (cstring, up to the max size of the packet)
 
 ## Watch -> Phone
 
@@ -62,6 +69,12 @@ Sent from the watch when the app is opened.
 * `1` - watch protocol version (uint16)
 * `2` - current bucketsync watch version (uint16)
 * `3` - Appmessage incoming buffer size in bytes (uint16)
+
+### Notification opened notification (packet 4)
+
+Sent from the watch when user opens/views a notification
+
+* `1` - id of the seen bucket (uint8)
 
 # Buckets
 

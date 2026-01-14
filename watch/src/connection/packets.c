@@ -3,11 +3,13 @@
 #include "commons/connection/bucket_sync.h"
 #include <pebble.h>
 
+#include "notification_details_fetcher.h"
 #include "../ui/window_status.h"
 
 static void receive_phone_welcome(const DictionaryIterator* iterator);
 static void receive_sync_restart(const DictionaryIterator* iterator);
 static void receive_sync_next_packet(const DictionaryIterator* iterator);
+static void receive_notification_details_text_packet(const DictionaryIterator* iterator);
 static void receive_watch_packet(const DictionaryIterator* received);
 
 void packets_init()
@@ -27,13 +29,20 @@ void send_watch_welcome()
     bluetooth_app_message_outbox_send();
 }
 
-void send_trigger_action(const uint16_t id)
+bool send_notification_opened(const uint8_t id)
 {
     DictionaryIterator* iterator;
-    app_message_outbox_begin(&iterator);
+    AppMessageResult res = app_message_outbox_begin(&iterator);
+
+    if (res != APP_MSG_OK)
+    {
+        return false;
+    }
+
     dict_write_uint8(iterator, 0, 4);
-    dict_write_uint16(iterator, 1, id);
+    dict_write_uint8(iterator, 1, id);
     bluetooth_app_message_outbox_send();
+    return true;
 }
 
 static void receive_watch_packet(const DictionaryIterator* received)
@@ -50,6 +59,9 @@ static void receive_watch_packet(const DictionaryIterator* received)
         break;
     case 3:
         receive_sync_next_packet(received);
+        break;
+    case 5:
+        receive_notification_details_text_packet(received);
         break;
     default:
         break;
@@ -97,4 +109,12 @@ void receive_sync_next_packet(const DictionaryIterator* iterator)
     Tuple* dict_entry = dict_find(iterator, 1);
 
     bucket_sync_on_start_received(dict_entry->value->data, dict_entry->length);
+}
+
+void receive_notification_details_text_packet(const DictionaryIterator* iterator)
+{
+    // ReSharper disable once CppLocalVariableMayBeConst
+    Tuple* dict_entry = dict_find(iterator, 1);
+
+    notification_details_fetcher_on_text_received(dict_entry->value->data, dict_entry->length);
 }

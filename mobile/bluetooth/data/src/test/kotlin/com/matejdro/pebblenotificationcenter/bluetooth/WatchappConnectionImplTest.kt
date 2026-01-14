@@ -28,6 +28,8 @@ class WatchappConnectionImplTest {
 
    private val watchappOpenController = FakeWatchappOpenController()
 
+   val notificationDetailsPusher = FakeNotificationDetailsPusher()
+
    private val watch = WatchIdentifier("watch")
 
    private val packetQueue = PacketQueue(sender, watch, WATCHAPP_UUID)
@@ -43,7 +45,8 @@ class WatchappConnectionImplTest {
          watchappOpenController,
          FakeBackgroundSyncNotifier(),
          watch,
-      )
+      ),
+      notificationDetailsPusher,
    )
 
    @Test
@@ -148,6 +151,24 @@ class WatchappConnectionImplTest {
       runCurrent()
 
       sender.sentData.first().shouldContainKey(3u)
+   }
+
+   @Test
+   fun `Push notification details on receive of the notification opened packet`() = scope.runTest {
+      receiveStandardHelloPacket(bufferSize = 123u)
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(4u),
+            1u to PebbleDictionaryItem.UInt32(12u),
+         )
+      )
+      runCurrent()
+
+      result shouldBe ReceiveResult.Ack
+
+      notificationDetailsPusher.lastPushRequestId shouldBe 12
+      notificationDetailsPusher.lastMaxPacketSize shouldBe 123
    }
 
    private suspend fun receiveStandardHelloPacket(version: UInt = 0u, bufferSize: UInt = 1000u): ReceiveResult =

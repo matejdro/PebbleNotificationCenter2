@@ -170,6 +170,7 @@ okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 orgJson = { module = "org.json:json", version.ref = "orgJson" }
 pebblekit = { module = "com.github.pebble-dev.PebbleKitAndroid2:client", version.ref = "pebblekit" }
 pebblekit-api = { module = "com.github.pebble-dev.PebbleKitAndroid2:client-api", version.ref = "pebblekit" }
+pebblekit-common = { module = "com.github.pebble-dev.PebbleKitAndroid2:common", version.ref = "pebblekit" }
 pebblekit-common-api = { module = "com.github.pebble-dev.PebbleKitAndroid2:common-api", version.ref = "pebblekit" }
 paparazzi = { module = "app.cash.paparazzi:paparazzi", version.ref = "paparazzi" }
 rebugger = { module = "io.github.theapache64:rebugger", version.ref = "rebugger" }

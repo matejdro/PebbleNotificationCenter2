@@ -2,6 +2,7 @@
 #include "pebble.h"
 #include "commons/connection/bluetooth.h"
 #include "commons/connection/bucket_sync.h"
+#include "connection/notification_details_fetcher.h"
 
 static const int STATUS_BAR_HEIGHT = 16;
 
@@ -74,13 +75,13 @@ static void custom_status_bar_paint(Layer* layer, GContext* ctx)
     {
         graphics_draw_bitmap_in_rect(ctx, indicator_disconnected, GRect(icon_x, 1, 14, 13));
     }
-    else if (is_currently_sending_data || bucket_sync_is_currently_syncing)
+    else if (is_currently_sending_data || bucket_sync_is_currently_syncing || notification_details_fetcher_is_fetching())
     {
         graphics_draw_bitmap_in_rect(ctx, indicator_busy, GRect(icon_x + 3, 3, 9, 10));
     }
 }
 
-void custom_status_bar_set_active(CustomStatusBarLayer* layer, bool active)
+void custom_status_bar_set_active(CustomStatusBarLayer* layer, const bool active)
 {
     if (active)
     {
@@ -95,6 +96,7 @@ void custom_status_bar_set_active(CustomStatusBarLayer* layer, bool active)
                 bluetooth_register_sending_error_status_callback(update_data);
                 bluetooth_register_sending_now_change_callback(update_data);
                 bucket_sync_register_syncing_status_changed_callback(update_data);
+                notification_details_fetcher_register_fetching_status_callback(update_data);
                 listeners_active = true;
             }
 

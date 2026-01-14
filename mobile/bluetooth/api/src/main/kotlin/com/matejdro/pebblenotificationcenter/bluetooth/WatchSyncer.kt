@@ -7,5 +7,9 @@ interface WatchSyncer {
 
    suspend fun clearAllNotifications()
    suspend fun clearNotification(key: String)
-   suspend fun syncNotification(notification: ParsedNotification)
+
+   /**
+    * @return bucket id of the notification
+    */
+   suspend fun syncNotification(notification: ParsedNotification): Int
 }

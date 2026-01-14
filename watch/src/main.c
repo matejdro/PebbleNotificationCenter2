@@ -1,6 +1,7 @@
 #include <pebble.h>
 #include "commons/connection/bluetooth.h"
 #include "commons/connection/bucket_sync.h"
+#include "connection/notification_details_fetcher.h"
 #include "connection/packets.h"
 #include "ui/window_status.h"
 #include "ui/window_notification/window_notification.h"
@@ -11,6 +12,7 @@ int main(void)
     packets_init();
     bluetooth_init();
     bucket_sync_init();
+    notification_details_fetcher_init();
 
     send_watch_welcome();
 

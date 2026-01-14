@@ -7,6 +7,8 @@ class FakeWatchSyncer : WatchSyncer {
    val clearedNotifications = mutableListOf<String>()
    var clearAllCalled = false
 
+   var nextBucketId = 1
+
    override suspend fun init() {
    }
 
@@ -18,7 +20,8 @@ class FakeWatchSyncer : WatchSyncer {
       clearedNotifications.add(key)
    }
 
-   override suspend fun syncNotification(notification: ParsedNotification) {
+   override suspend fun syncNotification(notification: ParsedNotification): Int {
       syncedNotifications.add(notification)
+      return nextBucketId++
    }
 }

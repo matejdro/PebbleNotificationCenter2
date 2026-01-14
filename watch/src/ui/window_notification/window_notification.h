@@ -4,6 +4,8 @@
 #include "ui/layers/dots.h"
 #include "ui/layers/status_bar.h"
 
+#define MAX_BODY_TEXT_SIZE 10000
+
 typedef struct
 {
     char* text;
@@ -13,13 +15,16 @@ typedef struct
 
 typedef struct
 {
+    bool active;
+
     uint8_t currently_selected_bucket;
     uint8_t currently_selected_bucket_index;
     uint8_t bucket_count;
 
     char title_text[21];
     char subtitle_text[21];
-    char body_text[256];
+    // Include +1 for the null character
+    char body_text[MAX_BODY_TEXT_SIZE + 1];
 } NotificationWindowData;
 
 extern NotificationWindowData window_notification_data;
