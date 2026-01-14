@@ -21,7 +21,7 @@ static void reload_data_for_current_bucket()
     }
     else
     {
-        uint8_t size = bucket_sync_get_bucket_size(window_notification_data.currently_selected_bucket);
+        const uint8_t size = bucket_sync_get_bucket_size(window_notification_data.currently_selected_bucket);
 
         uint8_t position = 4;
         strcpy(window_notification_data.title_text, (char*)&bucket_data[position]);

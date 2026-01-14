@@ -2,7 +2,7 @@
 
 static void dots_layer_paint(Layer* layer, GContext* ctx)
 {
-    DotsLayer* dots_layer = *((DotsLayer**)layer_get_data(layer));
+    const DotsLayer* dots_layer = *((DotsLayer**)layer_get_data(layer));
 
     graphics_context_set_fill_color(ctx, GColorWhite);
 

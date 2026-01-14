@@ -32,7 +32,7 @@ void send_watch_welcome()
 bool send_notification_opened(const uint8_t id)
 {
     DictionaryIterator* iterator;
-    AppMessageResult res = app_message_outbox_begin(&iterator);
+    const AppMessageResult res = app_message_outbox_begin(&iterator);
 
     if (res != APP_MSG_OK)
     {
