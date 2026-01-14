@@ -94,7 +94,7 @@ class WatchappConnectionImplTest {
          mapOf(
             0u to PebbleDictionaryItem.UInt8(1u),
             1u to PebbleDictionaryItem.UInt16(PROTOCOL_VERSION),
-            2u to PebbleDictionaryItem.ByteArray(
+            2u to PebbleDictionaryItem.Bytes(
                byteArrayOf(
                   0, // Status
                   0, 2, // Latest version
@@ -107,7 +107,7 @@ class WatchappConnectionImplTest {
          ),
          mapOf(
             0u to PebbleDictionaryItem.UInt8(3u),
-            1u to PebbleDictionaryItem.ByteArray(
+            1u to PebbleDictionaryItem.Bytes(
                byteArrayOf(
                   1, // Status
                   2, 1, 2, // Sync data for bucket 2
