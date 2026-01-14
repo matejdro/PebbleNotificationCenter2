@@ -227,7 +227,7 @@ jobs:
       # Build watchapp
 
       - name: Build watchapp
-        run: pebble build && mv build/watch.pbw build/notificatoin-center.pbw
+        run: pebble build && mv build/watch.pbw build/notification-center.pbw
         working-directory: watch
         if: "${{ env.BUILD_WATCH == 'true' }}"
 
@@ -270,7 +270,7 @@ jobs:
           name: release-artifacts
           path: |
             mobile/app/build/outputs/apk/release/notificationcenter-mobile.apk
-            watch/build/notificatoin-center.pbw
+            watch/build/notification-center.pbw
       - name: Create a Release
         uses: ncipollo/release-action@v1
         env:
@@ -279,5 +279,5 @@ jobs:
           name: ${{ env.VERSION }}
           tag: ${{ env.VERSION }}
           body: ${{ steps.changelog.outputs.changelog }}${{env.CHANGELOG_EXTRA}}
-          artifacts: "mobile/app/build/outputs/apk/release/notificationcenter-mobile.apk,watch/build/notificatoin-center.pbw"
+          artifacts: "mobile/app/build/outputs/apk/release/notificationcenter-mobile.apk,watch/build/notification-center.pbw"
           generateReleaseNotes: false
