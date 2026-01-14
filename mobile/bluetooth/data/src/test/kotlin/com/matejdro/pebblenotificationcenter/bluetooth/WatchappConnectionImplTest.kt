@@ -9,6 +9,7 @@ import com.matejdro.pebble.bluetooth.common.test.sentData
 import com.matejdro.pebblenotificationcenter.bluetooth.api.WATCHAPP_UUID
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainKey
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.rebble.pebblekit2.common.model.PebbleDictionaryItem
 import io.rebble.pebblekit2.common.model.ReceiveResult
@@ -169,6 +170,21 @@ class WatchappConnectionImplTest {
 
       notificationDetailsPusher.lastPushRequestId shouldBe 12
       notificationDetailsPusher.lastMaxPacketSize shouldBe 123
+   }
+
+   @Test
+   fun `Ignore notification details packets before valid hello packet`() = scope.runTest {
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(4u),
+            1u to PebbleDictionaryItem.UInt32(12u),
+         )
+      )
+      runCurrent()
+
+      result shouldBe ReceiveResult.Nack
+
+      notificationDetailsPusher.lastPushRequestId.shouldBeNull()
    }
 
    private suspend fun receiveStandardHelloPacket(version: UInt = 0u, bufferSize: UInt = 1000u): ReceiveResult =
