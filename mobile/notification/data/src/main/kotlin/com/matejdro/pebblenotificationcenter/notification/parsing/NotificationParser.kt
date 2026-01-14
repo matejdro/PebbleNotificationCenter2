@@ -14,19 +14,24 @@ class NotificationParser(
    fun parse(sbn: StatusBarNotification): ParsedNotification? {
       val notification = sbn.notification
       val extras = notification.extras
-      val subtitle = extras.getCharSequence(NotificationCompat.EXTRA_TITLE)
-         ?: extras.getCharSequence(NotificationCompat.EXTRA_TITLE_BIG)
-         ?: return null
+      val subtitle = (
+         extras.getCharSequence(NotificationCompat.EXTRA_TITLE)
+            ?: extras.getCharSequence(NotificationCompat.EXTRA_TITLE_BIG)
+            ?: return null
+         ).removeUselessCharacaters()
 
       val title = appNameProvider.getAppName(sbn.packageName)
       val text =
-         notification.parseMessagingStyle()
-            ?: notification.parseInboxStyle()
-            ?: extras.getCharSequence(NotificationCompat.EXTRA_BIG_TEXT)
-            ?: extras.getCharSequence(NotificationCompat.EXTRA_TEXT)
-            ?: extras.getCharSequence(NotificationCompat.EXTRA_SUMMARY_TEXT)
-            ?: extras.getCharSequence(NotificationCompat.EXTRA_SUB_TEXT)
-            ?: extras.getCharSequence(NotificationCompat.EXTRA_INFO_TEXT)
+         (
+            notification.parseMessagingStyle()
+               ?: notification.parseInboxStyle()
+               ?: extras.getCharSequence(NotificationCompat.EXTRA_BIG_TEXT)
+               ?: extras.getCharSequence(NotificationCompat.EXTRA_TEXT)
+               ?: extras.getCharSequence(NotificationCompat.EXTRA_SUMMARY_TEXT)
+               ?: extras.getCharSequence(NotificationCompat.EXTRA_SUB_TEXT)
+               ?: extras.getCharSequence(NotificationCompat.EXTRA_INFO_TEXT)
+            )
+            ?.removeUselessCharacaters()
 
       val updatedSubtitle: CharSequence
       val updatedText: CharSequence?
@@ -72,6 +77,11 @@ class NotificationParser(
 
       return textLines.joinToString("\n")
    }
+
+   private fun CharSequence.removeUselessCharacaters(): String {
+      return CONTROL_CHARACTERS.replace(this, "")
+   }
 }
 
 private const val MAX_TITLE_LENGTH = 20
+private val CONTROL_CHARACTERS = Regex("\\p{Cf}")
