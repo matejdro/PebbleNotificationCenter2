@@ -83,7 +83,7 @@ class NotificationParserTest {
          "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
          TEST_PACKAGE,
          "SMS App",
-         "Group Chat A: Bob",
+         "Group Chat A",
          "Bob: Message 3\n" +
             "Alice: Message 2\n" +
             "Bob: Message 1",
@@ -108,7 +108,7 @@ class NotificationParserTest {
          "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
          TEST_PACKAGE,
          "SMS App",
-         "Group Chat A: Bob",
+         "Group Chat A",
          "Bob: Message 3\n" +
             "Alice: Message 2\n" +
             "Message 1",
