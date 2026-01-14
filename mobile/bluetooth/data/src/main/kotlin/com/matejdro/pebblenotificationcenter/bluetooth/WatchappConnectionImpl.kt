@@ -49,10 +49,9 @@ class WatchappConnectionImpl(
          4u -> {
             if (watchBufferSize > 0) {
                notificationDetailsPusher.pushNotificationDetails(data.requireUint(1u).toInt(), watchBufferSize)
-               ReceiveResult.Ack
-            } else {
-               ReceiveResult.Nack
             }
+
+            ReceiveResult.Ack
          }
 
          else -> {

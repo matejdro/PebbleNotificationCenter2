@@ -182,7 +182,7 @@ class WatchappConnectionImplTest {
       )
       runCurrent()
 
-      result shouldBe ReceiveResult.Nack
+      result shouldBe ReceiveResult.Ack
 
       notificationDetailsPusher.lastPushRequestId.shouldBeNull()
    }
