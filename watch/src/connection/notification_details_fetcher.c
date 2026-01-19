@@ -18,10 +18,10 @@ void notification_details_fetcher_fetch(const uint8_t bucket_id)
     if (!success)
     {
         next_notification_to_fetch = bucket_id;
+        bluetooth_register_sending_finish(on_sending_finished);
         return;
     }
 
-    bluetooth_register_sending_finish(on_sending_finished);
 
     if (!is_phone_connected)
     {
