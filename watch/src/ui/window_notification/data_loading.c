@@ -1,5 +1,6 @@
 #include "data_loading.h"
 
+#include "action_list.h"
 #include "window_notification.h"
 #include "commons/math.h"
 #include "commons/connection/bucket_sync.h"
@@ -52,9 +53,11 @@ void window_notification_data_select_bucket_on_index(const uint8_t target_index)
             {
                 window_notification_data.currently_selected_bucket = id;
                 window_notification_data.currently_selected_bucket_index = target_index;
+                window_notification_data.num_actions = 0;
 
                 reload_data_for_current_bucket();
                 window_notification_ui_on_bucket_selected();
+                window_notification_action_list_hide();
                 return;
             }
 
@@ -125,8 +128,17 @@ void window_notification_data_receive_more_text(const uint8_t bucket_id, const u
         return;
     }
 
-    const size_t max_text_size = MIN(MAX_BODY_TEXT_SIZE, data_size);
-    strncpy(window_notification_data.body_text, (char*)data, max_text_size);
+    size_t position = 1;
+    const uint8_t num_actions = data[0];
+    window_notification_data.num_actions = num_actions;
+    for (int i = 0; i < num_actions; i++)
+    {
+        const char* action_title = strcpy(window_notification_data.actions[i].text, (char*) &data[position]);
+        position += strlen(action_title) + 1;
+    }
+
+    const size_t max_text_size = MIN(MAX_BODY_TEXT_SIZE, data_size - position);
+    strncpy(window_notification_data.body_text, (char*)&data[position], max_text_size);
     window_notification_data.body_text[max_text_size] = '\0';
 
     window_notification_ui_redraw_scroller_content();

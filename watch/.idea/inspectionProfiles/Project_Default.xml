@@ -3,5 +3,7 @@
     <option name="myName" value="Project Default" />
     <inspection_tool class="CppLocalVariableMayBeConst" enabled="true" level="WARNING" enabled_by_default="true" editorAttributes="WARNING_ATTRIBUTES" />
     <inspection_tool class="CppParameterMayBeConst" enabled="true" level="WARNING" enabled_by_default="true" editorAttributes="WARNING_ATTRIBUTES" />
+    <inspection_tool class="CppParameterMayBeConstPtrOrRef" enabled="true" level="WARNING" enabled_by_default="true" editorAttributes="WARNING_ATTRIBUTES" />
+    <inspection_tool class="CppPassValueParameterByConstReference" enabled="true" level="WARNING" enabled_by_default="true" editorAttributes="WARNING_ATTRIBUTES" />
   </profile>
 </component>

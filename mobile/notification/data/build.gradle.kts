@@ -24,6 +24,7 @@ dependencies {
    implementation(libs.kotlin.coroutines)
 
    testImplementation(projects.bluetooth.test)
+   testImplementation(libs.kotlinova.core.test)
 
    androidTestImplementation(libs.androidx.test.runner)
    androidTestImplementation(libs.androidx.test.core)

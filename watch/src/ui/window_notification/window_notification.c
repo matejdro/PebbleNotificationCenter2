@@ -2,6 +2,7 @@
 
 #include <pebble.h>
 
+#include "action_list.h"
 #include "buttons.h"
 #include "data_loading.h"
 #include "../layers/dots.h"
@@ -11,7 +12,9 @@ const int16_t HORIZONTAL_TEXT_PADDING = 2;
 const int16_t MID_TEXT_VERTICAL_PADDING = 4;
 
 NotificationWindowData window_notification_data = {
-    .active = false
+    .active = false,
+    .num_actions = 0,
+    .menu_displayed = false
 };
 
 static CustomStatusBarLayer* status_bar_layer;
@@ -22,7 +25,6 @@ static Layer* scroll_content_layer;
 static TextParameters title;
 static TextParameters subtitle;
 static TextParameters body;
-
 
 void window_notification_ui_redraw_scroller_content()
 {
@@ -120,6 +122,7 @@ static void window_load(Window* window)
     custom_status_bar_set_active(status_bar_layer, true);
 
     window_notification_data.active = true;
+    window_notification_action_list_init(window);
     window_notification_data_init();
 }
 
@@ -128,6 +131,7 @@ static void window_unload(Window* window)
     window_notification_data.active = false;
 
     window_notification_data_deinit();
+    window_notification_action_list_deinit();
     custom_status_bar_set_active(status_bar_layer, false);
     custom_status_bar_layer_destroy(status_bar_layer);
     scroll_layer_destroy(scroll_layer);
