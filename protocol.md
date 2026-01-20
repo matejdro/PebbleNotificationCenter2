@@ -58,6 +58,9 @@ Sent from the phone after the packet 4
 
 * `1` - Data (byte array)
   * Notification (Bucket) ID to apply that to (uint8)
+  * Number of actions (uint8)
+  * For every action:
+    * Action text (cstring, up to 20 bytes + null terminator)
   * Text (cstring, up to the max size of the packet)
 
 ## Watch -> Phone

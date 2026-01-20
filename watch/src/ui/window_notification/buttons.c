@@ -1,17 +1,62 @@
 #include "buttons.h"
 
+#include "action_list.h"
 #include "data_loading.h"
 
 const int32_t SINGLE_SCROLL_HEIGHT = 32;
 
 static void button_up_single(ClickRecognizerRef recognizer, void* context)
 {
-    window_notification_ui_scroll_by(SINGLE_SCROLL_HEIGHT);
+    if (window_notification_data.menu_displayed)
+    {
+        window_notification_action_list_move_up();
+    }
+    else
+    {
+        window_notification_ui_scroll_by(SINGLE_SCROLL_HEIGHT);
+    }
 }
 
 static void button_down_single(ClickRecognizerRef recognizer, void* context)
 {
-    window_notification_ui_scroll_by(-SINGLE_SCROLL_HEIGHT);
+    if (window_notification_data.menu_displayed)
+    {
+        window_notification_action_list_move_down();
+    }
+    else
+    {
+        window_notification_ui_scroll_by(-SINGLE_SCROLL_HEIGHT);
+    }
+}
+
+static void button_select_single(ClickRecognizerRef recognizer, void* context)
+{
+    if (window_notification_data.num_actions == 0)
+    {
+        vibes_double_pulse();
+        return;
+    }
+
+    if (window_notification_data.menu_displayed)
+    {
+        // TODO select action
+    }
+    else
+    {
+        window_notification_action_list_show();
+    }
+}
+
+static void button_back_single(ClickRecognizerRef recognizer, void* context)
+{
+    if (window_notification_data.menu_displayed)
+    {
+        window_notification_action_list_hide();
+    }
+    else
+    {
+        window_stack_pop(true);
+    }
 }
 
 static void button_up_repeating(const ClickRecognizerRef recognizer, void* context)
@@ -32,7 +77,7 @@ static void button_down_repeating(const ClickRecognizerRef recognizer, void* con
 
 static void button_up_multi(const ClickRecognizerRef recognizer, void* context)
 {
-    if (click_number_of_clicks_counted(recognizer) != 2)
+    if (click_number_of_clicks_counted(recognizer) != 2 || window_notification_data.menu_displayed)
     {
         button_up_single(recognizer, context);
         return;
@@ -50,7 +95,7 @@ static void button_up_multi(const ClickRecognizerRef recognizer, void* context)
 
 static void button_down_multi(const ClickRecognizerRef recognizer, void* context)
 {
-    if (click_number_of_clicks_counted(recognizer) != 2)
+    if (click_number_of_clicks_counted(recognizer) != 2 || window_notification_data.menu_displayed)
     {
         button_down_single(recognizer, context);
         return;
@@ -73,4 +118,7 @@ void window_notification_buttons_config()
 
     window_single_repeating_click_subscribe(BUTTON_ID_UP, 100, button_up_repeating);
     window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 100, button_down_repeating);
+
+    window_single_click_subscribe(BUTTON_ID_SELECT, button_select_single);
+    window_single_click_subscribe(BUTTON_ID_BACK, button_back_single);
 }

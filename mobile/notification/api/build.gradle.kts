@@ -1,6 +1,3 @@
 plugins {
    pureKotlinModule
 }
-
-dependencies {
-}

@@ -3,12 +3,16 @@ package com.matejdro.pebblenotificationcenter.bluetooth
 import com.matejdro.pebble.bluetooth.common.PacketQueue
 import com.matejdro.pebble.bluetooth.common.test.FakePebbleSender
 import com.matejdro.pebble.bluetooth.common.test.sentData
+import com.matejdro.pebble.bluetooth.common.util.requireBytes
 import com.matejdro.pebblenotificationcenter.bluetooth.api.WATCHAPP_UUID
 import com.matejdro.pebblenotificationcenter.notification.FakeNotificationRepository
+import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import dispatch.core.DefaultCoroutineScope
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
 import io.rebble.pebblekit2.common.model.PebbleDictionaryItem
 import io.rebble.pebblekit2.common.model.WatchIdentifier
 import kotlinx.coroutines.launch
@@ -60,6 +64,8 @@ class NotificationDetailsPusherImplTest {
                byteArrayOf(
                   12, // Notification id
 
+                  0, // No actions in this test
+
                   // Hello in UTf-8
                   72,
                   101,
@@ -99,9 +105,11 @@ class NotificationDetailsPusherImplTest {
             1u to PebbleDictionaryItem.Bytes(
                byteArrayOf(
                   12, // Notification id
+
+                  0, // No actions in this test
                ) +
-                  // 83 'a' characters, followed by the ...
-                  ByteArray(80) { 'a'.code.toByte() } +
+                  // 79 'a' characters, followed by the ...
+                  ByteArray(79) { 'a'.code.toByte() } +
                   byteArrayOf(46, 46, 46)
             )
          )
@@ -149,6 +157,134 @@ class NotificationDetailsPusherImplTest {
             0,
             2,
          )
+   }
+
+   @Test
+   fun `Send a list of actions of the notification`() = scope.runTest {
+      setup()
+
+      notificationRepository.putNotification(
+         12,
+         ProcessedNotification(
+            ParsedNotification(
+               "",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+            ),
+            actions = listOf(
+               Action.Dismiss("A1"),
+               Action.Dismiss("A2"),
+               Action.Dismiss("A3"),
+            )
+         ),
+      )
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+
+      runCurrent()
+
+      sender.sentData.shouldContainExactly(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt8(5),
+            1u to PebbleDictionaryItem.Bytes(
+               byteArrayOf(
+                  12, // Notification id
+
+                  3, // 3 actions
+                  65, 49, 0, // A1 & null
+                  65, 50, 0, // A2 & null
+                  65, 51, 0, // A2 & null
+
+                  // Hello in UTf-8
+                  72,
+                  101,
+                  108,
+                  108,
+                  111
+               )
+            )
+         )
+      )
+   }
+
+   @Test
+   fun `Trim action text length`() = scope.runTest {
+      setup()
+
+      notificationRepository.putNotification(
+         12,
+         ProcessedNotification(
+            ParsedNotification(
+               "",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+            ),
+            actions = listOf(
+               Action.Dismiss("a".repeat(100)),
+            )
+         ),
+      )
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+
+      runCurrent()
+
+      sender.sentData.shouldContainExactly(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt8(5),
+            1u to PebbleDictionaryItem.Bytes(
+               byteArrayOf(
+                  12, // Notification id
+
+                  1, // 1 action
+               ) +
+                  // 17 'a' characters, followed by the ...
+                  ByteArray(17) { 'a'.code.toByte() } +
+
+                  byteArrayOf(
+                     // ...
+                     46, 46, 46,
+                     0, // Null terminator
+
+                     // Notification body, Hello in UTf-8
+                     72,
+                     101,
+                     108,
+                     108,
+                     111
+                  )
+            )
+         )
+      )
+   }
+
+   @Test
+   fun `Allow maximum of 20 notification actions`() = scope.runTest {
+      setup()
+
+      notificationRepository.putNotification(
+         12,
+         ProcessedNotification(
+            ParsedNotification(
+               "",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+            ),
+            actions = List(30) { Action.Dismiss(it.toString()) }
+         ),
+      )
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+
+      runCurrent()
+
+      sender.sentData.shouldHaveSize(1).elementAt(0).requireBytes(1u).get(1) shouldBe 20
    }
 
    private fun TestScope.setup() {

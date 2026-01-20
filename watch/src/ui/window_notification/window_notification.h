@@ -15,6 +15,11 @@ typedef struct
 
 typedef struct
 {
+    char text[21];
+} Action;
+
+typedef struct
+{
     bool active;
 
     uint8_t currently_selected_bucket;
@@ -25,6 +30,10 @@ typedef struct
     char subtitle_text[21];
     // Include +1 for the null character
     char body_text[MAX_BODY_TEXT_SIZE + 1];
+
+    uint8_t num_actions;
+    Action actions[20];
+    bool menu_displayed;
 } NotificationWindowData;
 
 extern NotificationWindowData window_notification_data;

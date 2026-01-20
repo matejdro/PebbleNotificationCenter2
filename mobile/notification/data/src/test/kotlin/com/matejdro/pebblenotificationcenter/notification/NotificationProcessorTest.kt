@@ -1,19 +1,30 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import com.matejdro.pebblenotificationcenter.bluetooth.FakeWatchSyncer
+import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
-import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
+import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import si.inova.kotlinova.core.test.fakes.FakeActivity
 import java.time.Instant
 
 class NotificationProcessorTest {
    private val watchSyncer = FakeWatchSyncer()
 
-   private val processor = NotificationProcessor(watchSyncer)
+   private val context = FakeActivity()
+
+   private val processor = NotificationProcessor(context, watchSyncer)
+
+   @BeforeEach
+   fun setUp() {
+      context.resources.putString(R.string.dismiss, "Dismiss")
+   }
 
    @Test
    fun `It should forward received notifications to the watch syncer`() = runTest {
@@ -82,8 +93,8 @@ class NotificationProcessorTest {
 
       processor.onNotificationPosted(notification)
 
-      processor.getNotification(1) shouldBe ProcessedNotification(
-         ParsedNotification(
+      assertSoftly(processor.getNotification(1).shouldNotBeNull()) {
+         systemData shouldBe ParsedNotification(
             "key",
             "com.app",
             "Title",
@@ -91,13 +102,14 @@ class NotificationProcessorTest {
             "Body",
             // 19:18:25 GMT | Sunday, January 4, 2026
             Instant.ofEpochSecond(1_767_554_305)
-         ),
-         bucketId = 1
-      )
+         )
+
+         bucketId shouldBe 1
+      }
    }
 
    @Test
-   fun `Dismissing notification should delete it from getNotificatoin query`() = runTest {
+   fun `Dismissing notification should delete it from getNotification query`() = runTest {
       val notification = ParsedNotification(
          "key",
          "com.app",
@@ -130,5 +142,24 @@ class NotificationProcessorTest {
       processor.onNotificationsCleared()
 
       processor.getNotification(1).shouldBeNull()
+   }
+
+   @Test
+   fun `It should return dismiss action on every notification`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification)
+
+      processor.getNotification(1)?.actions shouldBe listOf(
+         Action.Dismiss("Dismiss")
+      )
    }
 }

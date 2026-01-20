@@ -1,6 +1,8 @@
 package com.matejdro.pebblenotificationcenter.notification
 
+import android.content.Context
 import com.matejdro.pebblenotificationcenter.bluetooth.WatchSyncer
+import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import dev.zacsweers.metro.AppScope
@@ -14,6 +16,7 @@ import kotlinx.coroutines.sync.withLock
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
 class NotificationProcessor(
+   private val context: Context,
    private val watchSyncer: WatchSyncer,
 ) : NotificationRepository {
    private val mutex = Mutex()
@@ -22,8 +25,12 @@ class NotificationProcessor(
    private val notificationsByKey = HashMap<String, ProcessedNotification>()
 
    suspend fun onNotificationPosted(parsedNotification: ParsedNotification) = mutex.withLock {
+      val actions = listOf<Action>(
+         Action.Dismiss(context.getString(R.string.dismiss)),
+      )
+
       val bucketId = watchSyncer.syncNotification(parsedNotification)
-      val processedNotification = ProcessedNotification(parsedNotification, bucketId)
+      val processedNotification = ProcessedNotification(parsedNotification, bucketId, actions)
 
       notifications[bucketId] = processedNotification
       notificationsByKey[parsedNotification.key] = processedNotification

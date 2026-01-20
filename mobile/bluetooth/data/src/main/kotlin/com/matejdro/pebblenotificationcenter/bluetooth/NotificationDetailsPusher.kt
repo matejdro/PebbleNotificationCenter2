@@ -38,6 +38,14 @@ class NotificationDetailsPusherImpl(
          val buffer = Buffer()
          buffer.writeUByte(bucketId.toUByte())
 
+         val actionsToSend = notification.actions.take(MAX_ACTIONS_TO_SEND)
+         buffer.writeUByte(actionsToSend.size.toUByte())
+
+         for (action in actionsToSend) {
+            buffer.write(stringEncoder.encodeSizeLimited(action.title, MAX_ACTIONS_TEXT_BYTES).encodedString)
+            buffer.writeUByte(0u)
+         }
+
          val packetBeforeText = mapOf(
             0u to PebbleDictionaryItem.UInt8(5u),
             1u to PebbleDictionaryItem.Bytes(ByteArray(buffer.size.toInt()) { 0 })
@@ -51,11 +59,14 @@ class NotificationDetailsPusherImpl(
             1u to PebbleDictionaryItem.Bytes(buffer.readByteArray())
          )
 
-         logcat { "Sending notification details for $bucketId: ${packet.sizeInBytes()}" }
+         logcat { "Sending notification details for $bucketId: ${packet.sizeInBytes()} (${actionsToSend.size} actions)" }
          queue.sendPacket(packet, priority = PRIORITY_WATCH_TEXT)
       }
    }
 }
+
+private const val MAX_ACTIONS_TO_SEND = 20
+private const val MAX_ACTIONS_TEXT_BYTES = 20
 
 interface NotificationDetailsPusher {
    fun pushNotificationDetails(bucketId: Int, maxPacketSize: Int)
