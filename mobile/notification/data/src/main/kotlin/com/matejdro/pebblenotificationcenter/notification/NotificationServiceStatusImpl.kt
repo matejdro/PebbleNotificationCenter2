@@ -8,6 +8,6 @@ import dev.zacsweers.metro.Inject
 @ContributesBinding(AppScope::class)
 class NotificationServiceStatusImpl : NotificationServiceStatus {
    override fun isEnabled(): Boolean {
-      return NotificationService.active
+      return NotificationService.instance != null
    }
 }

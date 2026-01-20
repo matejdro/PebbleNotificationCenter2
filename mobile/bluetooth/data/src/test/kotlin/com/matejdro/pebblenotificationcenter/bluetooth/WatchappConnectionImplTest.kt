@@ -7,6 +7,7 @@ import com.matejdro.pebble.bluetooth.common.PacketQueue
 import com.matejdro.pebble.bluetooth.common.test.FakePebbleSender
 import com.matejdro.pebble.bluetooth.common.test.sentData
 import com.matejdro.pebblenotificationcenter.bluetooth.api.WATCHAPP_UUID
+import com.matejdro.pebblenotificationcenter.notification.FakeActionHandler
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.nulls.shouldBeNull
@@ -29,7 +30,9 @@ class WatchappConnectionImplTest {
 
    private val watchappOpenController = FakeWatchappOpenController()
 
-   val notificationDetailsPusher = FakeNotificationDetailsPusher()
+   private val notificationDetailsPusher = FakeNotificationDetailsPusher()
+
+   private val actionHandler = FakeActionHandler()
 
    private val watch = WatchIdentifier("watch")
 
@@ -48,6 +51,7 @@ class WatchappConnectionImplTest {
          watch,
       ),
       notificationDetailsPusher,
+      actionHandler,
    )
 
    @Test
@@ -185,6 +189,42 @@ class WatchappConnectionImplTest {
       result shouldBe ReceiveResult.Ack
 
       notificationDetailsPusher.lastPushRequestId.shouldBeNull()
+   }
+
+   @Test
+   fun `Trigger action handler on activate action packet`() = scope.runTest {
+      receiveStandardHelloPacket(bufferSize = 123u)
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(6u),
+            1u to PebbleDictionaryItem.UInt32(10u),
+            2u to PebbleDictionaryItem.UInt32(5u),
+         )
+      )
+      runCurrent()
+
+      result shouldBe ReceiveResult.Ack
+
+      actionHandler.lastHandledAction shouldBe FakeActionHandler.HandledAction(10, 5)
+   }
+
+   @Test
+   fun `Return nack on activate action packet when action handling fails`() = scope.runTest {
+      receiveStandardHelloPacket(bufferSize = 123u)
+
+      actionHandler.returnValue = false
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(6u),
+            1u to PebbleDictionaryItem.UInt32(10u),
+            2u to PebbleDictionaryItem.UInt32(5u),
+         )
+      )
+      runCurrent()
+
+      result shouldBe ReceiveResult.Nack
    }
 
    private suspend fun receiveStandardHelloPacket(version: UInt = 0u, bufferSize: UInt = 1000u): ReceiveResult =

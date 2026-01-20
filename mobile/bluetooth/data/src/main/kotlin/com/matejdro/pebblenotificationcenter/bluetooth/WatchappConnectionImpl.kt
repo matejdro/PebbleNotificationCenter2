@@ -6,6 +6,7 @@ import com.matejdro.pebble.bluetooth.common.WatchAppConnection
 import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionGraph
 import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionScope
 import com.matejdro.pebble.bluetooth.common.util.requireUint
+import com.matejdro.pebblenotificationcenter.notification.ActionHandler
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -28,6 +29,7 @@ class WatchappConnectionImpl(
    private val packetQueue: PacketQueue,
    private val bucketSyncWatchLoop: BucketSyncWatchLoop,
    private val notificationDetailsPusher: NotificationDetailsPusher,
+   private val actionHandler: ActionHandler,
 ) : WatchAppConnection {
    private var watchBufferSize: Int = 0
 
@@ -52,6 +54,15 @@ class WatchappConnectionImpl(
             }
 
             ReceiveResult.Ack
+         }
+
+         6u -> {
+            val success = actionHandler.handleAction(
+               data.requireUint(1u).toInt(),
+               data.requireUint(2u).toInt()
+            )
+
+            if (success) ReceiveResult.Ack else ReceiveResult.Nack
          }
 
          else -> {

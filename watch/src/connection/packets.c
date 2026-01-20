@@ -45,6 +45,23 @@ bool send_notification_opened(const uint8_t id)
     return true;
 }
 
+bool send_action_trigger(const uint8_t notification_id, const uint8_t action_index)
+{
+    DictionaryIterator* iterator;
+    const AppMessageResult res = app_message_outbox_begin(&iterator);
+
+    if (res != APP_MSG_OK)
+    {
+        return false;
+    }
+
+    dict_write_uint8(iterator, 0, 6);
+    dict_write_uint8(iterator, 1, notification_id);
+    dict_write_uint8(iterator, 2, action_index);
+    bluetooth_app_message_outbox_send();
+    return true;
+}
+
 static void receive_watch_packet(const DictionaryIterator* received)
 {
     const uint8_t packet_id = dict_find(received, 0)->value->uint8;

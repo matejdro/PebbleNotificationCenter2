@@ -39,7 +39,7 @@ static void button_select_single(ClickRecognizerRef recognizer, void* context)
 
     if (window_notification_data.menu_displayed)
     {
-        // TODO select action
+        window_notification_action_select();
     }
     else
     {

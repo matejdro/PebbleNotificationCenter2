@@ -3,6 +3,8 @@
 #include <pebble.h>
 
 #include "window_notification.h"
+#include "commons/connection/bluetooth.h"
+#include "connection/packets.h"
 
 static const int16_t menu_outside_margin_top = 24;
 static const int16_t menu_outside_margin_bottom = 8;
@@ -11,6 +13,7 @@ static const int16_t item_padding = 2;
 
 static Layer* menu_background;
 static MenuLayer* menu_layer;
+static bool frozen = false;
 
 static void menu_paint_background(Layer* layer, GContext* ctx)
 {
@@ -41,8 +44,6 @@ static int16_t menu_get_row_height_callback(MenuLayer* me, MenuIndex* cell_index
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 static void menu_draw_row_callback(GContext* ctx, const Layer* cell_layer, MenuIndex* cell_index, void* data)
 {
-    graphics_context_set_text_color(ctx, menu_cell_layer_is_highlighted(cell_layer) ? GColorWhite : GColorBlack);
-
     GRect bounds = layer_get_bounds(cell_layer);
     bounds.origin.x += item_padding;
     bounds.origin.y += item_padding;
@@ -60,6 +61,17 @@ static void menu_draw_row_callback(GContext* ctx, const Layer* cell_layer, MenuI
     );
 }
 
+static void menu_freeze()
+{
+    frozen = true;
+    menu_layer_set_highlight_colors(menu_layer, GColorWhite, GColorBlack);
+}
+
+static void menu_unfreeze()
+{
+    frozen = false;
+    menu_layer_set_highlight_colors(menu_layer, GColorBlack, GColorWhite);
+}
 
 void window_notification_action_list_init(const Window* window)
 {
@@ -115,6 +127,7 @@ void window_notification_action_list_deinit()
 
 void window_notification_action_list_show()
 {
+    menu_unfreeze();
     layer_set_hidden(menu_background, false);
     window_notification_data.menu_displayed = true;
     menu_layer_reload_data(menu_layer);
@@ -129,6 +142,11 @@ void window_notification_action_list_hide()
 
 void window_notification_action_list_move_up()
 {
+    if (frozen)
+    {
+        return;
+    }
+
     const MenuIndex index = menu_layer_get_selected_index(menu_layer);
     if (index.row == 0)
     {
@@ -146,6 +164,11 @@ void window_notification_action_list_move_up()
 
 void window_notification_action_list_move_down()
 {
+    if (frozen)
+    {
+        return;
+    }
+
     const MenuIndex index = menu_layer_get_selected_index(menu_layer);
     if (index.row == window_notification_data.num_actions - 1)
     {
@@ -161,7 +184,33 @@ void window_notification_action_list_move_down()
     menu_layer_set_selected_next(menu_layer, false, MenuRowAlignCenter, true);
 }
 
-uint16_t window_notification_action_list_get_selected_index()
+static void on_sending_finished(const bool success)
 {
-    return menu_layer_get_selected_index(menu_layer).row;
+    if (success)
+    {
+        window_notification_action_list_hide();
+    }
+    else
+    {
+        menu_unfreeze();
+        vibes_double_pulse();
+    }
+}
+
+void window_notification_action_select()
+{
+    if (frozen)
+    {
+        return;
+    }
+    const uint8_t notification_id = window_notification_data.currently_selected_bucket;
+    const uint8_t action_index = menu_layer_get_selected_index(menu_layer).row;
+    if (!send_action_trigger(notification_id, action_index))
+    {
+        vibes_double_pulse();
+        return;
+    }
+    bluetooth_register_sending_finish(on_sending_finished);
+
+    menu_freeze();
 }

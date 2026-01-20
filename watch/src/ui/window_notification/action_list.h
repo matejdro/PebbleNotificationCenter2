@@ -9,4 +9,4 @@ void window_notification_action_list_hide();
 
 void window_notification_action_list_move_up();
 void window_notification_action_list_move_down();
-uint16_t window_notification_action_list_get_selected_index();
+void window_notification_action_select();

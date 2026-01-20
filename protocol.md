@@ -79,6 +79,13 @@ Sent from the watch when user opens/views a notification
 
 * `1` - id of the seen bucket (uint8)
 
+### Activate action (packet 6)
+
+Sent from the watch when selects an action from the action menu
+
+* `1` - id of the notification bucket (uint8)
+* `2` - index of the action
+
 # Buckets
 
 Watch can store up to 15 of them, up to 255 bytes each.    

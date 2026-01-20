@@ -29,14 +29,14 @@ class NotificationService : NotificationListenerService() {
          .applicationGraph
          .let { it as NotificationInject }
          .inject(this)
-      active = true
+      instance = this
 
       super.onCreate()
    }
 
    override fun onDestroy() {
       logcat { "Stopping notification service" }
-      active = false
+      instance = null
       bound = false
       super.onDestroy()
    }
@@ -96,7 +96,7 @@ class NotificationService : NotificationListenerService() {
    }
 
    companion object {
-      var active: Boolean = false
+      internal var instance: NotificationService? = null
    }
 }
 
