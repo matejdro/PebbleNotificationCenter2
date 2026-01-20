@@ -18,8 +18,7 @@ class NotificationParser(
          extras.getCharSequence(NotificationCompat.EXTRA_CONVERSATION_TITLE)
             ?: extras.getCharSequence(NotificationCompat.EXTRA_TITLE)
             ?: extras.getCharSequence(NotificationCompat.EXTRA_TITLE_BIG)
-            ?: return null
-         ).removeUselessCharacaters()
+         )?.removeUselessCharacaters().orEmpty()
 
       val title = appNameProvider.getAppName(sbn.packageName)
       val text =
@@ -42,6 +41,10 @@ class NotificationParser(
       } else {
          updatedSubtitle = subtitle
          updatedText = text
+      }
+
+      if (updatedSubtitle.isBlank() && updatedText.isNullOrBlank()) {
+         return null
       }
 
       return ParsedNotification(

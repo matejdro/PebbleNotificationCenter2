@@ -37,6 +37,23 @@ class NotificationParserTest {
    }
 
    @Test
+   fun parseNotificationWithoutTitle() {
+      val notification = NotificationCompat.Builder(context, "FAKE_CHANNEL")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .build()
+
+      notificationParser.parse(notification.toSbn()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "",
+         "Description",
+         Instant.ofEpochMilli(0L)
+      )
+   }
+
+   @Test
    fun returnNullWhenNotificationHasNoParsableProperties() {
       val notification = NotificationCompat.Builder(context, "FAKE_CHANNEL")
          .setSmallIcon(0)
