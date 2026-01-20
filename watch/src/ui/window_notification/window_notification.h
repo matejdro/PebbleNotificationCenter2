@@ -4,7 +4,7 @@
 #include "ui/layers/dots.h"
 #include "ui/layers/status_bar.h"
 
-#define MAX_BODY_TEXT_SIZE 10000
+#define MAX_BODY_TEXT_SIZE 4000
 
 typedef struct
 {
