@@ -287,6 +287,30 @@ class NotificationDetailsPusherImplTest {
       sender.sentData.shouldHaveSize(1).elementAt(0).requireBytes(1u).get(1) shouldBe 20
    }
 
+   @Test
+   fun `Send blank packet when the notification does not exist`() = scope.runTest {
+      setup()
+
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+
+      runCurrent()
+
+      sender.sentData.shouldContainExactly(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt8(5),
+            1u to PebbleDictionaryItem.Bytes(
+               byteArrayOf(
+                  12, // Notification id
+
+                  0, // No actions in this test
+
+                  // No text
+               )
+            )
+         )
+      )
+   }
+
    private fun TestScope.setup() {
       backgroundScope.launch {
          packetQueue.runQueue()

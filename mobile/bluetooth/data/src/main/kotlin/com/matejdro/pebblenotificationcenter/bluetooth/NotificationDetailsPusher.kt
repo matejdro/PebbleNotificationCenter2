@@ -29,16 +29,12 @@ class NotificationDetailsPusherImpl(
       previousDetailsSendingJob?.cancel()
 
       val notification = notificationRepository.getNotification(bucketId)
-      if (notification == null) {
-         logcat { "Watch wanted notification details for unknown notification bucket $bucketId" }
-         return
-      }
 
       previousDetailsSendingJob = scope.launch {
          val buffer = Buffer()
          buffer.writeUByte(bucketId.toUByte())
 
-         val actionsToSend = notification.actions.take(MAX_ACTIONS_TO_SEND)
+         val actionsToSend = notification?.actions.orEmpty().take(MAX_ACTIONS_TO_SEND)
          buffer.writeUByte(actionsToSend.size.toUByte())
 
          for (action in actionsToSend) {
@@ -48,11 +44,11 @@ class NotificationDetailsPusherImpl(
 
          val packetBeforeText = mapOf(
             0u to PebbleDictionaryItem.UInt8(5u),
-            1u to PebbleDictionaryItem.Bytes(ByteArray(buffer.size.toInt()) { 0 })
+            1u to PebbleDictionaryItem.Bytes(ByteArray(buffer.size.toInt()))
          )
 
          val maxTextSize = maxPacketSize - packetBeforeText.sizeInBytes()
-         val encodedText = stringEncoder.encodeSizeLimited(notification.systemData.body, maxTextSize).encodedString
+         val encodedText = stringEncoder.encodeSizeLimited(notification?.systemData?.body.orEmpty(), maxTextSize).encodedString
          buffer.write(encodedText)
 
          val packet = packetBeforeText + mapOf(
