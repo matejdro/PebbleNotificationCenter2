@@ -43,4 +43,4 @@ extern NotificationWindowData window_notification_data;
 void window_notification_show();
 void window_notification_ui_redraw_scroller_content();
 void window_notification_ui_on_bucket_selected();
-void window_notification_ui_scroll_by(int16_t amount);
+void window_notification_ui_scroll_by(int16_t amount, bool repeating);

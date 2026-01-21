@@ -13,7 +13,7 @@ static void button_up_single(ClickRecognizerRef recognizer, void* context)
     }
     else
     {
-        window_notification_ui_scroll_by(SINGLE_SCROLL_HEIGHT);
+        window_notification_ui_scroll_by(SINGLE_SCROLL_HEIGHT, click_recognizer_is_repeating(recognizer));
     }
 }
 
@@ -25,7 +25,7 @@ static void button_down_single(ClickRecognizerRef recognizer, void* context)
     }
     else
     {
-        window_notification_ui_scroll_by(-SINGLE_SCROLL_HEIGHT);
+        window_notification_ui_scroll_by(-SINGLE_SCROLL_HEIGHT, click_recognizer_is_repeating(recognizer));
     }
 }
 
