@@ -9,6 +9,8 @@ import com.matejdro.pebblenotificationcenter.notification.parsing.NotificationPa
 import dev.zacsweers.metro.Inject
 import dispatch.core.DefaultCoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import logcat.logcat
 
 class NotificationService : NotificationListenerService() {
@@ -20,6 +22,8 @@ class NotificationService : NotificationListenerService() {
 
    @Inject
    private lateinit var coroutineScope: DefaultCoroutineScope
+
+   private val mutex = Mutex()
 
    private var bound = false
 
@@ -51,18 +55,20 @@ class NotificationService : NotificationListenerService() {
       bound = true
 
       coroutineScope.launch {
-         notificationProcessor.onNotificationsCleared()
-         for (sbn in activeNotifications) {
-            if (!sbn.shouldShow()) {
-               logcat { "Skipping notification ${sbn.key} ${sbn.key}" }
-               continue
-            }
+         mutex.withLock {
+            notificationProcessor.onNotificationsCleared()
+            for (sbn in activeNotifications) {
+               if (!sbn.shouldShow()) {
+                  logcat { "Skipping notification ${sbn.key} ${sbn.key}" }
+                  continue
+               }
 
-            val parsed = notificationParser.parse(sbn)
-            if (parsed != null) {
-               notificationProcessor.onNotificationPosted(parsed)
-            } else {
-               logcat { "Notification ${sbn.key} has no text. Skipping..." }
+               val parsed = notificationParser.parse(sbn)
+               if (parsed != null) {
+                  notificationProcessor.onNotificationPosted(parsed)
+               } else {
+                  logcat { "Notification ${sbn.key} has no text. Skipping..." }
+               }
             }
          }
       }
@@ -71,18 +77,20 @@ class NotificationService : NotificationListenerService() {
    override fun onNotificationPosted(sbn: StatusBarNotification) {
       logcat { "Notification ${sbn.key} posted" }
       coroutineScope.launch {
-         if (sbn.shouldShow()) {
-            val parsed = notificationParser.parse(sbn)
-            if (parsed == null) {
-               logcat { "Notification ${sbn.key} has no text. Skipping..." }
-               return@launch
+         mutex.withLock {
+            if (sbn.shouldShow()) {
+               val parsed = notificationParser.parse(sbn)
+               if (parsed == null) {
+                  logcat { "Notification ${sbn.key} has no text. Skipping..." }
+                  return@launch
+               }
+               notificationProcessor.onNotificationPosted(parsed)
+            } else {
+               logcat { "Skipping notification ${sbn.key} ${sbn.key}" }
+               // When notification is being skipped, we should remove it from the store, to ensure any previous notification
+               // with that id is removed
+               onNotificationRemoved(sbn)
             }
-            notificationProcessor.onNotificationPosted(parsed)
-         } else {
-            logcat { "Skipping notification ${sbn.key} ${sbn.key}" }
-            // When notification is being skipped, we should remove it from the store, to ensure any previous notification
-            // with that id is removed
-            onNotificationRemoved(sbn)
          }
       }
    }
@@ -91,7 +99,9 @@ class NotificationService : NotificationListenerService() {
       logcat { "Notification ${sbn.key} removed" }
 
       coroutineScope.launch {
-         notificationProcessor.onNotificationDismissed(sbn.key)
+         mutex.withLock {
+            notificationProcessor.onNotificationDismissed(sbn.key)
+         }
       }
    }
 

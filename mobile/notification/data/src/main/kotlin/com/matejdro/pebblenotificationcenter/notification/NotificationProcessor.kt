@@ -9,8 +9,6 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 @Inject
 @SingleIn(AppScope::class)
@@ -19,12 +17,10 @@ class NotificationProcessor(
    private val context: Context,
    private val watchSyncer: WatchSyncer,
 ) : NotificationRepository {
-   private val mutex = Mutex()
-
    private val notifications = HashMap<Int, ProcessedNotification>()
    private val notificationsByKey = HashMap<String, ProcessedNotification>()
 
-   suspend fun onNotificationPosted(parsedNotification: ParsedNotification) = mutex.withLock {
+   suspend fun onNotificationPosted(parsedNotification: ParsedNotification) {
       val actions = listOf<Action>(
          Action.Dismiss(context.getString(R.string.dismiss)),
       )
@@ -36,7 +32,7 @@ class NotificationProcessor(
       notificationsByKey[parsedNotification.key] = processedNotification
    }
 
-   suspend fun onNotificationDismissed(key: String) = mutex.withLock {
+   suspend fun onNotificationDismissed(key: String) {
       val processedNotification = notificationsByKey.remove(key)
       if (processedNotification != null) {
          notifications.remove(processedNotification.bucketId)
@@ -45,7 +41,7 @@ class NotificationProcessor(
       watchSyncer.clearNotification(key)
    }
 
-   suspend fun onNotificationsCleared() = mutex.withLock {
+   suspend fun onNotificationsCleared() {
       notifications.clear()
       notificationsByKey.clear()
 
