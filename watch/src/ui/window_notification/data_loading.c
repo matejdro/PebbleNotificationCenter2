@@ -2,12 +2,52 @@
 
 #include "action_list.h"
 #include "window_notification.h"
+#include "commons/bytes.h"
 #include "commons/math.h"
 #include "commons/connection/bucket_sync.h"
 #include "connection/notification_details_fetcher.h"
 #include "ui/window_status.h"
 
 static BucketList* buckets;
+
+static void apply_date_to_body()
+{
+    const time_t current_unix_time = time(NULL);
+    // gmtime only has one static variable. We must make a copy in order to process two different date objects
+    const tm current_time = *gmtime(&current_unix_time);
+    const tm* receive_time = gmtime(&window_notification_data.receive_time);
+
+    char* format_string;
+    if (current_time.tm_yday == receive_time->tm_yday && current_time.tm_year == receive_time->tm_year)
+    {
+        if (clock_is_24h_style())
+            format_string = "Received at %H:%M";
+        else
+            format_string = "Received at %I:%M %p";
+    }
+    else if (current_time.tm_year == receive_time->tm_year && receive_time->tm_yday == current_time.tm_yday - 1)
+    {
+        if (clock_is_24h_style())
+            format_string = "Received yesterday, at %H:%M";
+        else
+            format_string = "Received yesterday, at %I:%M %p";
+    }
+    else
+    {
+        if (clock_is_24h_style())
+            format_string = "Received on %b %d, %H:%M";
+        else
+            format_string = "Received on %b %d, %I:%M %p";
+    }
+
+    size_t position = strlen(window_notification_data.body_text);
+
+    // Insert two newlines
+    window_notification_data.body_text[position++] = '\n';
+    window_notification_data.body_text[position++] = '\n';
+
+    strftime(&window_notification_data.body_text[position], 39, format_string, receive_time);
+}
 
 static void reload_data_for_current_bucket()
 {
@@ -24,6 +64,8 @@ static void reload_data_for_current_bucket()
     {
         const uint8_t size = bucket_sync_get_bucket_size(window_notification_data.currently_selected_bucket);
 
+        window_notification_data.receive_time = read_uint32_from_byte_array(bucket_data, 0);
+
         uint8_t position = 4;
         strcpy(window_notification_data.title_text, (char*)&bucket_data[position]);
         position += strlen(window_notification_data.title_text) + 1;
@@ -36,6 +78,7 @@ static void reload_data_for_current_bucket()
         notification_details_fetcher_fetch(window_notification_data.currently_selected_bucket);
     }
 
+    apply_date_to_body();
     window_notification_ui_redraw_scroller_content();
 }
 
@@ -141,6 +184,7 @@ void window_notification_data_receive_more_text(const uint8_t bucket_id, const u
     strncpy(window_notification_data.body_text, (char*)&data[position], max_text_size);
     window_notification_data.body_text[max_text_size] = '\0';
 
+    apply_date_to_body();
     window_notification_ui_redraw_scroller_content();
 }
 

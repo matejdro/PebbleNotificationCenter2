@@ -28,8 +28,10 @@ typedef struct
 
     char title_text[21];
     char subtitle_text[21];
-    // Include +1 for the null character
-    char body_text[MAX_BODY_TEXT_SIZE + 1];
+    // Include + 40 for the date and the null character
+    char body_text[MAX_BODY_TEXT_SIZE + 40];
+
+    time_t receive_time;
 
     uint8_t num_actions;
     Action actions[20];
