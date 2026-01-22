@@ -14,8 +14,8 @@ static void apply_date_to_body()
 {
     const time_t current_unix_time = time(NULL);
     // gmtime only has one static variable. We must make a copy in order to process two different date objects
-    const tm current_time = *gmtime(&current_unix_time);
-    const tm* receive_time = gmtime(&window_notification_data.receive_time);
+    const tm current_time = *localtime(&current_unix_time);
+    const tm* receive_time = localtime(&window_notification_data.receive_time);
 
     char* format_string;
     if (current_time.tm_yday == receive_time->tm_yday && current_time.tm_year == receive_time->tm_year)
