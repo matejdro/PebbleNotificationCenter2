@@ -139,8 +139,16 @@ void notification_window_ingest_bucket_metadata()
 
     if (count_without_settings == 0)
     {
-        window_stack_pop(true);
-        window_status_show_empty();
+        if (launch_reason() == APP_LAUNCH_PHONE)
+        {
+            window_stack_pop_all(true);
+        }
+        else
+        {
+            window_stack_pop(true);
+            window_status_show_empty();
+        }
+
         return;
     }
 
