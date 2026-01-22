@@ -1,5 +1,7 @@
 package com.matejdro.pebblenotificationcenter.notification
 
+import android.os.Build
+import android.os.Process
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
@@ -63,7 +65,7 @@ class NotificationService : NotificationListenerService() {
                   continue
                }
 
-               val parsed = notificationParser.parse(sbn)
+               val parsed = notificationParser.parse(sbn, getNotificationChannel(sbn))
                if (parsed != null) {
                   notificationProcessor.onNotificationPosted(parsed)
                } else {
@@ -79,7 +81,7 @@ class NotificationService : NotificationListenerService() {
       coroutineScope.launch {
          mutex.withLock {
             if (sbn.shouldShow()) {
-               val parsed = notificationParser.parse(sbn)
+               val parsed = notificationParser.parse(sbn, getNotificationChannel(sbn))
                if (parsed == null) {
                   logcat { "Notification ${sbn.key} has no text. Skipping..." }
                   return@launch
@@ -103,6 +105,14 @@ class NotificationService : NotificationListenerService() {
             notificationProcessor.onNotificationDismissed(sbn.key)
          }
       }
+   }
+
+   private fun getNotificationChannel(sbn: StatusBarNotification): Any? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      getNotificationChannels(sbn.packageName, Process.myUserHandle()).firstOrNull {
+         it.id == sbn.notification.channelId
+      }
+   } else {
+      null
    }
 
    companion object {

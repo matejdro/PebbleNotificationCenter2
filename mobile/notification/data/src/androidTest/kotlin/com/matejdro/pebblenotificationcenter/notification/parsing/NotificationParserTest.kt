@@ -1,7 +1,11 @@
 package com.matejdro.pebblenotificationcenter.notification.parsing
 
 import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.net.Uri
+import android.os.Build
 import android.os.Parcel
 import android.os.UserHandle
 import android.service.notification.StatusBarNotification
@@ -10,23 +14,24 @@ import androidx.core.app.Person
 import androidx.test.core.app.ApplicationProvider
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import io.kotest.matchers.shouldBe
+import org.junit.AssumptionViolatedException
 import org.junit.Test
 import java.time.Instant
 
 class NotificationParserTest {
-   private val notificationParser = NotificationParser({ "SMS App" })
 
    private val context = ApplicationProvider.getApplicationContext<Context>()
+   private val notificationParser = NotificationParser({ "SMS App" })
 
    @Test
    fun parseNotificationWithASimpleText() {
-      val notification = NotificationCompat.Builder(context, "FAKE_CHANNEL")
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setContentTitle("Title")
          .setContentText("Description")
          .setSmallIcon(0)
          .build()
 
-      notificationParser.parse(notification.toSbn()) shouldBe ParsedNotification(
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
          "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
          TEST_PACKAGE,
          "SMS App",
@@ -38,12 +43,12 @@ class NotificationParserTest {
 
    @Test
    fun parseNotificationWithoutTitle() {
-      val notification = NotificationCompat.Builder(context, "FAKE_CHANNEL")
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setContentText("Description")
          .setSmallIcon(0)
          .build()
 
-      notificationParser.parse(notification.toSbn()) shouldBe ParsedNotification(
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
          "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
          TEST_PACKAGE,
          "SMS App",
@@ -55,23 +60,23 @@ class NotificationParserTest {
 
    @Test
    fun returnNullWhenNotificationHasNoParsableProperties() {
-      val notification = NotificationCompat.Builder(context, "FAKE_CHANNEL")
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setSmallIcon(0)
          .build()
 
-      notificationParser.parse(notification.toSbn()) shouldBe null
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe null
    }
 
    @Test
    fun parseBigText() {
-      val notification = NotificationCompat.Builder(context, "FAKE_CHANNEL")
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setContentTitle("Title")
          .setContentText("Description")
          .setStyle(NotificationCompat.BigTextStyle().bigText("Long description"))
          .setSmallIcon(0)
          .build()
 
-      notificationParser.parse(notification.toSbn()) shouldBe ParsedNotification(
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
          "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
          TEST_PACKAGE,
          "SMS App",
@@ -83,7 +88,7 @@ class NotificationParserTest {
 
    @Test
    fun parseMessagingStyle() {
-      val notification = NotificationCompat.Builder(context, "FAKE_CHANNEL")
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setStyle(
             NotificationCompat.MessagingStyle(Person.Builder().setName("Group Chat A").build())
                .setConversationTitle("Group Chat A")
@@ -96,7 +101,7 @@ class NotificationParserTest {
          .setSmallIcon(0)
          .build()
 
-      notificationParser.parse(notification.toSbn()) shouldBe ParsedNotification(
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
          "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
          TEST_PACKAGE,
          "SMS App",
@@ -110,7 +115,7 @@ class NotificationParserTest {
 
    @Test
    fun doNotRepeatNameOfTheSamePerson() {
-      val notification = NotificationCompat.Builder(context, "FAKE_CHANNEL")
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setStyle(
             NotificationCompat.MessagingStyle(Person.Builder().setName("Group Chat A").build())
                .setConversationTitle("Group Chat A")
@@ -121,7 +126,7 @@ class NotificationParserTest {
          .setSmallIcon(0)
          .build()
 
-      notificationParser.parse(notification.toSbn()) shouldBe ParsedNotification(
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
          "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
          TEST_PACKAGE,
          "SMS App",
@@ -135,7 +140,7 @@ class NotificationParserTest {
 
    @Test
    fun parseInboxStyle() {
-      val notification = NotificationCompat.Builder(context, "FAKE_CHANNEL")
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setStyle(
             NotificationCompat.InboxStyle()
                .addLine("Message 1")
@@ -146,7 +151,7 @@ class NotificationParserTest {
          .setSmallIcon(0)
          .build()
 
-      notificationParser.parse(notification.toSbn()) shouldBe ParsedNotification(
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
          "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
          TEST_PACKAGE,
          "SMS App",
@@ -160,13 +165,16 @@ class NotificationParserTest {
 
    @Test
    fun parseIdTagAndTimestamp() {
-      val notification = NotificationCompat.Builder(context, "FAKE_CHANNEL")
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setContentTitle("Title")
          .setContentText("Description")
          .setSmallIcon(0)
          .build()
 
-      notificationParser.parse(notification.toSbn(id = 123, tag = "tags", timestamp = 1234L)) shouldBe ParsedNotification(
+      notificationParser.parse(
+         notification.toSbn(id = 123, tag = "tags", timestamp = 1234L),
+         createDefaultSilentChannel()
+      ) shouldBe ParsedNotification(
          "0|com.matejdro.pebblenotificationcenter.notification.parsing|123|tags|0",
          TEST_PACKAGE,
          "SMS App",
@@ -178,13 +186,13 @@ class NotificationParserTest {
 
    @Test
    fun parseNotificationWithLongSubtitleIntoText() {
-      val notification = NotificationCompat.Builder(context, "FAKE_CHANNEL")
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setContentTitle("A very very long long title title")
          .setContentText("Description")
          .setSmallIcon(0)
          .build()
 
-      notificationParser.parse(notification.toSbn()) shouldBe ParsedNotification(
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
          "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
          TEST_PACKAGE,
          "SMS App",
@@ -196,13 +204,13 @@ class NotificationParserTest {
 
    @Test
    fun removeUselessControllCharacters() {
-      val notification = NotificationCompat.Builder(context, "FAKE_CHANNEL")
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setContentTitle("\u202CTitle")
          .setContentText("\u200EDescription")
          .setSmallIcon(0)
          .build()
 
-      notificationParser.parse(notification.toSbn()) shouldBe ParsedNotification(
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
          "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
          TEST_PACKAGE,
          "SMS App",
@@ -210,6 +218,180 @@ class NotificationParserTest {
          "Description",
          Instant.ofEpochMilli(0L)
       )
+   }
+
+   @Test
+   fun parseNotificationWithLegacyDefaultVibration() {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+         throw AssumptionViolatedException("Legacy defaults can only be tested on pre-O")
+      }
+
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setDefaults(NotificationCompat.DEFAULT_VIBRATE)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         isSilent = false
+      )
+   }
+
+   @Test
+   fun parseNotificationWithLegacyDefaultSound() {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+         throw AssumptionViolatedException("Legacy defaults can only be tested on pre-O")
+      }
+
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setDefaults(NotificationCompat.DEFAULT_SOUND)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         isSilent = false
+      )
+   }
+
+   @Test
+   fun parseNotificationWithLegacyCustomSound() {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+         throw AssumptionViolatedException("Legacy defaults can only be tested on pre-O")
+      }
+
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setSound(Uri.parse("android.resource://dummy_uri"))
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         isSilent = false
+      )
+   }
+
+   @Test
+   fun parseNotificationWithLegacyCustomVibration() {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+         throw AssumptionViolatedException("Legacy defaults can only be tested on pre-O")
+      }
+
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setVibrate(longArrayOf(1, 1, 1, 1))
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         isSilent = false
+      )
+   }
+
+   @Test
+   fun parseNotificationWithChannelVibration() {
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+         throw AssumptionViolatedException("Notification Channels are not supported pre-O")
+      }
+
+      val channel = NotificationChannel("TEST_CHANNEL_VIB", "Test", NotificationManager.IMPORTANCE_LOW).apply {
+         enableVibration(true)
+      }
+
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL_VIB")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), channel) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         isSilent = false
+      )
+   }
+
+   @Test
+   fun parseNotificationWithNoisyChannel() {
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+         throw AssumptionViolatedException("Notification Channels are not supported pre-O")
+      }
+
+      val channel = NotificationChannel("TEST_CHANNEL_NOISE", "Test", NotificationManager.IMPORTANCE_DEFAULT)
+
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL_NOISE")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), channel) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         isSilent = false
+      )
+   }
+
+   @Test
+   fun handleMissingChannel() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL_MISSING")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L)
+      )
+   }
+
+   private fun createDefaultSilentChannel(): Any? {
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+         return null
+      }
+
+      return NotificationChannel("TEST_CHANNEL", "Test", NotificationManager.IMPORTANCE_LOW)
    }
 }
 

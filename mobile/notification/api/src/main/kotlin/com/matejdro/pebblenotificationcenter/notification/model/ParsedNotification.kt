@@ -9,4 +9,9 @@ data class ParsedNotification(
    val subtitle: String,
    val body: String,
    val timestamp: Instant,
+
+   /**
+    * When true, the notification would not vibrate and/or make sounds from the phone.
+    */
+   val isSilent: Boolean = true,
 )

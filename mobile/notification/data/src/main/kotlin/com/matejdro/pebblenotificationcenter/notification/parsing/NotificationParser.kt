@@ -1,6 +1,9 @@
 package com.matejdro.pebblenotificationcenter.notification.parsing
 
 import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
@@ -11,7 +14,7 @@ import java.time.Instant
 class NotificationParser(
    private val appNameProvider: AppNameProvider,
 ) {
-   fun parse(sbn: StatusBarNotification): ParsedNotification? {
+   fun parse(sbn: StatusBarNotification, channel: Any?): ParsedNotification? {
       val notification = sbn.notification
       val extras = notification.extras
       val subtitle = (
@@ -48,14 +51,33 @@ class NotificationParser(
          return null
       }
 
+      val isSilent = getIsSilent(notification, channel)
+
       return ParsedNotification(
          sbn.key,
          sbn.packageName,
          title,
-         updatedSubtitle.toString(),
-         updatedText?.toString().orEmpty(),
+         updatedSubtitle,
+         updatedText.orEmpty(),
          Instant.ofEpochMilli(sbn.postTime),
+         isSilent = isSilent,
       )
+   }
+
+   private fun getIsSilent(notification: Notification, channel: Any?): Boolean {
+      val isSilentChannel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+         val channelCast: NotificationChannel? = channel as NotificationChannel?
+
+         channelCast == null || (channelCast.importance < NotificationManager.IMPORTANCE_DEFAULT && !channelCast.shouldVibrate())
+      } else {
+         true
+      }
+
+      @Suppress("DEPRECATION") // We still need to support legacy pre-channel notifications
+      return isSilentChannel &&
+         notification.vibrate == null &&
+         notification.sound == null &&
+         (notification.defaults and (NotificationCompat.DEFAULT_SOUND or NotificationCompat.DEFAULT_VIBRATE)) == 0
    }
 
    private fun Notification.parseMessagingStyle(): String? {
