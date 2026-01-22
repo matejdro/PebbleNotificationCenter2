@@ -6,7 +6,9 @@ import com.matejdro.pebble.bluetooth.common.WatchAppConnection
 import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionGraph
 import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionScope
 import com.matejdro.pebble.bluetooth.common.util.requireUint
+import com.matejdro.pebble.bluetooth.common.util.writeUShort
 import com.matejdro.pebblenotificationcenter.notification.ActionHandler
+import com.matejdro.pebblenotificationcenter.notification.NotificationRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -19,6 +21,7 @@ import io.rebble.pebblekit2.common.model.WatchIdentifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import logcat.logcat
+import okio.Buffer
 
 @Inject
 @ContributesBinding(WatchappConnectionScope::class)
@@ -30,6 +33,7 @@ class WatchappConnectionImpl(
    private val bucketSyncWatchLoop: BucketSyncWatchLoop,
    private val notificationDetailsPusher: NotificationDetailsPusher,
    private val actionHandler: ActionHandler,
+   private val notificationRepository: NotificationRepository,
 ) : WatchAppConnection {
    private var watchBufferSize: Int = 0
 
@@ -96,10 +100,30 @@ class WatchappConnectionImpl(
             (3u to UInt8(1u)).takeIf { watchappOpenController.isNextWatchappOpenForAutoSync() },
          ),
          watchVersion,
-         watchBufferSize
+         watchBufferSize,
+         onBucketsChanged = { pushVibration() }
       )
 
       return ReceiveResult.Ack
+   }
+
+   private suspend fun pushVibration() {
+      val vibrationPattern = notificationRepository.pollNextVibration()
+      logcat { "Next vibration after packets change: ${vibrationPattern?.contentToString() ?: "null"}" }
+      if (vibrationPattern == null) {
+         return
+      }
+
+      val buffer = Buffer()
+      for (entry in vibrationPattern) {
+         buffer.writeUShort(entry.toUShort())
+      }
+
+      val packet = mapOf(
+         0u to PebbleDictionaryItem.UInt8(7u),
+         1u to PebbleDictionaryItem.Bytes(buffer.readByteArray())
+      )
+      packetQueue.sendPacket(packet, priority = PRIORITY_VIBRATION)
    }
 
    @Inject

@@ -8,7 +8,9 @@ import com.matejdro.pebble.bluetooth.common.test.FakePebbleSender
 import com.matejdro.pebble.bluetooth.common.test.sentData
 import com.matejdro.pebblenotificationcenter.bluetooth.api.WATCHAPP_UUID
 import com.matejdro.pebblenotificationcenter.notification.FakeActionHandler
+import com.matejdro.pebblenotificationcenter.notification.FakeNotificationRepository
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
@@ -16,11 +18,13 @@ import io.rebble.pebblekit2.common.model.PebbleDictionaryItem
 import io.rebble.pebblekit2.common.model.ReceiveResult
 import io.rebble.pebblekit2.common.model.WatchIdentifier
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import si.inova.kotlinova.core.test.TestScopeWithDispatcherProvider
 import si.inova.kotlinova.core.test.time.virtualTimeProvider
+import kotlin.time.Duration.Companion.seconds
 
 class WatchappConnectionImplTest {
    private val scope = TestScopeWithDispatcherProvider()
@@ -31,6 +35,8 @@ class WatchappConnectionImplTest {
    private val watchappOpenController = FakeWatchappOpenController()
 
    private val notificationDetailsPusher = FakeNotificationDetailsPusher()
+
+   private val notificationsRepository = FakeNotificationRepository()
 
    private val actionHandler = FakeActionHandler()
 
@@ -52,6 +58,7 @@ class WatchappConnectionImplTest {
       ),
       notificationDetailsPusher,
       actionHandler,
+      notificationsRepository,
    )
 
    @Test
@@ -225,6 +232,32 @@ class WatchappConnectionImplTest {
       runCurrent()
 
       result shouldBe ReceiveResult.Nack
+   }
+
+   @Test
+   fun `Send vibrations after buckets update post initial sync packet `() = scope.runTest {
+      receiveStandardHelloPacket(bufferSize = 123u)
+      runCurrent()
+
+      sender.sentPackets.clear()
+
+      notificationsRepository.nextVibration = intArrayOf(20, 20, 20, 20)
+
+      bucketSyncRepository.updateBucket(1u, byteArrayOf(1))
+      bucketSyncRepository.updateBucket(2u, byteArrayOf(2))
+      delay(1.seconds)
+
+      sender.sentData.shouldNotBeEmpty().last() shouldBe mapOf(
+         0u to PebbleDictionaryItem.UInt8(7),
+         1u to PebbleDictionaryItem.Bytes(
+            byteArrayOf(
+               0, 20,
+               0, 20,
+               0, 20,
+               0, 20,
+            )
+         )
+      )
    }
 
    private suspend fun receiveStandardHelloPacket(version: UInt = 0u, bufferSize: UInt = 1000u): ReceiveResult =
