@@ -4,4 +4,6 @@ interface WatchappOpenController {
    fun isNextWatchappOpenForAutoSync(): Boolean
    fun setNextWatchappOpenForAutoSync()
    fun resetNextWatchappOpen()
+
+   suspend fun openWatchapp()
 }

@@ -4,6 +4,7 @@ import com.matejdro.bucketsync.BucketSyncWatchappOpenController
 
 class FakeWatchappOpenController : WatchappOpenController, BucketSyncWatchappOpenController {
    private var nextWatchappOpenForAutoSync: Boolean = false
+   var watchappOpened: Boolean = false
 
    override fun isNextWatchappOpenForAutoSync(): Boolean {
       return nextWatchappOpenForAutoSync
@@ -15,5 +16,9 @@ class FakeWatchappOpenController : WatchappOpenController, BucketSyncWatchappOpe
 
    override fun resetNextWatchappOpen() {
       nextWatchappOpenForAutoSync = false
+   }
+
+   override suspend fun openWatchapp() {
+      watchappOpened = true
    }
 }

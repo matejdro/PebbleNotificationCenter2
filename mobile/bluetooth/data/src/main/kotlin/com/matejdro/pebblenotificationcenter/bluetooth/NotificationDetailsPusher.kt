@@ -4,6 +4,7 @@ import com.matejdro.pebble.bluetooth.common.PacketQueue
 import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionScope
 import com.matejdro.pebble.bluetooth.common.util.LimitingStringEncoder
 import com.matejdro.pebble.bluetooth.common.util.writeUByte
+import com.matejdro.pebble.bluetooth.common.util.writeUShort
 import com.matejdro.pebblenotificationcenter.notification.NotificationRepository
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -57,7 +58,27 @@ class NotificationDetailsPusherImpl(
 
          logcat { "Sending notification details for $bucketId: ${packet.sizeInBytes()} (${actionsToSend.size} actions)" }
          queue.sendPacket(packet, priority = PRIORITY_WATCH_TEXT)
+         pushVibration()
       }
+   }
+
+   private suspend fun pushVibration() {
+      val vibrationPattern = notificationRepository.pollNextVibration()
+      logcat { "Next vibration: ${vibrationPattern?.contentToString() ?: "null"}" }
+      if (vibrationPattern == null) {
+         return
+      }
+
+      val buffer = Buffer()
+      for (entry in vibrationPattern) {
+         buffer.writeUShort(entry.toUShort())
+      }
+
+      val packet = mapOf(
+         0u to PebbleDictionaryItem.UInt8(7u),
+         1u to PebbleDictionaryItem.Bytes(buffer.readByteArray())
+      )
+      queue.sendPacket(packet, priority = PRIORITY_VIBRATION)
    }
 }
 

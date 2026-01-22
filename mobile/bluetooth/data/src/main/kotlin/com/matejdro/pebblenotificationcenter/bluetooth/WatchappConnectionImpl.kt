@@ -115,5 +115,8 @@ class WatchappConnectionImpl(
 
 internal const val PRIORITY_WATCH_TEXT = 1
 
+// This should be sent last, so user has everything visible before watch vibrates
+internal const val PRIORITY_VIBRATION = -1
+
 private fun <K, V> mapOfNotNull(vararg pairs: Pair<K, V>?): Map<K, V> =
    pairs.filterNotNull().toMap()

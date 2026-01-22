@@ -1,6 +1,7 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import com.matejdro.pebblenotificationcenter.bluetooth.FakeWatchSyncer
+import com.matejdro.pebblenotificationcenter.bluetooth.FakeWatchappOpenController
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import io.kotest.assertions.assertSoftly
@@ -19,7 +20,9 @@ class NotificationProcessorTest {
 
    private val context = FakeActivity()
 
-   private val processor = NotificationProcessor(context, watchSyncer)
+   private val openController = FakeWatchappOpenController()
+
+   private val processor = NotificationProcessor(context, watchSyncer, openController)
 
    @BeforeEach
    fun setUp() {
@@ -161,5 +164,42 @@ class NotificationProcessorTest {
       processor.getNotification(1)?.actions shouldBe listOf(
          Action.Dismiss("Dismiss")
       )
+   }
+
+   @Test
+   fun `It should not vibrate for the silent notifications by default`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification)
+
+      openController.watchappOpened shouldBe false
+      processor.pollNextVibration() shouldBe null
+   }
+
+   @Test
+   fun `It should vibrate for the non-silent notifications by default`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isSilent = false
+      )
+
+      processor.onNotificationPosted(notification)
+
+      openController.watchappOpened shouldBe true
+      processor.pollNextVibration().shouldNotBeNull()
    }
 }

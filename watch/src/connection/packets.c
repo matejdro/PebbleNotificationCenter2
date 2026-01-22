@@ -5,12 +5,14 @@
 
 #include "notification_details_fetcher.h"
 #include "../ui/window_status.h"
+#include "commons/bytes.h"
 
 static void receive_phone_welcome(const DictionaryIterator* iterator);
 static void receive_sync_restart(const DictionaryIterator* iterator);
 static void receive_sync_next_packet(const DictionaryIterator* iterator);
 static void receive_notification_details_text_packet(const DictionaryIterator* iterator);
 static void receive_watch_packet(const DictionaryIterator* received);
+static void receive_vibrate_packet(const DictionaryIterator* iterator);
 
 void packets_init()
 {
@@ -80,12 +82,15 @@ static void receive_watch_packet(const DictionaryIterator* received)
     case 5:
         receive_notification_details_text_packet(received);
         break;
+    case 7:
+        receive_vibrate_packet(received);
+        break;
     default:
         break;
     }
 }
 
-void receive_phone_welcome(const DictionaryIterator* iterator)
+static void receive_phone_welcome(const DictionaryIterator* iterator)
 {
     if (launch_reason() == APP_LAUNCH_PHONE && dict_find(iterator, 3) != NULL)
     {
@@ -112,7 +117,7 @@ void receive_phone_welcome(const DictionaryIterator* iterator)
     bucket_sync_on_start_received(dict_entry->value->data, dict_entry->length);
 }
 
-void receive_sync_restart(const DictionaryIterator* iterator)
+static void receive_sync_restart(const DictionaryIterator* iterator)
 {
     // ReSharper disable once CppLocalVariableMayBeConst
     Tuple* dict_entry = dict_find(iterator, 1);
@@ -120,7 +125,7 @@ void receive_sync_restart(const DictionaryIterator* iterator)
     bucket_sync_on_start_received(dict_entry->value->data, dict_entry->length);
 }
 
-void receive_sync_next_packet(const DictionaryIterator* iterator)
+static void receive_sync_next_packet(const DictionaryIterator* iterator)
 {
     // ReSharper disable once CppLocalVariableMayBeConst
     Tuple* dict_entry = dict_find(iterator, 1);
@@ -128,10 +133,33 @@ void receive_sync_next_packet(const DictionaryIterator* iterator)
     bucket_sync_on_start_received(dict_entry->value->data, dict_entry->length);
 }
 
-void receive_notification_details_text_packet(const DictionaryIterator* iterator)
+static void receive_notification_details_text_packet(const DictionaryIterator* iterator)
 {
     // ReSharper disable once CppLocalVariableMayBeConst
     Tuple* dict_entry = dict_find(iterator, 1);
 
     notification_details_fetcher_on_text_received(dict_entry->value->data, dict_entry->length);
+}
+
+static void receive_vibrate_packet(const DictionaryIterator* iterator)
+{
+    const Tuple* dict_entry = dict_find(iterator, 1);
+
+    const size_t size = dict_entry->length;
+    const uint8_t* data = dict_entry->value->data;
+
+    static uint32_t segments[100];
+    const uint16_t num_segments = size / 2;
+
+    for (int i = 0; i < num_segments; i++)
+    {
+        segments[i] = read_uint16_from_byte_array(data, i * 2);
+    }
+
+    const VibePattern vibe_pattern = {
+        .durations = segments,
+        .num_segments = num_segments,
+    };
+    vibes_cancel();
+    vibes_enqueue_custom_pattern(vibe_pattern);
 }

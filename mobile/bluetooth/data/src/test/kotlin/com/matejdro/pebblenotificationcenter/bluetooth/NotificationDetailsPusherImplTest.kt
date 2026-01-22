@@ -311,6 +311,42 @@ class NotificationDetailsPusherImplTest {
       )
    }
 
+   @Test
+   fun `Send send vibration after successful details push`() = scope.runTest {
+      setup()
+
+      notificationRepository.nextVibration = intArrayOf(10, 10, 10, 10)
+
+      notificationRepository.putNotification(
+         12,
+         ProcessedNotification(
+            ParsedNotification(
+               "",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+            )
+         )
+      )
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+
+      runCurrent()
+
+      sender.sentData.shouldHaveSize(2).elementAt(1) shouldBe mapOf(
+         0u to PebbleDictionaryItem.UInt8(7),
+         1u to PebbleDictionaryItem.Bytes(
+            byteArrayOf(
+               0, 10,
+               0, 10,
+               0, 10,
+               0, 10,
+            )
+         )
+      )
+   }
+
    private fun TestScope.setup() {
       backgroundScope.launch {
          packetQueue.runQueue()

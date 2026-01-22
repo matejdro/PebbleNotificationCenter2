@@ -2,6 +2,7 @@ package com.matejdro.pebblenotificationcenter.notification
 
 import android.content.Context
 import com.matejdro.pebblenotificationcenter.bluetooth.WatchSyncer
+import com.matejdro.pebblenotificationcenter.bluetooth.WatchappOpenController
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
@@ -9,6 +10,8 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import logcat.logcat
+import java.util.concurrent.atomic.AtomicReference
 
 @Inject
 @SingleIn(AppScope::class)
@@ -16,9 +19,12 @@ import dev.zacsweers.metro.SingleIn
 class NotificationProcessor(
    private val context: Context,
    private val watchSyncer: WatchSyncer,
+   private val openController: WatchappOpenController,
 ) : NotificationRepository {
    private val notifications = HashMap<Int, ProcessedNotification>()
    private val notificationsByKey = HashMap<String, ProcessedNotification>()
+
+   private var nextVibration: AtomicReference<IntArray?> = AtomicReference(null)
 
    suspend fun onNotificationPosted(parsedNotification: ParsedNotification) {
       val actions = listOf<Action>(
@@ -30,6 +36,16 @@ class NotificationProcessor(
 
       notifications[bucketId] = processedNotification
       notificationsByKey[parsedNotification.key] = processedNotification
+
+      logcat { "Is notification silent: ${parsedNotification.isSilent}" }
+      if (!parsedNotification.isSilent) {
+         nextVibration.set(
+            // Until settings are there, just hardcode jackhammer
+            @Suppress("MagicNumber")
+            intArrayOf(50, 50, 50, 50, 50, 50, 50, 50, 50, 50)
+         )
+         openController.openWatchapp()
+      }
    }
 
    suspend fun onNotificationDismissed(key: String) {
@@ -50,5 +66,9 @@ class NotificationProcessor(
 
    override fun getNotification(bucketId: Int): ProcessedNotification? {
       return notifications[bucketId]
+   }
+
+   override fun pollNextVibration(): IntArray? {
+      return nextVibration.getAndSet(null)
    }
 }

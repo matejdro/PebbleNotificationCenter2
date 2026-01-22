@@ -62,6 +62,18 @@ Sent from the phone after the packet 4
   * For every action:
     * Action text (cstring, up to 20 bytes + null terminator)
   * Text (cstring, up to the max size of the packet)
+  
+### Vibrate (packet 7)
+
+Sent from the phone after new notificaton, when all data is synced. On reception, watch will vibrate with the provided pattern.
+
+* `1` - Data (byte array)
+    * Vibration pattern
+      * Number of milliseconds to vibrate (uint16)
+      * Number of milliseconds to stay quiet (uint16)
+      * Number of milliseconds to vibrate (uint16)
+      * Number of milliseconds to stay quiet (uint16)
+      * ...
 
 ## Watch -> Phone
 
