@@ -5,8 +5,11 @@
 
 const int32_t SINGLE_SCROLL_HEIGHT = 32;
 
+// ReSharper disable once CppParameterMayBeConst
 static void button_up_single(ClickRecognizerRef recognizer, void* context)
 {
+    window_notification_data.user_interacted = true;
+
     if (window_notification_data.menu_displayed)
     {
         window_notification_action_list_move_up();
@@ -17,8 +20,11 @@ static void button_up_single(ClickRecognizerRef recognizer, void* context)
     }
 }
 
+// ReSharper disable once CppParameterMayBeConst
 static void button_down_single(ClickRecognizerRef recognizer, void* context)
 {
+    window_notification_data.user_interacted = true;
+
     if (window_notification_data.menu_displayed)
     {
         window_notification_action_list_move_down();
@@ -31,6 +37,8 @@ static void button_down_single(ClickRecognizerRef recognizer, void* context)
 
 static void button_select_single(ClickRecognizerRef recognizer, void* context)
 {
+    window_notification_data.user_interacted = true;
+
     if (window_notification_data.num_actions == 0)
     {
         vibes_double_pulse();
@@ -49,6 +57,8 @@ static void button_select_single(ClickRecognizerRef recognizer, void* context)
 
 static void button_back_single(ClickRecognizerRef recognizer, void* context)
 {
+    window_notification_data.user_interacted = true;
+
     if (window_notification_data.menu_displayed)
     {
         window_notification_action_list_hide();

@@ -36,6 +36,7 @@ typedef struct
     uint8_t num_actions;
     Action actions[20];
     bool menu_displayed;
+    bool user_interacted;
 } NotificationWindowData;
 
 extern NotificationWindowData window_notification_data;

@@ -14,7 +14,8 @@ const int16_t MID_TEXT_VERTICAL_PADDING = 4;
 NotificationWindowData window_notification_data = {
     .active = false,
     .num_actions = 0,
-    .menu_displayed = false
+    .menu_displayed = false,
+    .user_interacted = false,
 };
 
 static CustomStatusBarLayer* status_bar_layer;
@@ -145,11 +146,14 @@ void window_notification_show()
     Window* window = window_create();
 
     window_set_window_handlers(window, (WindowHandlers)
-                               {
-                                   .load = window_load,
-                                   .unload = window_unload,
-                               }
-    );
+    {
+        .
+        load = window_load,
+        .
+        unload = window_unload,
+    }
+    )
+    ;
 
     window_stack_push(window, true);
 }
