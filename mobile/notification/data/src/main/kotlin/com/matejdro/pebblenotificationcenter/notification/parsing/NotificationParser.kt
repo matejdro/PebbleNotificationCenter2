@@ -16,6 +16,7 @@ class NotificationParser(
       val extras = notification.extras
       val subtitle = (
          extras.getCharSequence(NotificationCompat.EXTRA_CONVERSATION_TITLE)
+            ?: extras.getCharSequence(NotificationCompat.EXTRA_HIDDEN_CONVERSATION_TITLE)
             ?: extras.getCharSequence(NotificationCompat.EXTRA_TITLE)
             ?: extras.getCharSequence(NotificationCompat.EXTRA_TITLE_BIG)
          )?.removeUselessCharacaters().orEmpty()
