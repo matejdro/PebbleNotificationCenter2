@@ -8,7 +8,6 @@ import com.matejdro.pebblenotificationcenter.common.di.NavigationInjectingGraph
 import com.matejdro.pebblenotificationcenter.logging.FileLoggingController
 import com.matejdro.pebblenotificationcenter.logging.TinyLogLoggingThread
 import com.matejdro.pebblenotificationcenter.navigation.scenes.TabListDetailScene
-import com.matejdro.pebblenotificationcenter.notification.NotificationServiceStatus
 import com.matejdro.pebblenotificationcenter.notification.di.NotificationInject
 import com.matejdro.pebblenotificationcenter.receiving.PebbleListenerService
 import dev.zacsweers.metro.AppScope
@@ -54,7 +53,6 @@ interface ApplicationGraph : NavigationInjectingGraph, NotificationInject {
    fun getTabListDetailSceneFactory(): TabListDetailScene.Factory
    fun getWorkerFactory(): NotificationCenterWorkerFactory
    fun getSyncNotifier(): BackgroundSyncNotifier
-   fun getNotificationServiceStatus(): NotificationServiceStatus
 
    fun inject(target: PebbleListenerService)
 }

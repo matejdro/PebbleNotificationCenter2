@@ -1,8 +1,12 @@
 package com.matejdro.pebblenotificationcenter.home.ui.onboarding
 
 import android.Manifest
+import android.companion.AssociationInfo
+import android.companion.AssociationRequest
+import android.companion.CompanionDeviceManager
 import android.content.Context
 import android.content.Intent
+import android.content.IntentSender
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -36,14 +40,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.getSystemService
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import com.matejdro.pebblenotificationcenter.home.ui.R
+import com.matejdro.pebblenotificationcenter.home.ui.R.string.grant
 import com.matejdro.pebblenotificationcenter.navigation.keys.HomeScreenKey
 import com.matejdro.pebblenotificationcenter.navigation.keys.OnboardingKey
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleListScreenKey
+import com.matejdro.pebblenotificationcenter.notification.NotificationServiceStatus
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
 import si.inova.kotlinova.navigation.instructions.ReplaceBackstack
@@ -54,10 +62,12 @@ import si.inova.kotlinova.navigation.screens.Screen
 @InjectNavigationScreen
 class OnboardingScreen(
    private val navigator: Navigator,
+   private val serviceStatus: NotificationServiceStatus,
 ) : Screen<OnboardingKey>() {
    @Composable
    override fun Content(key: OnboardingKey) {
       OnboardingContent(
+         serviceStatus,
          {
             navigator.navigate(
                ReplaceBackstack(
@@ -72,6 +82,7 @@ class OnboardingScreen(
 
 @Composable
 private fun OnboardingContent(
+   serviceStatus: NotificationServiceStatus,
    continueToApp: () -> Unit,
 ) {
    Column(
@@ -88,7 +99,7 @@ private fun OnboardingContent(
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
          verticalArrangement = Arrangement.spacedBy(16.dp)
       ) {
-         OnboardingScrollContent()
+         OnboardingScrollContent(serviceStatus)
       }
 
       Surface(
@@ -110,12 +121,17 @@ private fun OnboardingContent(
 }
 
 @Composable
-private fun ColumnScope.OnboardingScrollContent() {
+private fun ColumnScope.OnboardingScrollContent(serviceStatus: NotificationServiceStatus) {
    Text(stringResource(R.string.onboarding_title))
    Text(stringResource(R.string.onboarding_intro))
 
    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
       NotificationPermission()
+   }
+   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      NotificationAccessPermissionCompanion(serviceStatus)
+   } else {
+      NotificationAccessPermissionLegacy(serviceStatus)
    }
 }
 
@@ -140,6 +156,91 @@ private fun NotificationPermission() {
          Text(stringResource(R.string.notification_permission_description))
 
          SinglePermissionButton(permissionState, rejectedPermission)
+      }
+   }
+}
+
+@Composable
+@RequiresApi(Build.VERSION_CODES.O)
+private fun NotificationAccessPermissionCompanion(
+   serviceStatus: NotificationServiceStatus,
+) {
+   var permissionGranted by remember { mutableStateOf(false) }
+   val context = LocalContext.current
+
+   val companionManager = remember(context) { context.getSystemService<CompanionDeviceManager>()!! }
+
+   LifecycleResumeEffect(serviceStatus) {
+      permissionGranted = serviceStatus.isPermissionGranted()
+
+      onPauseOrDispose { }
+   }
+
+   fun associateWithCompanionManager() {
+      companionManager.associate(
+         AssociationRequest.Builder()
+            .build(),
+         object : CompanionDeviceManager.Callback() {
+            override fun onFailure(error: CharSequence?) {}
+
+            // New method is only available in the SDK 33, so we
+            // have to use the old one for now.
+            @Suppress("DEPRECATION")
+            @Deprecated("Deprecated in Java")
+            override fun onDeviceFound(intentSender: IntentSender) {
+               super.onDeviceFound(intentSender)
+               context.startIntentSender(intentSender, null, 0, 0, 0)
+            }
+
+            override fun onAssociationCreated(associationInfo: AssociationInfo) {
+               serviceStatus.requestNotificationAccess()
+            }
+         },
+         null
+      )
+   }
+   Card(Modifier.fillMaxWidth()) {
+      Column(
+         Modifier.padding(8.dp),
+         verticalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+         Text(stringResource(R.string.permission_notification_access_title), style = MaterialTheme.typography.headlineSmall)
+         Text(stringResource(R.string.permission_notification_access_companion_description))
+
+         if (permissionGranted) {
+            Text("✅")
+         } else {
+            Button(onClick = { associateWithCompanionManager() }) { Text(stringResource(grant)) }
+         }
+      }
+   }
+}
+
+@Composable
+private fun NotificationAccessPermissionLegacy(
+   serviceStatus: NotificationServiceStatus,
+) {
+   var permissionGranted by remember { mutableStateOf(serviceStatus.isPermissionGranted()) }
+
+   LifecycleResumeEffect(serviceStatus) {
+      permissionGranted = serviceStatus.isPermissionGranted()
+
+      onPauseOrDispose { }
+   }
+
+   Card(Modifier.fillMaxWidth()) {
+      Column(
+         Modifier.padding(8.dp),
+         verticalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+         Text(stringResource(R.string.permission_notification_access_title), style = MaterialTheme.typography.headlineSmall)
+         Text(stringResource(R.string.permission_notification_access_legacy_description))
+
+         if (permissionGranted) {
+            Text("✅")
+         } else {
+            Button(onClick = { serviceStatus.requestNotificationAccess() }) { Text(stringResource(grant)) }
+         }
       }
    }
 }
@@ -178,7 +279,7 @@ private fun openSystemPermissionSettings(context: Context) {
 @ShowkaseComposable(group = "test")
 internal fun OnboardingContentWithWatchPairedPreview() {
    PreviewTheme {
-      OnboardingContent({})
+      OnboardingContent(FAKE_SERVICE_STATUS, {})
    }
 }
 
@@ -190,7 +291,19 @@ private fun OnboardingWholeListPreview() {
          Modifier.padding(8.dp),
          verticalArrangement = Arrangement.spacedBy(8.dp)
       ) {
-         OnboardingScrollContent()
+         OnboardingScrollContent(FAKE_SERVICE_STATUS)
       }
    }
+}
+
+private val FAKE_SERVICE_STATUS = object : NotificationServiceStatus {
+   override fun isEnabled(): Boolean {
+      return false
+   }
+
+   override fun isPermissionGranted(): Boolean {
+      return false
+   }
+
+   override fun requestNotificationAccess() {}
 }

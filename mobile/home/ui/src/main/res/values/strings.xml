@@ -3,7 +3,7 @@
     <string name="tools">Tools</string>
     <string name="grant">Grant</string>
     <string name="open_settings">Open Settings</string>
-    <string name="notifications_permission_title">Notifications</string>
+    <string name="notifications_permission_title">Posting notifications</string>
     <string name="notification_permission_description">Needed for error reporting</string>
     <string name="continue_to_the_app">Continue to the app</string>
     <string name="onboarding_title">Welcome to the Notification Center App!</string>
@@ -12,4 +12,12 @@
     </string>
     <string name="rules">Rules</string>
     <string name="history">History</string>
+    <string name="permission_notification_access_title">Notification Access</string>
+    <string name="permission_notification_access_companion_description">Needed to forward notifications from the other
+        apps.\n\nAfter pressing \'Grant\' button, you need to select anything from the list and then
+        grant notifications access when prompted.
+    </string>
+    <string name="permission_notification_access_legacy_description">Needed to forward notifications from the other
+        apps.
+    </string>
 </resources>

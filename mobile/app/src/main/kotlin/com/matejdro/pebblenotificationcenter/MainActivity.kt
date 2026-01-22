@@ -1,9 +1,6 @@
 package com.matejdro.pebblenotificationcenter
 
-import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -25,10 +22,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.DialogSceneStrategy
 import com.matejdro.pebblenotificationcenter.navigation.scenes.TabListDetailScene
 import com.matejdro.pebblenotificationcenter.navigation.scenes.rememberTabListDetailSceneStrategy
-import com.matejdro.pebblenotificationcenter.notification.NotificationServiceStatus
 import com.matejdro.pebblenotificationcenter.ui.theme.NotificationCenterTheme
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -43,7 +38,6 @@ import si.inova.kotlinova.navigation.di.NavigationContext
 import si.inova.kotlinova.navigation.di.NavigationInjection
 import si.inova.kotlinova.navigation.navigation3.NavDisplay
 import si.inova.kotlinova.navigation.screenkeys.ScreenKey
-import kotlin.time.Duration.Companion.seconds
 
 class MainActivity : ComponentActivity() {
    private lateinit var navigationInjectionFactory: NavigationInjection.Factory
@@ -51,8 +45,6 @@ class MainActivity : ComponentActivity() {
    private lateinit var navigationContext: NavigationContext
    private lateinit var dateFormatter: AndroidDateTimeFormatter
    private lateinit var mainViewModelFactory: MainViewModel.Factory
-
-   private lateinit var notificationServiceStatus: NotificationServiceStatus
 
    private lateinit var tabListDetailSceneFactory: TabListDetailScene.Factory
 
@@ -68,7 +60,6 @@ class MainActivity : ComponentActivity() {
       dateFormatter = appGraph.getDateFormatter()
       mainViewModelFactory = appGraph.getMainViewModelFactory()
       tabListDetailSceneFactory = appGraph.getTabListDetailSceneFactory()
-      notificationServiceStatus = appGraph.getNotificationServiceStatus()
 
       super.onCreate(savedInstanceState)
       enableEdgeToEdge()
@@ -143,29 +134,5 @@ class MainActivity : ComponentActivity() {
          @Suppress("UNCHECKED_CAST")
          return mainViewModelFactory.create() as T
       }
-   }
-
-   override fun onStart() {
-      super.onStart()
-
-      lifecycleScope.launch {
-         // Give the service some time to start
-         delay(1.seconds)
-         if (!notificationServiceStatus.isEnabled()) {
-            showServiceDeadPopup()
-         }
-      }
-   }
-
-   private fun showServiceDeadPopup() {
-      val builder = AlertDialog.Builder(this)
-
-      builder.setTitle(getString(R.string.service_not_running)).setNegativeButton(getString(R.string.cancel), null)
-      builder.setMessage(getString(R.string.notification_service_is_not_running_you_must_enable_it_to_get_this_app_to_work))
-      builder.setPositiveButton(
-         getString(R.string.open_settings)
-      ) { _, _ -> startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
-
-      builder.show()
    }
 }

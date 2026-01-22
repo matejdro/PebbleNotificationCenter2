@@ -2,13 +2,14 @@ package com.matejdro.pebblenotificationcenter
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matejdro.pebblenotificationcenter.navigation.keys.HomeScreenKey
 import com.matejdro.pebblenotificationcenter.navigation.keys.OnboardingKey
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleListScreenKey
+import com.matejdro.pebblenotificationcenter.notification.NotificationServiceStatus
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,20 +21,24 @@ import si.inova.kotlinova.navigation.screenkeys.ScreenKey
 @AssistedInject
 class MainViewModel(
    private val preferences: DataStore<Preferences>,
+   private val notificationServiceStatus: NotificationServiceStatus,
 ) : ViewModel() {
    private val _startingScreens = MutableStateFlow<List<ScreenKey>?>(null)
    val startingScreens: StateFlow<List<ScreenKey>?> = _startingScreens
 
    init {
       viewModelScope.launch {
-         _startingScreens.value = if (preferences.data.first()[onboardingShown] == true) {
+         _startingScreens.value = if (
+            notificationServiceStatus.isPermissionGranted() &&
+            preferences.data.first()[onboardingShownVersion] == LATEST_VERSION
+         ) {
             listOf(HomeScreenKey, RuleListScreenKey)
          } else {
             listOf(OnboardingKey)
          }
 
          preferences.edit {
-            it[onboardingShown] = true
+            it[onboardingShownVersion] = LATEST_VERSION
          }
       }
    }
@@ -44,4 +49,5 @@ class MainViewModel(
    }
 }
 
-private val onboardingShown = booleanPreferencesKey("onboarding_shown")
+private const val LATEST_VERSION = 1
+private val onboardingShownVersion = intPreferencesKey("onboarding_shown_version")

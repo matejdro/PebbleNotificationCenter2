@@ -15,10 +15,12 @@ android {
 }
 
 dependencies {
-   implementation(projects.commonCompose)
+   api(projects.notification.api)
    api(libs.kotlinova.navigation)
 
+   implementation(projects.commonCompose)
    implementation(libs.accompanist.permissions)
+   implementation(libs.androidx.core)
    implementation(libs.androidx.compose.material3.sizeClasses)
    implementation(libs.kotlinova.core)
 }
