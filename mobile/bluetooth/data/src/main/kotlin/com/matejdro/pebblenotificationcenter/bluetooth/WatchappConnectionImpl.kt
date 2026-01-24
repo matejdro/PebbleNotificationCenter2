@@ -66,6 +66,8 @@ class WatchappConnectionImpl(
                data.requireUint(2u).toInt()
             )
 
+            logcat { "Action handling success: $success" }
+
             if (success) ReceiveResult.Ack else ReceiveResult.Nack
          }
 
