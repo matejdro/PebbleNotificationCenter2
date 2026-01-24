@@ -62,7 +62,7 @@ class NotificationService : NotificationListenerService() {
             notificationProcessor.onNotificationsCleared()
             for (sbn in activeNotifications) {
                if (!sbn.shouldShow()) {
-                  logcat { "Skipping notification ${sbn.key} ${sbn.key}" }
+                  logcat { "Skipping notification ${sbn.key}" }
                   continue
                }
 
