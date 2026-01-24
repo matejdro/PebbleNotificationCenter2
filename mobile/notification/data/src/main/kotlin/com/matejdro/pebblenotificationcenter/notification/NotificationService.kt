@@ -68,7 +68,7 @@ class NotificationService : NotificationListenerService() {
 
                val parsed = parseNotification(sbn)
                if (parsed != null) {
-                  notificationProcessor.onNotificationPosted(parsed)
+                  notificationProcessor.onNotificationPosted(parsed, suppressVibration = true)
                } else {
                   logcat { "Notification ${sbn.key} has no text. Skipping..." }
                }

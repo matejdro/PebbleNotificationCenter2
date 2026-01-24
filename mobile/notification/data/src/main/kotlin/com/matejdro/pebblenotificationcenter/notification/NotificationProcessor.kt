@@ -26,7 +26,7 @@ class NotificationProcessor(
 
    private var nextVibration: AtomicReference<IntArray?> = AtomicReference(null)
 
-   suspend fun onNotificationPosted(parsedNotification: ParsedNotification) {
+   suspend fun onNotificationPosted(parsedNotification: ParsedNotification, suppressVibration: Boolean = false) {
       val actions = listOf<Action>(
          Action.Dismiss(context.getString(R.string.dismiss)),
       )
@@ -37,8 +37,13 @@ class NotificationProcessor(
       notifications[bucketId] = processedNotification
       notificationsByKey[parsedNotification.key] = processedNotification
 
-      logcat { "Notification flags: silent=${parsedNotification.isSilent} dnd=${parsedNotification.isFilteredByDoNotDisturb}" }
-      if (!parsedNotification.isSilent && !parsedNotification.isFilteredByDoNotDisturb) {
+      logcat {
+         "Notification flags: " +
+            "suppress=$suppressVibration " +
+            "silent=${parsedNotification.isSilent} " +
+            "dnd=${parsedNotification.isFilteredByDoNotDisturb}"
+      }
+      if (!suppressVibration && !parsedNotification.isSilent && !parsedNotification.isFilteredByDoNotDisturb) {
          nextVibration.set(
             // Until settings are there, just hardcode jackhammer
             @Suppress("MagicNumber")

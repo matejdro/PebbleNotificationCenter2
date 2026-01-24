@@ -222,4 +222,23 @@ class NotificationProcessorTest {
       openController.watchappOpened shouldBe true
       processor.pollNextVibration().shouldNotBeNull()
    }
+
+   @Test
+   fun `It should not vibrate for the loud notifications with the suppress flag on`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isSilent = false,
+      )
+
+      processor.onNotificationPosted(notification, suppressVibration = true)
+
+      openController.watchappOpened shouldBe false
+      processor.pollNextVibration() shouldBe null
+   }
 }
