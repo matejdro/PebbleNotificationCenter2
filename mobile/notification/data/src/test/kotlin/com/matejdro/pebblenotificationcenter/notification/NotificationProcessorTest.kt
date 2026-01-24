@@ -185,6 +185,26 @@ class NotificationProcessorTest {
    }
 
    @Test
+   fun `It should not vibrate for the loud but filtered by dnd notifications by default`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isSilent = false,
+         isFilteredByDoNotDisturb = true
+      )
+
+      processor.onNotificationPosted(notification)
+
+      openController.watchappOpened shouldBe false
+      processor.pollNextVibration() shouldBe null
+   }
+
+   @Test
    fun `It should vibrate for the non-silent notifications by default`() = runTest {
       val notification = ParsedNotification(
          "key",

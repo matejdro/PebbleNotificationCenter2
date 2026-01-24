@@ -7,6 +7,7 @@ import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 import com.matejdro.pebblenotificationcenter.common.di.NavigationInjectingApplication
 import com.matejdro.pebblenotificationcenter.notification.di.NotificationInject
+import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.parsing.NotificationParser
 import dev.zacsweers.metro.Inject
 import dispatch.core.DefaultCoroutineScope
@@ -65,7 +66,7 @@ class NotificationService : NotificationListenerService() {
                   continue
                }
 
-               val parsed = notificationParser.parse(sbn, getNotificationChannel(sbn))
+               val parsed = parseNotification(sbn)
                if (parsed != null) {
                   notificationProcessor.onNotificationPosted(parsed)
                } else {
@@ -81,7 +82,7 @@ class NotificationService : NotificationListenerService() {
       coroutineScope.launch {
          mutex.withLock {
             if (sbn.shouldShow()) {
-               val parsed = notificationParser.parse(sbn, getNotificationChannel(sbn))
+               val parsed = parseNotification(sbn)
                if (parsed == null) {
                   logcat { "Notification ${sbn.key} has no text. Skipping..." }
                   return@launch
@@ -95,6 +96,13 @@ class NotificationService : NotificationListenerService() {
             }
          }
       }
+   }
+
+   private fun parseNotification(sbn: StatusBarNotification): ParsedNotification? {
+      val ranking = Ranking()
+      currentRanking.getRanking(sbn.key, ranking)
+
+      return notificationParser.parse(sbn, getNotificationChannel(sbn), ranking)
    }
 
    override fun onNotificationRemoved(sbn: StatusBarNotification) {

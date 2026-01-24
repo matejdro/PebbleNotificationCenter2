@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
@@ -14,7 +15,11 @@ import java.time.Instant
 class NotificationParser(
    private val appNameProvider: AppNameProvider,
 ) {
-   fun parse(sbn: StatusBarNotification, channel: Any?): ParsedNotification? {
+   fun parse(
+      sbn: StatusBarNotification,
+      channel: Any?,
+      ranking: NotificationListenerService.Ranking? = null,
+   ): ParsedNotification? {
       val notification = sbn.notification
       val extras = notification.extras
       val subtitle = (
@@ -61,6 +66,7 @@ class NotificationParser(
          updatedText.orEmpty(),
          Instant.ofEpochMilli(sbn.postTime),
          isSilent = isSilent,
+         isFilteredByDoNotDisturb = ranking?.matchesInterruptionFilter() == false
       )
    }
 

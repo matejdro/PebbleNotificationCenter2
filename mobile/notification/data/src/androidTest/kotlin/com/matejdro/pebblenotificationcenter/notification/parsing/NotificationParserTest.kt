@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Parcel
 import android.os.UserHandle
+import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
@@ -386,6 +387,52 @@ class NotificationParserTest {
       )
    }
 
+   @Test
+   fun parseNotificationWithDoNotDisturb() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .build()
+
+      val ranking = NotificationListenerService.Ranking()
+      rankingInterruptionField.set(ranking, false)
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel(), ranking) shouldBe
+         ParsedNotification(
+            "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+            TEST_PACKAGE,
+            "SMS App",
+            "Title",
+            "Description",
+            Instant.ofEpochMilli(0L),
+            isFilteredByDoNotDisturb = true,
+         )
+   }
+
+   @Test
+   fun parseNotificationExcludedFromDoNotDisturb() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .build()
+
+      val ranking = NotificationListenerService.Ranking()
+      rankingInterruptionField.set(ranking, true)
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel(), ranking) shouldBe
+         ParsedNotification(
+            "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+            TEST_PACKAGE,
+            "SMS App",
+            "Title",
+            "Description",
+            Instant.ofEpochMilli(0L),
+            isFilteredByDoNotDisturb = false,
+         )
+   }
+
    private fun createDefaultSilentChannel(): Any? {
       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
          return null
@@ -412,3 +459,7 @@ private fun Notification.toSbn(id: Int = 0, tag: String? = null, timestamp: Long
 }
 
 private const val TEST_PACKAGE = "com.matejdro.pebblenotificationcenter.notification.parsing"
+
+private val rankingInterruptionField = NotificationListenerService.Ranking::class.java
+   .getDeclaredField("mMatchesInterruptionFilter")
+   .apply { isAccessible = true }

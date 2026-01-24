@@ -37,8 +37,8 @@ class NotificationProcessor(
       notifications[bucketId] = processedNotification
       notificationsByKey[parsedNotification.key] = processedNotification
 
-      logcat { "Is notification silent: ${parsedNotification.isSilent}" }
-      if (!parsedNotification.isSilent) {
+      logcat { "Notification flags: silent=${parsedNotification.isSilent} dnd=${parsedNotification.isFilteredByDoNotDisturb}" }
+      if (!parsedNotification.isSilent && !parsedNotification.isFilteredByDoNotDisturb) {
          nextVibration.set(
             // Until settings are there, just hardcode jackhammer
             @Suppress("MagicNumber")

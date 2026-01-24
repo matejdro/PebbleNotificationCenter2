@@ -14,4 +14,8 @@ data class ParsedNotification(
     * When true, the notification would not vibrate and/or make sounds from the phone.
     */
    val isSilent: Boolean = true,
+   /**
+    * When true, the phone has the do not disturb on and this notification would be filtered by it
+    */
+   val isFilteredByDoNotDisturb: Boolean = false,
 )
