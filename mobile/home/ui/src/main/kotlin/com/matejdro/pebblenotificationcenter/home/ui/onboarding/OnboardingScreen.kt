@@ -279,7 +279,7 @@ private fun openSystemPermissionSettings(context: Context) {
 @FullScreenPreviews
 @Composable
 @ShowkaseComposable(group = "test")
-internal fun OnboardingContentWithWatchPairedPreview() {
+internal fun OnboardingContentPreview() {
    PreviewTheme {
       OnboardingContent(FAKE_SERVICE_STATUS, {})
    }
