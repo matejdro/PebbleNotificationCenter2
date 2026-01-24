@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -170,7 +171,14 @@ private fun NotificationAccessPermissionCompanion(
    var permissionGranted by remember { mutableStateOf(false) }
    val context = LocalContext.current
 
-   val companionManager = remember(context) { context.getSystemService<CompanionDeviceManager>()!! }
+   val inPreview = LocalInspectionMode.current
+   val companionManager = remember(context) {
+      if (inPreview) {
+         null
+      } else {
+         context.getSystemService<CompanionDeviceManager>()
+      }
+   }
 
    LifecycleResumeEffect(serviceStatus) {
       permissionGranted = serviceStatus.isPermissionGranted()
@@ -179,7 +187,7 @@ private fun NotificationAccessPermissionCompanion(
    }
 
    fun associateWithCompanionManager() {
-      companionManager.associate(
+      companionManager!!.associate(
          AssociationRequest.Builder()
             .build(),
          object : CompanionDeviceManager.Callback() {
