@@ -34,6 +34,7 @@ class NotificationProcessor(
       val bucketId = watchSyncer.syncNotification(parsedNotification)
       val processedNotification = ProcessedNotification(parsedNotification, bucketId, actions)
 
+      val previousNotification = notificationsByKey[parsedNotification.key]
       notifications[bucketId] = processedNotification
       notificationsByKey[parsedNotification.key] = processedNotification
 
@@ -43,7 +44,16 @@ class NotificationProcessor(
             "silent=${parsedNotification.isSilent} " +
             "dnd=${parsedNotification.isFilteredByDoNotDisturb}"
       }
-      if (!suppressVibration && !parsedNotification.isSilent && !parsedNotification.isFilteredByDoNotDisturb) {
+
+      val identicalText = previousNotification != null &&
+         previousNotification.systemData.title == parsedNotification.title &&
+         previousNotification.systemData.subtitle == parsedNotification.subtitle &&
+         previousNotification.systemData.body == parsedNotification.body
+
+      println("Id $identicalText $previousNotification")
+
+      val noisy = !suppressVibration && !parsedNotification.isSilent
+      if (noisy && !parsedNotification.isFilteredByDoNotDisturb && !identicalText) {
          nextVibration.set(
             // Until settings are there, just hardcode jackhammer
             @Suppress("MagicNumber")
