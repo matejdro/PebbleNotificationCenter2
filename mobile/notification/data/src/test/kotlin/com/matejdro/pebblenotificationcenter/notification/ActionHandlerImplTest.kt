@@ -1,10 +1,12 @@
 package com.matejdro.pebblenotificationcenter.notification
 
+import android.app.createPendingIntent
 import com.matejdro.pebblenotificationcenter.FakeNotificationServiceController
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeSameInstanceAs
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import java.time.Instant
@@ -88,5 +90,33 @@ class ActionHandlerImplTest {
       handler.handleAction(2, 0) shouldBe true
 
       controller.lastCancelledNotification shouldBe "keyNotification"
+   }
+
+   @Test
+   fun `Forward native action to controller`() = runTest {
+      val intent = createPendingIntent()
+
+      repo.putNotification(
+         2,
+         ProcessedNotification(
+            ParsedNotification(
+               "keyNotification",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+            ),
+            actions = listOf(
+               Action.Native("Mark as read", intent)
+            )
+         ),
+      )
+
+      controller.returnValue = true
+
+      handler.handleAction(2, 0) shouldBe true
+
+      controller.lastTriggeredIntent shouldBeSameInstanceAs intent
    }
 }

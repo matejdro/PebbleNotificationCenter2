@@ -35,6 +35,10 @@ class ActionHandlerImpl(
          is Action.Dismiss -> {
             serviceController.cancelNotification(notification.systemData.key)
          }
+
+         is Action.Native -> {
+            serviceController.triggerAction(action.intent)
+         }
       }
    }
 }
