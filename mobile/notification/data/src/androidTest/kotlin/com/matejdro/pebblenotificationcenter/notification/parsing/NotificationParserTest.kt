@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Parcel
@@ -11,9 +12,12 @@ import android.os.UserHandle
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
+import androidx.core.app.PendingIntentCompat
 import androidx.core.app.Person
 import androidx.test.core.app.ApplicationProvider
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.AssumptionViolatedException
 import org.junit.Test
@@ -475,6 +479,31 @@ class NotificationParserTest {
       )
    }
 
+   @Test
+   fun parseActions() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .addAction(
+            123,
+            "Action 1",
+            PendingIntentCompat.getActivity(context, 0, Intent(), 0, false)
+         )
+         .addAction(
+            123,
+            "Action 2",
+            PendingIntentCompat.getActivity(context, 0, Intent(), 0, false)
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
+         .shouldNotBeNull()
+         .nativeActions
+         .map { it.text }
+         .shouldContainExactly("Action 1", "Action 2")
+   }
 
    private fun createDefaultSilentChannel(): Any? {
       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {

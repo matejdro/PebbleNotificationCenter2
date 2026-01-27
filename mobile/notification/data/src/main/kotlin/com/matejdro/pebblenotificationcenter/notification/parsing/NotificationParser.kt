@@ -7,6 +7,7 @@ import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
+import com.matejdro.pebblenotificationcenter.notification.model.NativeAction
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import dev.zacsweers.metro.Inject
 import java.time.Instant
@@ -44,7 +45,8 @@ class NotificationParser(
          text.orEmpty(),
          Instant.ofEpochMilli(timestampMillis),
          isSilent = isSilent,
-         isFilteredByDoNotDisturb = ranking?.matchesInterruptionFilter() == false
+         isFilteredByDoNotDisturb = ranking?.matchesInterruptionFilter() == false,
+         nativeActions = notification.parseActions()
       )
    }
 
@@ -123,6 +125,12 @@ class NotificationParser(
       val textLines = extras.getCharSequenceArray(NotificationCompat.EXTRA_TEXT_LINES) ?: return null
 
       return textLines.joinToString("\n")
+   }
+
+   private fun Notification.parseActions(): List<NativeAction> {
+      return actions.orEmpty().map { action ->
+         NativeAction(action.title.toString(), action.actionIntent)
+      }
    }
 
    private fun CharSequence.removeUselessCharacaters(): String {
