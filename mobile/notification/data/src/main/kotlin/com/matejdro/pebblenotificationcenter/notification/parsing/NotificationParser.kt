@@ -21,8 +21,37 @@ class NotificationParser(
       ranking: NotificationListenerService.Ranking? = null,
    ): ParsedNotification? {
       val notification = sbn.notification
-      val extras = notification.extras
       val title = appNameProvider.getAppName(sbn.packageName)
+
+      val (subtitle, text) = parseSubtitleAndBody(notification)
+
+      if (subtitle.isBlank() && text.isNullOrBlank()) {
+         return null
+      }
+
+      val isSilent = getIsSilent(notification, channel)
+
+      val timestampMillis = if (NotificationCompat.getShowWhen(notification)) {
+         notification.`when`
+      } else {
+         sbn.postTime
+      }
+      return ParsedNotification(
+         sbn.key,
+         sbn.packageName,
+         title,
+         subtitle,
+         text.orEmpty(),
+         Instant.ofEpochMilli(timestampMillis),
+         isSilent = isSilent,
+         isFilteredByDoNotDisturb = ranking?.matchesInterruptionFilter() == false
+      )
+   }
+
+   private fun parseSubtitleAndBody(
+      notification: Notification,
+   ): Pair<String, String?> {
+      val extras = notification.extras
 
       val subtitle = (
          extras.getCharSequence(NotificationCompat.EXTRA_CONVERSATION_TITLE)
@@ -52,28 +81,7 @@ class NotificationParser(
          updatedSubtitle = subtitle
          updatedText = text
       }
-
-      if (updatedSubtitle.isBlank() && updatedText.isNullOrBlank()) {
-         return null
-      }
-
-      val isSilent = getIsSilent(notification, channel)
-
-      val timestampMillis = if (NotificationCompat.getShowWhen(notification)) {
-         notification.`when`
-      } else {
-         sbn.postTime
-      }
-      return ParsedNotification(
-         sbn.key,
-         sbn.packageName,
-         title,
-         updatedSubtitle,
-         updatedText.orEmpty(),
-         Instant.ofEpochMilli(timestampMillis),
-         isSilent = isSilent,
-         isFilteredByDoNotDisturb = ranking?.matchesInterruptionFilter() == false
-      )
+      return Pair(updatedSubtitle, updatedText)
    }
 
    private fun getIsSilent(notification: Notification, channel: Any?): Boolean {
