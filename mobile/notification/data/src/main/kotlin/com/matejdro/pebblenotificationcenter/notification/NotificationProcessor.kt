@@ -27,9 +27,7 @@ class NotificationProcessor(
    private var nextVibration: AtomicReference<IntArray?> = AtomicReference(null)
 
    suspend fun onNotificationPosted(parsedNotification: ParsedNotification, suppressVibration: Boolean = false) {
-      val actions = listOf<Action>(
-         Action.Dismiss(context.getString(R.string.dismiss)),
-      )
+      val actions = processActions(parsedNotification)
 
       val bucketId = watchSyncer.syncNotification(parsedNotification)
       val processedNotification = ProcessedNotification(parsedNotification, bucketId, actions)
@@ -50,8 +48,6 @@ class NotificationProcessor(
          previousNotification.systemData.subtitle == parsedNotification.subtitle &&
          previousNotification.systemData.body == parsedNotification.body
 
-      println("Id $identicalText $previousNotification")
-
       val noisy = !suppressVibration && !parsedNotification.isSilent
       if (noisy && !parsedNotification.isFilteredByDoNotDisturb && !identicalText) {
          nextVibration.set(
@@ -61,6 +57,16 @@ class NotificationProcessor(
          )
          openController.openWatchapp()
       }
+   }
+
+   private fun processActions(parsedNotification: ParsedNotification): List<Action> {
+      val defaultActions = listOf<Action>(
+         Action.Dismiss(context.getString(R.string.dismiss)),
+      )
+
+      val nativeActions = parsedNotification.nativeActions.map { Action.Native(it.text, it.pendingIntent) }
+
+      return defaultActions + nativeActions
    }
 
    suspend fun onNotificationDismissed(key: String) {

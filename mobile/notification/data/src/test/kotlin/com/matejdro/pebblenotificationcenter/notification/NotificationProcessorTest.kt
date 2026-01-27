@@ -1,8 +1,10 @@
 package com.matejdro.pebblenotificationcenter.notification
 
+import android.app.createPendingIntent
 import com.matejdro.pebblenotificationcenter.bluetooth.FakeWatchSyncer
 import com.matejdro.pebblenotificationcenter.bluetooth.FakeWatchappOpenController
 import com.matejdro.pebblenotificationcenter.notification.model.Action
+import com.matejdro.pebblenotificationcenter.notification.model.NativeAction
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldContainExactly
@@ -262,5 +264,33 @@ class NotificationProcessorTest {
       processor.onNotificationPosted(notification)
       openController.watchappOpened shouldBe false
       processor.pollNextVibration() shouldBe null
+   }
+
+   @Test
+   fun `It should return parsed native actions`() = runTest {
+      val intent1 = createPendingIntent()
+      val intent2 = createPendingIntent()
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         nativeActions = listOf(
+            NativeAction("Action 1", intent1),
+            NativeAction("Action 2", intent2),
+         )
+      )
+
+      processor.onNotificationPosted(notification)
+
+      processor.getNotification(1)?.actions.orEmpty() shouldBe listOf(
+         Action.Dismiss("Dismiss"),
+         Action.Native("Action 1", intent1),
+         Action.Native("Action 2", intent2),
+      )
    }
 }
