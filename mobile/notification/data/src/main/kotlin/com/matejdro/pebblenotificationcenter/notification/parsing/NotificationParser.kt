@@ -22,6 +22,8 @@ class NotificationParser(
    ): ParsedNotification? {
       val notification = sbn.notification
       val extras = notification.extras
+      val title = appNameProvider.getAppName(sbn.packageName)
+
       val subtitle = (
          extras.getCharSequence(NotificationCompat.EXTRA_CONVERSATION_TITLE)
             ?: extras.getCharSequence(NotificationCompat.EXTRA_HIDDEN_CONVERSATION_TITLE)
@@ -29,7 +31,6 @@ class NotificationParser(
             ?: extras.getCharSequence(NotificationCompat.EXTRA_TITLE_BIG)
          )?.removeUselessCharacaters().orEmpty()
 
-      val title = appNameProvider.getAppName(sbn.packageName)
       val text =
          (
             notification.parseMessagingStyle()
@@ -58,13 +59,18 @@ class NotificationParser(
 
       val isSilent = getIsSilent(notification, channel)
 
+      val timestampMillis = if (NotificationCompat.getShowWhen(notification)) {
+         notification.`when`
+      } else {
+         sbn.postTime
+      }
       return ParsedNotification(
          sbn.key,
          sbn.packageName,
          title,
          updatedSubtitle,
          updatedText.orEmpty(),
-         Instant.ofEpochMilli(sbn.postTime),
+         Instant.ofEpochMilli(timestampMillis),
          isSilent = isSilent,
          isFilteredByDoNotDisturb = ranking?.matchesInterruptionFilter() == false
       )

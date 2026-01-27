@@ -30,6 +30,7 @@ class NotificationParserTest {
          .setContentTitle("Title")
          .setContentText("Description")
          .setSmallIcon(0)
+         .setShowWhen(false)
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
@@ -47,6 +48,7 @@ class NotificationParserTest {
       val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setContentText("Description")
          .setSmallIcon(0)
+         .setShowWhen(false)
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
@@ -63,6 +65,7 @@ class NotificationParserTest {
    fun returnNullWhenNotificationHasNoParsableProperties() {
       val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setSmallIcon(0)
+         .setShowWhen(false)
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe null
@@ -75,6 +78,7 @@ class NotificationParserTest {
          .setContentText("Description")
          .setStyle(NotificationCompat.BigTextStyle().bigText("Long description"))
          .setSmallIcon(0)
+         .setShowWhen(false)
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
@@ -100,6 +104,7 @@ class NotificationParserTest {
                )
          )
          .setSmallIcon(0)
+         .setShowWhen(false)
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
@@ -125,6 +130,7 @@ class NotificationParserTest {
                .addMessage("Message 3", 3L, Person.Builder().setName("Bob").build())
          )
          .setSmallIcon(0)
+         .setShowWhen(false)
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
@@ -150,6 +156,7 @@ class NotificationParserTest {
                .setBigContentTitle("Group Chat A")
          )
          .setSmallIcon(0)
+         .setShowWhen(false)
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
@@ -170,6 +177,7 @@ class NotificationParserTest {
          .setContentTitle("Title")
          .setContentText("Description")
          .setSmallIcon(0)
+         .setShowWhen(false)
          .build()
 
       notificationParser.parse(
@@ -191,6 +199,7 @@ class NotificationParserTest {
          .setContentTitle("A very very long long title title")
          .setContentText("Description")
          .setSmallIcon(0)
+         .setShowWhen(false)
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
@@ -209,6 +218,7 @@ class NotificationParserTest {
          .setContentTitle("\u202CTitle")
          .setContentText("\u200EDescription")
          .setSmallIcon(0)
+         .setShowWhen(false)
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
@@ -231,6 +241,7 @@ class NotificationParserTest {
          .setContentTitle("Title")
          .setContentText("Description")
          .setSmallIcon(0)
+         .setShowWhen(false)
          .setDefaults(NotificationCompat.DEFAULT_VIBRATE)
          .build()
 
@@ -255,6 +266,7 @@ class NotificationParserTest {
          .setContentTitle("Title")
          .setContentText("Description")
          .setSmallIcon(0)
+         .setShowWhen(false)
          .setDefaults(NotificationCompat.DEFAULT_SOUND)
          .build()
 
@@ -279,6 +291,7 @@ class NotificationParserTest {
          .setContentTitle("Title")
          .setContentText("Description")
          .setSmallIcon(0)
+         .setShowWhen(false)
          .setSound(Uri.parse("android.resource://dummy_uri"))
          .build()
 
@@ -303,6 +316,7 @@ class NotificationParserTest {
          .setContentTitle("Title")
          .setContentText("Description")
          .setSmallIcon(0)
+         .setShowWhen(false)
          .setVibrate(longArrayOf(1, 1, 1, 1))
          .build()
 
@@ -331,6 +345,7 @@ class NotificationParserTest {
          .setContentTitle("Title")
          .setContentText("Description")
          .setSmallIcon(0)
+         .setShowWhen(false)
          .build()
 
       notificationParser.parse(notification.toSbn(), channel) shouldBe ParsedNotification(
@@ -356,6 +371,7 @@ class NotificationParserTest {
          .setContentTitle("Title")
          .setContentText("Description")
          .setSmallIcon(0)
+         .setShowWhen(false)
          .build()
 
       notificationParser.parse(notification.toSbn(), channel) shouldBe ParsedNotification(
@@ -375,6 +391,7 @@ class NotificationParserTest {
          .setContentTitle("Title")
          .setContentText("Description")
          .setSmallIcon(0)
+         .setShowWhen(false)
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
@@ -393,6 +410,7 @@ class NotificationParserTest {
          .setContentTitle("Title")
          .setContentText("Description")
          .setSmallIcon(0)
+         .setShowWhen(false)
          .build()
 
       val ranking = NotificationListenerService.Ranking()
@@ -416,6 +434,7 @@ class NotificationParserTest {
          .setContentTitle("Title")
          .setContentText("Description")
          .setSmallIcon(0)
+         .setShowWhen(false)
          .build()
 
       val ranking = NotificationListenerService.Ranking()
@@ -432,6 +451,30 @@ class NotificationParserTest {
             isFilteredByDoNotDisturb = false,
          )
    }
+
+   @Test
+   fun prioritiseInnerTimestamp() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setWhen(4321L)
+         .setShowWhen(true)
+         .build()
+
+      notificationParser.parse(
+         notification.toSbn(id = 123, timestamp = 1234L),
+         createDefaultSilentChannel()
+      ) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|123|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(4321L)
+      )
+   }
+
 
    private fun createDefaultSilentChannel(): Any? {
       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
