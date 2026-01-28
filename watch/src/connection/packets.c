@@ -130,7 +130,7 @@ static void receive_sync_next_packet(const DictionaryIterator* iterator)
     // ReSharper disable once CppLocalVariableMayBeConst
     Tuple* dict_entry = dict_find(iterator, 1);
 
-    bucket_sync_on_start_received(dict_entry->value->data, dict_entry->length);
+    bucket_sync_on_next_packet_received(dict_entry->value->data, dict_entry->length);
 }
 
 static void receive_notification_details_text_packet(const DictionaryIterator* iterator)
