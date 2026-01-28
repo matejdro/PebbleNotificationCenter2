@@ -1,9 +1,34 @@
 #include "dots.h"
 
+#include "commons/math.h"
+
+static const uint8_t LARGE_DOT_RADIUS = 4;
+static const uint8_t SMALL_DOT_RADIUS = 3;
+#define LARGE_DOT_DIAMETER LARGE_DOT_RADIUS * 2 + 1
+#define SMALL_DOT_DIAMETER SMALL_DOT_RADIUS * 2 + 1
+static const uint8_t INTER_DOT_PADDING = 2;
+static const uint8_t ARROW_HEIGHT = 6;
+#define ARROW_WIDTH ARROW_HEIGHT / 2
+static const uint8_t ARROW_PADDING = 4;
+
+static void draw_left_arrow(const int16_t pos_x, const int16_t pos_y, GContext* ctx)
+{
+    graphics_draw_line(ctx, GPoint(pos_x, pos_y + ARROW_HEIGHT / 2), GPoint(pos_x + ARROW_WIDTH, pos_y));
+    graphics_draw_line(ctx, GPoint(pos_x, pos_y + ARROW_HEIGHT / 2), GPoint(pos_x + ARROW_WIDTH, pos_y + ARROW_HEIGHT));
+}
+
+static void draw_right_arrow(const int16_t pos_x, const int16_t pos_y, GContext* ctx)
+{
+    graphics_draw_line(ctx, GPoint(pos_x, pos_y), GPoint(pos_x + ARROW_WIDTH, pos_y + ARROW_HEIGHT / 2));
+    graphics_draw_line(ctx, GPoint(pos_x, pos_y + ARROW_HEIGHT), GPoint(pos_x + ARROW_WIDTH, pos_y + ARROW_HEIGHT / 2));
+}
+
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
 static void dots_layer_paint(Layer* layer, GContext* ctx)
 {
     const DotsLayer* dots_layer = *((DotsLayer**)layer_get_data(layer));
 
+    graphics_context_set_antialiased(ctx, true);
     graphics_context_set_fill_color(ctx, GColorWhite);
 
     const uint8_t number_of_dots = dots_layer->number_of_dots;
@@ -13,47 +38,64 @@ static void dots_layer_paint(Layer* layer, GContext* ctx)
     const uint16_t available_space_per_dot = width / number_of_dots;
 
     uint8_t radius;
-    uint8_t padding;
 
-    if (available_space_per_dot >= 11)
+    if (available_space_per_dot >= LARGE_DOT_DIAMETER * 2 + INTER_DOT_PADDING)
     {
-        radius = 4;
-        padding = 2;
-    }
-    else if (available_space_per_dot >= 9)
-    {
-        radius = 3;
-        padding = 2;
-    }
-    else if (available_space_per_dot >= 6)
-    {
-        radius = 2;
-        padding = 1;
+        radius = LARGE_DOT_RADIUS;
     }
     else
     {
-        radius = 1;
-        padding = 1;
+        radius = SMALL_DOT_RADIUS;
     }
 
-    const uint8_t total_width_per_Dot = radius * 2 + 1 + padding;
+    const uint8_t total_width_per_Dot = radius * 2 + 1 + INTER_DOT_PADDING;
 
 
     const GColor circlesColor = GColorWhite;
     graphics_context_set_stroke_color(ctx, circlesColor);
     graphics_context_set_fill_color(ctx, circlesColor);
 
-    uint16_t x = radius;
+    const bool paginated = dots_layer->number_of_dots > dots_layer->max_dots_without_pages;
 
-    for (int i = 0; i < number_of_dots; i++)
+    uint16_t x = 0;
+
+    if (paginated)
+    {
+        x += INTER_DOT_PADDING;
+        if (dots_layer->current_page_first_dot_index != 0)
+        {
+            draw_left_arrow(x, dots_layer->bounds.size.h / 2 - ARROW_HEIGHT / 2, ctx);
+        }
+        x += ARROW_WIDTH + ARROW_PADDING + radius;
+    }
+    else
+    {
+        x += radius;
+    }
+
+    uint8_t draw_until;
+    if (paginated)
+    {
+        draw_until = MIN(dots_layer->current_page_first_dot_index + dots_layer->max_dots_per_page, dots_layer->number_of_dots);
+    }
+    else
+    {
+        draw_until = dots_layer->number_of_dots;
+    }
+
+    for (int i = dots_layer->current_page_first_dot_index; i < draw_until; i++)
     {
         if (selected_dot == i)
-            graphics_fill_circle(ctx, GPoint(x, 8), radius);
-            // graphics_fill_rect(ctx, GRect(x - radius, 8 - radius, radius * 2 + 1, radius * 2 + 1), 0, GCornerNone);
-        else
             graphics_draw_circle(ctx, GPoint(x, 8), radius);
+        else
+            graphics_fill_circle(ctx, GPoint(x, 8), radius);
 
         x += total_width_per_Dot;
+    }
+
+    if (paginated && draw_until < dots_layer->number_of_dots)
+    {
+        draw_right_arrow(x + ARROW_PADDING - INTER_DOT_PADDING - radius, dots_layer->bounds.size.h / 2 - ARROW_HEIGHT / 2, ctx);
     }
 }
 
@@ -65,6 +107,10 @@ DotsLayer* dots_layer_create(const GRect bounds)
     DotsLayer** layer_data = layer_get_data(dots->layer);
     *layer_data = dots;
 
+    const uint16_t width = bounds.size.w;
+    dots->max_dots_without_pages = (width + INTER_DOT_PADDING) / (SMALL_DOT_DIAMETER + INTER_DOT_PADDING);
+    dots->max_dots_per_page = (width - ARROW_WIDTH * 2 - ARROW_PADDING * 2) / (SMALL_DOT_DIAMETER + INTER_DOT_PADDING);
+
     layer_set_update_proc(dots->layer, dots_layer_paint);
 
     dots->bounds = bounds;
@@ -72,15 +118,51 @@ DotsLayer* dots_layer_create(const GRect bounds)
     return dots;
 }
 
+static void fix_pages(DotsLayer* layer)
+{
+    if (layer->number_of_dots <= layer->max_dots_without_pages)
+    {
+        layer->current_page_first_dot_index = 0;
+    }
+    else if (layer->selected_dot < layer->current_page_first_dot_index)
+    {
+        const uint8_t first_page_end = layer->max_dots_per_page;
+
+        if (layer->selected_dot < first_page_end)
+        {
+            layer->current_page_first_dot_index = 0;
+        }
+        else
+        {
+            layer->current_page_first_dot_index = MAX(layer->selected_dot - layer->max_dots_per_page / 2, 0);
+        }
+    }
+    else if (layer->selected_dot >= layer->current_page_first_dot_index + layer->max_dots_per_page)
+    {
+        const uint8_t last_page_start = layer->number_of_dots - layer->max_dots_per_page;
+
+        if (layer->selected_dot >= last_page_start)
+        {
+            layer->current_page_first_dot_index = last_page_start;
+        }
+        else
+        {
+            layer->current_page_first_dot_index = MAX(layer->selected_dot - layer->max_dots_per_page / 2, 0);
+        }
+    }
+}
+
 void dots_layer_set_selected_dot(DotsLayer* layer, const uint8_t selected_dot)
 {
     layer->selected_dot = selected_dot;
+    fix_pages(layer);
     layer_mark_dirty(layer->layer);
 }
 
 void dots_layer_set_number_of_dots(DotsLayer* layer, const uint8_t number_of_dots)
 {
     layer->number_of_dots = number_of_dots;
+    fix_pages(layer);
     layer_mark_dirty(layer->layer);
 }
 

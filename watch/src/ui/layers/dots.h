@@ -6,6 +6,9 @@ typedef struct
     Layer* layer;
     uint8_t selected_dot;
     uint8_t number_of_dots;
+    uint8_t current_page_first_dot_index;
+    uint8_t max_dots_without_pages;
+    uint8_t max_dots_per_page;
     GRect bounds;
 } DotsLayer;
 
