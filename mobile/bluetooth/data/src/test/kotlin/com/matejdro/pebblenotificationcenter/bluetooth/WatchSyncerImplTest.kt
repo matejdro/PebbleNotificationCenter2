@@ -5,6 +5,7 @@ import com.matejdro.bucketsync.FakeBucketSyncRepository
 import com.matejdro.bucketsync.api.Bucket
 import com.matejdro.bucketsync.api.BucketUpdate
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -266,4 +267,8 @@ class WatchSyncerImplTest {
    private suspend fun init() {
       bucketSyncRepository.init(1, 2..BucketSyncRepository.MAX_BUCKET_ID)
    }
+}
+
+private suspend fun WatchSyncer.syncNotification(parsedNotification: ParsedNotification): Int {
+   return syncNotification(ProcessedNotification(parsedNotification))
 }

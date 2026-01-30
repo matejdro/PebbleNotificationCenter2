@@ -1,6 +1,6 @@
 package com.matejdro.pebblenotificationcenter.bluetooth
 
-import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 
 interface WatchSyncer {
    suspend fun init()
@@ -11,5 +11,5 @@ interface WatchSyncer {
    /**
     * @return bucket id of the notification
     */
-   suspend fun syncNotification(notification: ParsedNotification): Int
+   suspend fun syncNotification(notification: ProcessedNotification): Int
 }

@@ -45,7 +45,7 @@ class NotificationProcessorTest {
 
       processor.onNotificationPosted(notification)
 
-      watchSyncer.syncedNotifications.shouldContainExactly(notification)
+      watchSyncer.syncedNotifications.map { it.systemData }.shouldContainExactly(notification)
    }
 
    @Test

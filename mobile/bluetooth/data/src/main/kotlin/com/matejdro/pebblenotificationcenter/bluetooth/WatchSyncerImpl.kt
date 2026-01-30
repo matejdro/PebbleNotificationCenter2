@@ -5,7 +5,7 @@ import com.matejdro.bucketsync.BucketSyncRepository.Companion.MAX_BUCKET_ID
 import com.matejdro.pebble.bluetooth.common.util.LimitingStringEncoder
 import com.matejdro.pebble.bluetooth.common.util.writeUByte
 import com.matejdro.pebble.bluetooth.common.util.writeUInt
-import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -29,16 +29,17 @@ class WatchSyncerImpl(
       }
    }
 
-   override suspend fun syncNotification(notification: ParsedNotification): Int {
+   override suspend fun syncNotification(notification: ProcessedNotification): Int {
       val buffer = Buffer()
 
-      logcat { "Syncing notification ${notification.key} ${notification.title}" }
+      val notificationData = notification.systemData
+      logcat { "Syncing notification ${notificationData.key} ${notificationData.title}" }
 
-      val epochSecond = notification.timestamp.epochSecond
+      val epochSecond = notificationData.timestamp.epochSecond
       buffer.writeUInt(epochSecond.toUInt())
       buffer.write(
          utf8Encoder.encodeSizeLimited(
-            notification.title,
+            notificationData.title,
             MAX_TITLE_TEXT_LENGTH,
             true
          ).encodedString
@@ -46,7 +47,7 @@ class WatchSyncerImpl(
       buffer.writeUByte(0u)
       buffer.write(
          utf8Encoder.encodeSizeLimited(
-            notification.subtitle,
+            notificationData.subtitle,
             MAX_TITLE_TEXT_LENGTH,
             true
          ).encodedString
@@ -55,13 +56,13 @@ class WatchSyncerImpl(
       val leftoverSize = BucketSyncRepository.MAX_BUCKET_SIZE_BYTES - buffer.size.toInt()
       buffer.write(
          utf8Encoder.encodeSizeLimited(
-            notification.body,
+            notificationData.body,
             leftoverSize,
             true
          ).encodedString
       )
 
-      val id = bucketSyncRepository.updateBucketDynamic(notification.key, buffer.readByteArray(), sortKey = -epochSecond)
+      val id = bucketSyncRepository.updateBucketDynamic(notificationData.key, buffer.readByteArray(), sortKey = -epochSecond)
 
       logcat { "Synced" }
 

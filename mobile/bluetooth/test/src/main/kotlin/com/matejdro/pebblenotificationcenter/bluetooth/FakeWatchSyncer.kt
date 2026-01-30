@@ -1,9 +1,9 @@
 package com.matejdro.pebblenotificationcenter.bluetooth
 
-import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 
 class FakeWatchSyncer : WatchSyncer {
-   val syncedNotifications = mutableListOf<ParsedNotification>()
+   val syncedNotifications = mutableListOf<ProcessedNotification>()
    val clearedNotifications = mutableListOf<String>()
    var clearAllCalled = false
 
@@ -20,7 +20,7 @@ class FakeWatchSyncer : WatchSyncer {
       clearedNotifications.add(key)
    }
 
-   override suspend fun syncNotification(notification: ParsedNotification): Int {
+   override suspend fun syncNotification(notification: ProcessedNotification): Int {
       syncedNotifications.add(notification)
       return nextBucketId++
    }

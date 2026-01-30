@@ -29,8 +29,10 @@ class NotificationProcessor(
    suspend fun onNotificationPosted(parsedNotification: ParsedNotification, suppressVibration: Boolean = false) {
       val actions = processActions(parsedNotification)
 
-      val bucketId = watchSyncer.syncNotification(parsedNotification)
-      val processedNotification = ProcessedNotification(parsedNotification, bucketId, actions)
+      val initialProcessedNotification = ProcessedNotification(parsedNotification, 0, actions)
+      val bucketId = watchSyncer.syncNotification(initialProcessedNotification)
+
+      val processedNotification = initialProcessedNotification.copy(bucketId = bucketId)
 
       val previousNotification = notificationsByKey[parsedNotification.key]
       notifications[bucketId] = processedNotification
