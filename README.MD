@@ -47,16 +47,16 @@ If an indicator is filled with black color, it indicates the currently selected 
 
 ### Why is the app buzzing at me?
 
-### While attempting to open actions menu
+#### While attempting to open actions menu
 
 * Double buzz - Either the actions menu is still loading or the phone is disconnected (check the status icon). If former, this usually takes a very short amount of time, so you can usually retry immediately.
 
-### While triggering a notification action
+#### While triggering a notification action
 
 * Double buzz - Trigger failed. That usually means the phone got disconnected (check the status icon).
 * Single buzz - Action triggered successfuly
 
-### While not pressing anything
+#### While not pressing anything
 
 * Double buzz - Phone got disconnected from the watch while the app was open (check the status icon).
 
