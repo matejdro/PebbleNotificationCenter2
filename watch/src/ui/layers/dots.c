@@ -1,15 +1,21 @@
 #include "dots.h"
 
+#include "../../../build/basalt/src/resource_ids.auto.h"
 #include "commons/math.h"
 
-static const uint8_t LARGE_DOT_RADIUS = 4;
-static const uint8_t SMALL_DOT_RADIUS = 3;
+#define LARGE_DOT_RADIUS 4
+#define SMALL_DOT_RADIUS 3
 #define LARGE_DOT_DIAMETER LARGE_DOT_RADIUS * 2 + 1
 #define SMALL_DOT_DIAMETER SMALL_DOT_RADIUS * 2 + 1
-static const uint8_t INTER_DOT_PADDING = 2;
-static const uint8_t ARROW_HEIGHT = 6;
+#define INTER_DOT_PADDING 2
+#define ARROW_HEIGHT 6
 #define ARROW_WIDTH ARROW_HEIGHT / 2
-static const uint8_t ARROW_PADDING = 4;
+#define ARROW_PADDING 4
+
+static GBitmap* indicator_unread_large = NULL;
+static GBitmap* indicator_unread_large_selected = NULL;
+static GBitmap* indicator_unread_small = NULL;
+static GBitmap* indicator_unread_small_selected = NULL;
 
 static void draw_left_arrow(const int16_t pos_x, const int16_t pos_y, GContext* ctx)
 {
@@ -48,12 +54,9 @@ static void dots_layer_paint(Layer* layer, GContext* ctx)
         radius = SMALL_DOT_RADIUS;
     }
 
-    const uint8_t total_width_per_Dot = radius * 2 + 1 + INTER_DOT_PADDING;
+    const uint8_t diameter = radius * 2 + 1;
+    const uint8_t total_width_per_Dot = diameter + INTER_DOT_PADDING;
 
-
-    const GColor circlesColor = GColorWhite;
-    graphics_context_set_stroke_color(ctx, circlesColor);
-    graphics_context_set_fill_color(ctx, circlesColor);
 
     const bool paginated = dots_layer->number_of_dots > dots_layer->max_dots_without_pages;
 
@@ -64,6 +67,7 @@ static void dots_layer_paint(Layer* layer, GContext* ctx)
         x += INTER_DOT_PADDING;
         if (dots_layer->current_page_first_dot_index != 0)
         {
+            graphics_context_set_stroke_color(ctx, GColorWhite);
             draw_left_arrow(x, dots_layer->bounds.size.h / 2 - ARROW_HEIGHT / 2, ctx);
         }
         x += ARROW_WIDTH + ARROW_PADDING + radius;
@@ -85,10 +89,65 @@ static void dots_layer_paint(Layer* layer, GContext* ctx)
 
     for (int i = dots_layer->current_page_first_dot_index; i < draw_until; i++)
     {
-        if (selected_dot == i)
-            graphics_draw_circle(ctx, GPoint(x, 8), radius);
+        GColor circlesColor;
+
+        const enum DotState state = dots_layer->dot_states[i];
+
+#ifdef  PBL_COLOR
+        if (state == UNREAD)
+        {
+            circlesColor = GColorWhite;
+        }
         else
-            graphics_fill_circle(ctx, GPoint(x, 8), radius);
+        {
+            circlesColor = GColorWhite;
+        }
+# else
+        circlesColor = GColorWhite;
+#endif
+
+        graphics_context_set_stroke_color(ctx, circlesColor);
+        graphics_context_set_fill_color(ctx, circlesColor);
+
+        if (state == UNREAD)
+        {
+            if (selected_dot == i)
+            {
+                GBitmap* indicator;
+                if (radius == SMALL_DOT_RADIUS)
+                {
+                    indicator = indicator_unread_small_selected;
+                }
+                else
+                {
+                    indicator = indicator_unread_large_selected;
+                }
+
+                graphics_draw_bitmap_in_rect(ctx, indicator,
+                                             GRect(x - radius, 8 - radius, diameter, diameter));
+            }
+            else
+            {
+                GBitmap* indicator;
+                if (radius == SMALL_DOT_RADIUS)
+                {
+                    indicator = indicator_unread_small;
+                }
+                else
+                {
+                    indicator = indicator_unread_large;
+                }
+
+                graphics_draw_bitmap_in_rect(ctx, indicator, GRect(x - radius, 8 - radius, diameter, diameter));
+            }
+        }
+        else
+        {
+            if (selected_dot == i)
+                graphics_draw_circle(ctx, GPoint(x, 8), radius);
+            else
+                graphics_fill_circle(ctx, GPoint(x, 8), radius);
+        }
 
         x += total_width_per_Dot;
     }
@@ -101,6 +160,13 @@ static void dots_layer_paint(Layer* layer, GContext* ctx)
 
 DotsLayer* dots_layer_create(const GRect bounds)
 {
+    if (indicator_unread_large == NULL)
+    {
+        indicator_unread_large = gbitmap_create_with_resource(RESOURCE_ID_INDICATOR_UNREAD_LARGE);
+        indicator_unread_large_selected = gbitmap_create_with_resource(RESOURCE_ID_INDICATOR_UNREAD_LARGE_SELECTED);
+        indicator_unread_small = gbitmap_create_with_resource(RESOURCE_ID_INDICATOR_UNREAD_SMALL);
+        indicator_unread_small_selected = gbitmap_create_with_resource(RESOURCE_ID_INDICATOR_UNREAD_SMALL_SELECTED);
+    }
     DotsLayer* dots = malloc(sizeof(DotsLayer));
 
     dots->layer = layer_create_with_data(bounds, sizeof(dots));
@@ -159,9 +225,10 @@ void dots_layer_set_selected_dot(DotsLayer* layer, const uint8_t selected_dot)
     layer_mark_dirty(layer->layer);
 }
 
-void dots_layer_set_number_of_dots(DotsLayer* layer, const uint8_t number_of_dots)
+void dots_layer_set_dots(DotsLayer* layer, const uint8_t number_of_dots, const enum DotState* states)
 {
     layer->number_of_dots = number_of_dots;
+    layer->dot_states = states;
     fix_pages(layer);
     layer_mark_dirty(layer->layer);
 }

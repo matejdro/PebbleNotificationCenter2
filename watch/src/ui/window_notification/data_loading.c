@@ -10,6 +10,8 @@
 
 static BucketList* buckets;
 
+static const uint32_t STORAGE_BUCKET_FLAGS_ID_MIN = 3000;
+
 static void apply_date_to_body()
 {
     const time_t current_unix_time = time(NULL);
@@ -84,6 +86,19 @@ static void reload_data_for_current_bucket()
 
 void window_notification_data_select_bucket_on_index(const uint8_t target_index)
 {
+    if (window_notification_data.currently_selected_bucket != 0)
+    {
+        // Update dot as read when user moves away from it
+        const uint8_t previously_selected_bucket_index = window_notification_data.currently_selected_bucket_index;
+
+        if (window_notification_data.dot_states[previously_selected_bucket_index] == UNREAD)
+        {
+            // After user switches away from "unread" notification, it should change to read
+            window_notification_data.dot_states[previously_selected_bucket_index] = NORMAL;
+            window_notification_ui_on_bucket_list_updated();
+        }
+    }
+
     uint8_t index_without_settings = 0;
 
     for (int i = 0; i < buckets->count; i++)
@@ -97,6 +112,19 @@ void window_notification_data_select_bucket_on_index(const uint8_t target_index)
                 window_notification_data.currently_selected_bucket = id;
                 window_notification_data.currently_selected_bucket_index = target_index;
                 window_notification_data.num_actions = 0;
+
+                if (!close_after_sync && window_notification_data.dot_states[target_index] == UNREAD)
+                {
+                    // After user switches away from "unread" notification, we save to storage that user has seen it
+                    // But we should not change the UI yet, as just-read notification should still have the Ui
+
+                    // This should not happen if app is just open momentarily to sync the data, as user would not have the
+                    // change to read the notification, hence the close after sync check
+
+                    const uint8_t on_watch_flags[] = {1};
+                    persist_write_data(STORAGE_BUCKET_FLAGS_ID_MIN + id, on_watch_flags, 1);
+                }
+
 
                 reload_data_for_current_bucket();
                 window_notification_ui_on_bucket_selected();
@@ -125,6 +153,19 @@ void notification_window_ingest_bucket_metadata()
     for (int i = 0; i < buckets->count; i++)
     {
         const uint8_t id = buckets->data[i].id;
+        const uint8_t flags = buckets->data[i].flags;
+
+        uint8_t on_watch_flags[] = {0};
+        persist_read_data(STORAGE_BUCKET_FLAGS_ID_MIN + id, on_watch_flags, 1);
+
+        if (flags == 1 && on_watch_flags[0] != 1)
+        {
+            window_notification_data.dot_states[count_without_settings] = UNREAD;
+        }
+        else
+        {
+            window_notification_data.dot_states[count_without_settings] = NORMAL;
+        }
 
         if (id != 1)
         {
@@ -153,6 +194,7 @@ void notification_window_ingest_bucket_metadata()
     }
 
     window_notification_data.bucket_count = count_without_settings;
+    window_notification_ui_on_bucket_list_updated();
 
     if (current_bucket_index != -1)
     {
@@ -172,7 +214,34 @@ static void on_buckets_changed()
 
 static void on_bucket_updated(const BucketMetadata bucket_metadata, void* context)
 {
-    if (bucket_metadata.id == window_notification_data.currently_selected_bucket)
+    const uint8_t new_notification_id = bucket_metadata.id;
+    persist_delete(new_notification_id + STORAGE_BUCKET_FLAGS_ID_MIN);
+
+
+    uint8_t count_without_settings = 0;
+    for (int i = 0; i < buckets->count; i++)
+    {
+        if (buckets[i].data->id == new_notification_id)
+        {
+            if (bucket_metadata.flags == 1)
+            {
+                window_notification_data.dot_states[count_without_settings] = UNREAD;
+            }
+            else
+            {
+                window_notification_data.dot_states[count_without_settings] = NORMAL;
+            }
+            window_notification_ui_on_bucket_list_updated();
+            break;
+        }
+        if (new_notification_id != 1)
+        {
+            count_without_settings++;
+        }
+    }
+
+
+    if (new_notification_id == window_notification_data.currently_selected_bucket)
     {
         reload_data_for_current_bucket();
     }
@@ -202,6 +271,15 @@ void window_notification_data_receive_more_text(const uint8_t bucket_id, const u
     window_notification_ui_redraw_scroller_content();
 }
 
+static void on_bucket_deleted(const uint8_t bucket_id)
+{
+    persist_delete(bucket_id + STORAGE_BUCKET_FLAGS_ID_MIN);
+}
+
+void window_notification_data_app_started()
+{
+    bucket_sync_register_bucket_deleted_callback(on_bucket_deleted);
+}
 
 void window_notification_data_init()
 {

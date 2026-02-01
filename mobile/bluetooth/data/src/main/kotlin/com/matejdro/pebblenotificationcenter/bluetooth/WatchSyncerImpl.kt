@@ -62,11 +62,24 @@ class WatchSyncerImpl(
          ).encodedString
       )
 
-      val id = bucketSyncRepository.updateBucketDynamic(notificationData.key, buffer.readByteArray(), sortKey = -epochSecond)
+      val flags: UByte = getNotificationFlags(notification)
+
+      val id = bucketSyncRepository.updateBucketDynamic(
+         notificationData.key,
+         buffer.readByteArray(),
+         sortKey = -epochSecond,
+         flags = flags
+      )
 
       logcat { "Synced" }
 
       return id
+   }
+
+   private fun getNotificationFlags(notification: ProcessedNotification): UByte = if (notification.unread) {
+      1u
+   } else {
+      0u
    }
 
    override suspend fun clearAllNotifications() {
@@ -76,6 +89,10 @@ class WatchSyncerImpl(
    override suspend fun clearNotification(key: String) {
       bucketSyncRepository.deleteBucketDynamic(key)
       logcat { "Deleting Notification $key from the store" }
+   }
+
+   override suspend fun prepareNotificationReadStatus(notification: ProcessedNotification) {
+      bucketSyncRepository.updateBucketFlagsSilently(notification.bucketId.toUByte(), getNotificationFlags(notification))
    }
 }
 

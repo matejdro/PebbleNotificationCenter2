@@ -23,8 +23,9 @@ typedef struct
     bool active;
 
     uint8_t currently_selected_bucket;
-    uint8_t currently_selected_bucket_index;
+    int16_t currently_selected_bucket_index;
     uint8_t bucket_count;
+    enum DotState dot_states[14];
 
     char title_text[21];
     char subtitle_text[21];
@@ -44,4 +45,5 @@ extern NotificationWindowData window_notification_data;
 void window_notification_show();
 void window_notification_ui_redraw_scroller_content();
 void window_notification_ui_on_bucket_selected();
+void window_notification_ui_on_bucket_list_updated();
 void window_notification_ui_scroll_by(int16_t amount, bool repeating);

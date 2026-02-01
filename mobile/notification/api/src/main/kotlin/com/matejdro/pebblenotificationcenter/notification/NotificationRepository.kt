@@ -5,4 +5,6 @@ import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotific
 interface NotificationRepository {
    fun getNotification(bucketId: Int): ProcessedNotification?
    fun pollNextVibration(): IntArray?
+
+   suspend fun markAsRead(bucketId: Int)
 }

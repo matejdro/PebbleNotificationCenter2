@@ -110,6 +110,12 @@ TBD
 
 ## Buckets 2-15
 
+Bucket flags:
+
+* 0x01 - When set, notification was not seen by the user yet
+
+Bucket data:
+
 * Notification receive timestamp, in unix time (uint32)
 * Notification title (string, up to 20 bytes + null terminator)
 * Notification subtitle (string, up to 20 bytes + null terminator)
@@ -129,3 +135,6 @@ TBD
 `1001` - Current version of the data on the watch (uint16)
 `1002` - Protocol version of the last data writing on the watch (uint16)
   If this changes, the watch is wiped and re-synced to the phone
+
+`3002` - `3015` - On-watch per-notification flags
+  * When flag is set to 1, it means user has already seen the notification

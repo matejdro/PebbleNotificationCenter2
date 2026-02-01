@@ -4,6 +4,7 @@
 #include "connection/notification_details_fetcher.h"
 #include "connection/packets.h"
 #include "ui/window_status.h"
+#include "ui/window_notification/data_loading.h"
 #include "ui/window_notification/window_notification.h"
 #include "utils/bucket_utils.h"
 
@@ -13,6 +14,7 @@ int main(void)
 {
     packets_init();
     bluetooth_init();
+    window_notification_data_app_started();
     bucket_sync_init();
     notification_details_fetcher_init();
 

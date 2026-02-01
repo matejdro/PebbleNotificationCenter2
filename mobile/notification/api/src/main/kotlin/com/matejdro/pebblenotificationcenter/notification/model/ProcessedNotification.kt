@@ -4,4 +4,5 @@ data class ProcessedNotification(
    val systemData: ParsedNotification,
    val bucketId: Int = 0,
    val actions: List<Action> = emptyList(),
+   val unread: Boolean = false,
 )

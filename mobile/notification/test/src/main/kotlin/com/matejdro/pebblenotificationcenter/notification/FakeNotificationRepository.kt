@@ -4,6 +4,7 @@ import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotific
 
 class FakeNotificationRepository : NotificationRepository {
    private val notifications = HashMap<Int, ProcessedNotification?>()
+   val notificationsMarkedAsRead = ArrayList<Int>()
    var nextVibration: IntArray? = null
 
    override fun getNotification(bucketId: Int): ProcessedNotification? {
@@ -18,5 +19,9 @@ class FakeNotificationRepository : NotificationRepository {
 
    fun putNotification(bucketId: Int, processedNotification: ProcessedNotification) {
       notifications[bucketId] = processedNotification
+   }
+
+   override suspend fun markAsRead(bucketId: Int) {
+      notificationsMarkedAsRead.add(bucketId)
    }
 }

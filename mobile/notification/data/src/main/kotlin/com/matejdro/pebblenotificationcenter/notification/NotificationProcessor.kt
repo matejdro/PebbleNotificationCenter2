@@ -29,7 +29,7 @@ class NotificationProcessor(
    suspend fun onNotificationPosted(parsedNotification: ParsedNotification, suppressVibration: Boolean = false) {
       val actions = processActions(parsedNotification)
 
-      val initialProcessedNotification = ProcessedNotification(parsedNotification, 0, actions)
+      val initialProcessedNotification = ProcessedNotification(parsedNotification, 0, actions, unread = !suppressVibration)
       val bucketId = watchSyncer.syncNotification(initialProcessedNotification)
 
       val processedNotification = initialProcessedNotification.copy(bucketId = bucketId)
@@ -91,7 +91,21 @@ class NotificationProcessor(
       return notifications[bucketId]
    }
 
+   fun getNotificationByKey(key: String): ProcessedNotification? {
+      return notificationsByKey[key]
+   }
+
    override fun pollNextVibration(): IntArray? {
       return nextVibration.getAndSet(null)
+   }
+
+   override suspend fun markAsRead(bucketId: Int) {
+      logcat { "Marking $bucketId as read" }
+      val notification = notifications.computeIfPresent(bucketId) { _, value ->
+         value.copy(unread = false)
+      } ?: return
+
+      notificationsByKey[notification.systemData.key] = notification
+      watchSyncer.prepareNotificationReadStatus(notification)
    }
 }

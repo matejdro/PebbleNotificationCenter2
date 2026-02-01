@@ -8,6 +8,7 @@ import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotificati
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
@@ -262,6 +263,136 @@ class WatchSyncerImplTest {
       delay(1.seconds)
 
       bucketSyncRepository.awaitNextUpdate(0u).activeBuckets.shouldBeEmpty()
+   }
+
+   @Test
+   fun `Set unread flag when the notification is unread`() = runTest {
+      init()
+      watchSyncer.syncNotification(
+         ProcessedNotification(
+            ParsedNotification(
+               "key",
+               "com.app",
+               "Title",
+               "sTitle",
+               "Body",
+               // 19:18:25 GMT | Sunday, January 4, 2026
+               Instant.ofEpochSecond(1_767_554_305)
+            ),
+            unread = true
+         )
+      )
+
+      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+         toVersion = 1u,
+         activeBuckets = listOf(2u),
+         activeBucketFlags = listOf(1u),
+         bucketsToUpdate = listOf(
+            Bucket(
+               2u,
+               byteArrayOf(
+                  // Timestamp, in 4 bytes
+                  0x69,
+                  0x5a,
+                  0xbd.toByte(),
+                  0x01,
+
+                  // UTF8 Bytes for the title, followed by null terminator
+                  84,
+                  105,
+                  116,
+                  108,
+                  101,
+                  0,
+
+                  // UTF8 Bytes for the subtitle, followed by null terminator
+                  115,
+                  84,
+                  105,
+                  116,
+                  108,
+                  101,
+                  0,
+
+                  // UTF8 Bytes for the body, NOT followed by null terminator
+                  66,
+                  111,
+                  100,
+                  121,
+               )
+            )
+         )
+      )
+   }
+
+   @Test
+   fun `Update notification flags`() = runTest {
+      init()
+      watchSyncer.syncNotification(
+         ParsedNotification(
+            "key",
+            "com.app",
+            "Title",
+            "sTitle",
+            "Body",
+            // 19:18:25 GMT | Sunday, January 4, 2026
+            Instant.ofEpochSecond(1_767_554_305)
+         )
+      )
+
+      watchSyncer.prepareNotificationReadStatus(
+         ProcessedNotification(
+            ParsedNotification(
+               "key",
+               "com.app",
+               "Title",
+               "sTitle",
+               "Body",
+               // 19:18:25 GMT | Sunday, January 4, 2026
+               Instant.ofEpochSecond(1_767_554_305)
+            ),
+            bucketId = 2,
+            unread = false
+         )
+      )
+
+      bucketSyncRepository.awaitNextUpdate(0u).activeBucketFlags.shouldContainExactly(0u)
+   }
+
+   @Test
+   fun `Do not trigger sync when just preparing flags`() = runTest {
+      init()
+      watchSyncer.syncNotification(
+         ParsedNotification(
+            "key",
+            "com.app",
+            "Title",
+            "sTitle",
+            "Body",
+            // 19:18:25 GMT | Sunday, January 4, 2026
+            Instant.ofEpochSecond(1_767_554_305)
+         )
+      )
+
+      delay(1.seconds)
+
+      watchSyncer.prepareNotificationReadStatus(
+         ProcessedNotification(
+            ParsedNotification(
+               "key",
+               "com.app",
+               "Title",
+               "sTitle",
+               "Body",
+               // 19:18:25 GMT | Sunday, January 4, 2026
+               Instant.ofEpochSecond(1_767_554_305)
+            ),
+            bucketId = 2,
+            unread = false
+         )
+      )
+
+      bucketSyncRepository.checkForNextUpdate(1u).shouldBeNull()
    }
 
    private suspend fun init() {

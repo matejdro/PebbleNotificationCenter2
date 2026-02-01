@@ -161,13 +161,16 @@ void window_notification_show()
 void window_notification_ui_on_bucket_selected()
 {
     dots_layer_set_selected_dot(dots_layer, window_notification_data.currently_selected_bucket_index);
-    dots_layer_set_number_of_dots(dots_layer, window_notification_data.bucket_count);
 
     //First scroll with animation to override animation caused by pressing buttons. Then scroll without animation to speed it up.
     scroll_layer_set_content_offset(scroll_layer, GPoint(0, 0), true);
     scroll_layer_set_content_offset(scroll_layer, GPoint(0, 0), false);
 }
 
+void window_notification_ui_on_bucket_list_updated()
+{
+    dots_layer_set_dots(dots_layer, window_notification_data.bucket_count, window_notification_data.dot_states);
+}
 
 void window_notification_ui_scroll_by(const int16_t amount, const bool repeating)
 {

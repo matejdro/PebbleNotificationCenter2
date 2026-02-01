@@ -4,6 +4,7 @@ import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotific
 
 class FakeWatchSyncer : WatchSyncer {
    val syncedNotifications = mutableListOf<ProcessedNotification>()
+   val syncedNotificationReadStatuses = mutableListOf<ProcessedNotification>()
    val clearedNotifications = mutableListOf<String>()
    var clearAllCalled = false
 
@@ -23,5 +24,9 @@ class FakeWatchSyncer : WatchSyncer {
    override suspend fun syncNotification(notification: ProcessedNotification): Int {
       syncedNotifications.add(notification)
       return nextBucketId++
+   }
+
+   override suspend fun prepareNotificationReadStatus(notification: ProcessedNotification) {
+      syncedNotificationReadStatuses.add(notification)
    }
 }

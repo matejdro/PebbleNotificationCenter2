@@ -6,6 +6,7 @@ import com.matejdro.pebblenotificationcenter.bluetooth.FakeWatchappOpenControlle
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.NativeAction
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldBeNull
@@ -291,6 +292,77 @@ class NotificationProcessorTest {
          Action.Dismiss("Dismiss"),
          Action.Native("Action 1", intent1),
          Action.Native("Action 2", intent2),
+      )
+   }
+
+   @Test
+   fun `Notification should have unread flag set by default`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification)
+
+      assertSoftly(processor.getNotification(1).shouldNotBeNull()) {
+         unread shouldBe true
+      }
+   }
+
+   @Test
+   fun `Notification with suppressed vibration should not have unread flag set by default`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification, suppressVibration = true)
+
+      assertSoftly(processor.getNotification(1).shouldNotBeNull()) {
+         unread shouldBe false
+      }
+   }
+
+   @Test
+   fun `Notification should not be unread after marking as read`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      watchSyncer.nextBucketId = 1
+      processor.onNotificationPosted(notification)
+      processor.markAsRead(1)
+
+      assertSoftly(processor.getNotification(1).shouldNotBeNull()) {
+         unread shouldBe false
+      }
+      assertSoftly(processor.getNotificationByKey("key").shouldNotBeNull()) {
+         unread shouldBe false
+      }
+
+      watchSyncer.syncedNotificationReadStatuses.shouldContainExactly(
+         ProcessedNotification(
+            notification,
+            unread = false,
+            actions = listOf(Action.Dismiss("Dismiss")),
+            bucketId = 1
+         )
       )
    }
 }

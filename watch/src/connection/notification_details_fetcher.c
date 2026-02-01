@@ -2,6 +2,7 @@
 
 #include "packets.h"
 #include "commons/connection/bluetooth.h"
+#include "commons/connection/bucket_sync.h"
 #include "ui/window_notification/data_loading.h"
 
 static void (*change_callback)() = NULL;
@@ -13,7 +14,13 @@ static void on_sending_finished(const bool success);
 
 void notification_details_fetcher_fetch(const uint8_t bucket_id)
 {
-    bool success = send_notification_opened(bucket_id);
+    if (close_after_sync)
+    {
+        // Disable notification details fetching on momentary sync open
+        return;
+    }
+
+    const bool success = send_notification_opened(bucket_id);
 
     if (!success)
     {

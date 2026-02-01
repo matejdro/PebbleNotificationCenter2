@@ -347,6 +347,30 @@ class NotificationDetailsPusherImplTest {
       )
    }
 
+   @Test
+   fun `Mark notification as read on sending`() = scope.runTest {
+      setup()
+
+      notificationRepository.putNotification(
+         12,
+         ProcessedNotification(
+            ParsedNotification(
+               "",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+            )
+         )
+      )
+
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+      runCurrent()
+
+      notificationRepository.notificationsMarkedAsRead.shouldContainExactly(12)
+   }
+
    private fun TestScope.setup() {
       backgroundScope.launch {
          packetQueue.runQueue()

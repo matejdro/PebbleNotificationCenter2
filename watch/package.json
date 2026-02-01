@@ -42,6 +42,26 @@
           "type": "bitmap",
           "name": "INDICATOR_ERROR",
           "file": "error.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "INDICATOR_UNREAD_LARGE",
+          "file": "indicator_unread_large.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "INDICATOR_UNREAD_LARGE_SELECTED",
+          "file": "indicator_unread_large_selected.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "INDICATOR_UNREAD_SMALL",
+          "file": "indicator_unread_small.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "INDICATOR_UNREAD_SMALL_SELECTED",
+          "file": "indicator_unread_small_selected.png"
         }
       ]
     },

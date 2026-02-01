@@ -32,6 +32,8 @@ class NotificationDetailsPusherImpl(
       val notification = notificationRepository.getNotification(bucketId)
 
       previousDetailsSendingJob = scope.launch {
+         notificationRepository.markAsRead(bucketId)
+
          val buffer = Buffer()
          buffer.writeUByte(bucketId.toUByte())
 

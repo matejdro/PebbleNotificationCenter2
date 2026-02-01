@@ -12,4 +12,6 @@ interface WatchSyncer {
     * @return bucket id of the notification
     */
    suspend fun syncNotification(notification: ProcessedNotification): Int
+
+   suspend fun prepareNotificationReadStatus(notification: ProcessedNotification)
 }
