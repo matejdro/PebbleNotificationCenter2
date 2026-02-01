@@ -15,6 +15,51 @@ A WIP improved notifications app for the PebbleOS watches
 
 [<img src="docs/badge_github.png" alt="Get it on GitHub">](../../releases/latest)
 
+# Usage
+
+## On the watch
+
+![Image](docs/guide.png)
+
+### Status icons
+
+* Hourglass (![Image](docs/busy.png)) - The app is loading data in the background. You can generally keep using the app while this is going on.
+* Phone disconnected (![Image](docs/disconnected.png)) - The Watch has been disconnected from the phone. You can stil use the app to read excerpts of the previously-synced notifications, but you cannot execute any actions
+* Error (E) - Something has gone wrong. Please make a Github issue with the reproduction steps.
+
+### Notification list indicators
+
+If an indicator is filled with black color, it indicates the currently selected notification.
+
+* Diamond (◆) - Unread noitifcation
+* Circle (●) - Read notification
+* Right arrow (>) - There are more notifications that way
+* Left arrow (<) - There are more notifications that way
+
+### Buttons
+
+* Single click / hold DOWN - Scroll text down (wraps on click)
+* Single click / hold UP - Scroll text up (wraps on click)
+* Double click UP - Switch to previous notification (wraps around)
+* Double click DOWN - Switch to next notification (wraps around)
+* Click SELECT - Open actions menu
+* Click BACK - Exit
+
+### Why is the app buzzing at me?
+
+### While attempting to open actions menu
+
+* Double buzz - Either the actions menu is still loading or the phone is disconnected (check the status icon). If former, this usually takes a very short amount of time, so you can usually retry immediately.
+
+### While triggering a notification action
+
+* Double buzz - Trigger failed. That usually means the phone got disconnected (check the status icon).
+* Single buzz - Action triggered successfuly
+
+### While not pressing anything
+
+* Double buzz - Phone got disconnected from the watch while the app was open (check the status icon).
+
 # Contributing
 
 To contribute to this project:
@@ -55,7 +100,7 @@ Process for updating all library versions::
 To easily add new modules, first enable project templates (you only need to do this once).
 Open Android Studio's Settings, go to "File and Code Templates" and set Scheme to "Project".
 
-![](docs/enable_templates.png)
+![Image](docs/guide.png)
 
 Then, to create a new module:
 
