@@ -100,7 +100,7 @@ Process for updating all library versions::
 To easily add new modules, first enable project templates (you only need to do this once).
 Open Android Studio's Settings, go to "File and Code Templates" and set Scheme to "Project".
 
-![Image](docs/guide.png)
+![](docs/enable_templates.png)
 
 Then, to create a new module:
 
