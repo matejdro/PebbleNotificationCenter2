@@ -1,6 +1,5 @@
 #include "dots.h"
 
-#include "../../../build/basalt/src/resource_ids.auto.h"
 #include "commons/math.h"
 
 #define LARGE_DOT_RADIUS 4
