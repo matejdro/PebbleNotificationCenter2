@@ -31,10 +31,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -56,6 +58,9 @@ import com.matejdro.pebblenotificationcenter.navigation.keys.RuleListScreenKey
 import com.matejdro.pebblenotificationcenter.notification.NotificationServiceStatus
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
+import io.rebble.pebblekit2.client.PebbleAndroidAppPicker
+import io.rebble.pebblekit2.client.ui.PebbleAppPermissionDialog
+import kotlinx.coroutines.launch
 import si.inova.kotlinova.navigation.instructions.ReplaceBackstack
 import si.inova.kotlinova.navigation.navigator.Navigator
 import si.inova.kotlinova.navigation.screens.InjectNavigationScreen
@@ -66,11 +71,13 @@ import si.inova.kotlinova.navigation.screens.Screen
 class OnboardingScreen(
    private val navigator: Navigator,
    private val serviceStatus: NotificationServiceStatus,
+   private val pebbleAndroidAppPicker: PebbleAndroidAppPicker,
 ) : Screen<OnboardingKey>() {
    @Composable
    override fun Content(key: OnboardingKey) {
       OnboardingContent(
          serviceStatus,
+         pebbleAndroidAppPicker,
          {
             navigator.navigate(
                ReplaceBackstack(
@@ -78,7 +85,7 @@ class OnboardingScreen(
                   RuleListScreenKey,
                )
             )
-         }
+         },
       )
    }
 }
@@ -86,6 +93,7 @@ class OnboardingScreen(
 @Composable
 private fun OnboardingContent(
    serviceStatus: NotificationServiceStatus,
+   pebbleAndroidAppPicker: PebbleAndroidAppPicker,
    continueToApp: () -> Unit,
 ) {
    Column(
@@ -102,7 +110,7 @@ private fun OnboardingContent(
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
          verticalArrangement = Arrangement.spacedBy(16.dp)
       ) {
-         OnboardingScrollContent(serviceStatus)
+         OnboardingScrollContent(serviceStatus, pebbleAndroidAppPicker)
       }
 
       Surface(
@@ -124,7 +132,10 @@ private fun OnboardingContent(
 }
 
 @Composable
-private fun ColumnScope.OnboardingScrollContent(serviceStatus: NotificationServiceStatus) {
+private fun ColumnScope.OnboardingScrollContent(
+   serviceStatus: NotificationServiceStatus,
+   pebbleAndroidAppPicker: PebbleAndroidAppPicker,
+) {
    Text(stringResource(R.string.onboarding_title))
    Text(stringResource(R.string.onboarding_intro))
 
@@ -136,6 +147,8 @@ private fun ColumnScope.OnboardingScrollContent(serviceStatus: NotificationServi
    } else {
       NotificationAccessPermissionLegacy(serviceStatus)
    }
+
+   PebblekitPermission(pebbleAndroidAppPicker)
 }
 
 @Composable
@@ -256,6 +269,53 @@ private fun NotificationAccessPermissionLegacy(
 }
 
 @Composable
+private fun PebblekitPermission(
+   pebbleAndroidAppPicker: PebbleAndroidAppPicker,
+) {
+   var permissionGranted by remember { mutableStateOf(false) }
+
+   var showGrantDialog by remember { mutableStateOf(false) }
+
+   suspend fun recheck() {
+      permissionGranted = pebbleAndroidAppPicker.getCurrentlySelectedApp() != null
+   }
+
+   LaunchedEffect(pebbleAndroidAppPicker) {
+      recheck()
+   }
+   val coroutineScope = rememberCoroutineScope()
+
+   if (showGrantDialog) {
+      PebbleAppPermissionDialog(
+         pebbleAndroidAppPicker,
+         onDismiss = {
+            showGrantDialog = false
+            coroutineScope.launch { recheck() }
+         },
+         rationaleText = {
+            Text(stringResource(R.string.permission_pebble_app_access_rationale), Modifier.padding(top = 8.dp))
+         }
+      )
+   }
+
+   Card(Modifier.fillMaxWidth()) {
+      Column(
+         Modifier.padding(8.dp),
+         verticalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+         Text(stringResource(R.string.permission_pebble_app_access_title), style = MaterialTheme.typography.headlineSmall)
+         Text(stringResource(R.string.permission_pebble_app_access_description))
+
+         if (permissionGranted) {
+            Text("✅")
+         } else {
+            Button(onClick = { showGrantDialog = true }) { Text(stringResource(grant)) }
+         }
+      }
+   }
+}
+
+@Composable
 private fun SinglePermissionButton(
    permissionState: PermissionState,
    rejectedPermission: Boolean,
@@ -289,7 +349,7 @@ private fun openSystemPermissionSettings(context: Context) {
 @ShowkaseComposable(group = "test")
 internal fun OnboardingContentPreview() {
    PreviewTheme {
-      OnboardingContent(FAKE_SERVICE_STATUS, {})
+      OnboardingContent(FAKE_SERVICE_STATUS, FAKE_APP_PICKER, {})
    }
 }
 
@@ -301,7 +361,7 @@ private fun OnboardingWholeListPreview() {
          Modifier.padding(8.dp),
          verticalArrangement = Arrangement.spacedBy(8.dp)
       ) {
-         OnboardingScrollContent(FAKE_SERVICE_STATUS)
+         OnboardingScrollContent(FAKE_SERVICE_STATUS, FAKE_APP_PICKER)
       }
    }
 }
@@ -316,4 +376,20 @@ private val FAKE_SERVICE_STATUS = object : NotificationServiceStatus {
    }
 
    override fun requestNotificationAccess() {}
+}
+
+private val FAKE_APP_PICKER = object : PebbleAndroidAppPicker {
+   override var enableAutoSelect: Boolean = false
+
+   override suspend fun getCurrentlySelectedApp(): String? {
+      throw UnsupportedOperationException("Not supported in preview")
+   }
+
+   override suspend fun selectApp(packageName: String?) {
+      throw UnsupportedOperationException("Not supported in preview")
+   }
+
+   override fun getAllEligibleApps(): List<String> {
+      throw UnsupportedOperationException("Not supported in preview")
+   }
 }

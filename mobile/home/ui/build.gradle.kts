@@ -23,4 +23,6 @@ dependencies {
    implementation(libs.androidx.core)
    implementation(libs.androidx.compose.material3.sizeClasses)
    implementation(libs.kotlinova.core)
+   implementation(libs.kotlin.coroutines)
+   implementation(libs.pebblekit.ui)
 }

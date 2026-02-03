@@ -15,6 +15,7 @@ import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Multibinds
 import dev.zacsweers.metro.Provides
 import dispatch.core.DefaultCoroutineScope
+import io.rebble.pebblekit2.client.PebbleAndroidAppPicker
 import si.inova.kotlinova.core.reporting.ErrorReporter
 import si.inova.kotlinova.core.time.AndroidDateTimeFormatter
 import si.inova.kotlinova.navigation.conditions.ConditionalNavigationHandler
@@ -53,6 +54,7 @@ interface ApplicationGraph : NavigationInjectingGraph, NotificationInject {
    fun getTabListDetailSceneFactory(): TabListDetailScene.Factory
    fun getWorkerFactory(): NotificationCenterWorkerFactory
    fun getSyncNotifier(): BackgroundSyncNotifier
+   fun getPebbleAppPicker(): PebbleAndroidAppPicker
 
    fun inject(target: PebbleListenerService)
 }

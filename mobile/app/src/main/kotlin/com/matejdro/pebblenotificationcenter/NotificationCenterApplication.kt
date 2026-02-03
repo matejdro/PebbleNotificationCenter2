@@ -53,6 +53,8 @@ open class NotificationCenterApplication : Application(), NavigationInjectingApp
          return
       }
 
+      applicationGraph.getPebbleAppPicker().enableAutoSelect = false
+
       DefaultDispatcherProvider.set(
          AccessCallbackDispatcherProvider(DefaultDispatcherProvider.get()) {
             if (BuildConfig.DEBUG) {

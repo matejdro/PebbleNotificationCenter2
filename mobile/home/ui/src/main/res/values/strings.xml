@@ -20,4 +20,7 @@
     <string name="permission_notification_access_legacy_description">Needed to forward notifications from the other
         apps.
     </string>
+    <string name="permission_pebble_app_access_title">Pebble App Access</string>
+    <string name="permission_pebble_app_access_description">Needed to be able to send the data to the watch</string>
+    <string name="permission_pebble_app_access_rationale">This app will be able to read all of your notifications!</string>
 </resources>

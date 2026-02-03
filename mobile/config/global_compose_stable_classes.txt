@@ -10,6 +10,7 @@ si.inova.kotlinova.core.time.FakeAndroidDateTimeFormatter
 si.inova.kotlinova.core.outcome.CauseException
 // Technically, only the androidx.datastore.core.DataStore is stable, but it seems it only works with this wildcard
 androidx.datastore.**
+io.rebble.pebblekit2.client.PebbleAndroidAppPicker
 
 // Suspend lamdas
 kotlin.coroutines.SuspendFunction2
