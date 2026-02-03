@@ -170,6 +170,13 @@ jobs:
         with:
           name: mapping-app-develop-release.txt
           path: mobile/app/build/outputs/mapping/release/mapping.txt
+      - name: Rename apk
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
+        # AGP has no good configuration-cache way of setting the APK name
+        # Until this is resolved, we can just rename the APK post-build
+        run: mv mobile/app/build/outputs/apk/release/notificationcenter-mobile.apk mobile/app/build/outputs/apk/release/notificationcenter-mobile-$VERSION.apk
+        env:
+          VERSION: ${{ env.VERSION }}
 
       # Tests
 
@@ -227,9 +234,11 @@ jobs:
       # Build watchapp
 
       - name: Build watchapp
-        run: pebble build && mv build/watch.pbw build/notification-center.pbw
+        run: pebble build && mv build/watch.pbw build/notification-center-$VERSION.pbw
         working-directory: watch
         if: "${{ env.BUILD_WATCH == 'true' }}"
+        env:
+          VERSION: ${{ env.VERSION }}
 
       - name: Generate Changelog
         id: changelog
@@ -264,13 +273,6 @@ jobs:
         run: |
           git tag ${{ env.VERSION }}
           git push origin ${{ env.VERSION }}
-      - name: "Publish arficats to action"
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-artifacts
-          path: |
-            mobile/app/build/outputs/apk/release/notificationcenter-mobile.apk
-            watch/build/notification-center.pbw
       - name: Create a Release
         uses: ncipollo/release-action@v1
         env:
@@ -279,5 +281,5 @@ jobs:
           name: ${{ env.VERSION }}
           tag: ${{ env.VERSION }}
           body: ${{ steps.changelog.outputs.changelog }}${{env.CHANGELOG_EXTRA}}
-          artifacts: "mobile/app/build/outputs/apk/release/notificationcenter-mobile.apk,watch/build/notification-center.pbw"
+          artifacts: "mobile/app/build/outputs/apk/release/notificationcenter-mobile-${{ env.VERSION }}.apk,watch/build/notification-center-${{ env.VERSION }}.pbw"
           generateReleaseNotes: false
