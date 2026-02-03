@@ -6,6 +6,7 @@
 #include "commons/math.h"
 #include "commons/connection/bucket_sync.h"
 #include "connection/notification_details_fetcher.h"
+#include "connection/packets.h"
 #include "ui/window_status.h"
 
 static BucketList* buckets;
@@ -182,7 +183,7 @@ void notification_window_ingest_bucket_metadata()
     {
         if (launch_reason() == APP_LAUNCH_PHONE)
         {
-            window_stack_pop_all(true);
+            send_close_me();
         }
         else
         {

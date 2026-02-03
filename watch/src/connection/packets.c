@@ -14,6 +14,8 @@ static void receive_notification_details_text_packet(const DictionaryIterator* i
 static void receive_watch_packet(const DictionaryIterator* received);
 static void receive_vibrate_packet(const DictionaryIterator* iterator);
 
+static int close_retries_left = 3;
+
 void packets_init()
 {
     bluetooth_register_reconnect_callback(send_watch_welcome);
@@ -62,6 +64,36 @@ bool send_action_trigger(const uint8_t notification_id, const uint8_t action_ind
     dict_write_uint8(iterator, 2, action_index);
     bluetooth_app_message_outbox_send();
     return true;
+}
+
+static void on_close_me_finished(const bool success)
+{
+    if (!success)
+    {
+        if (--close_retries_left == 0)
+        {
+            window_stack_pop_all(true);
+        }
+        else
+        {
+            // After this method is finished, all callbacks will be unregistered, so we cannot send data yet.
+            // Send it after 1ms
+            app_timer_register(1, send_close_me, NULL);
+        }
+    }
+}
+
+void send_close_me()
+{
+    bluetooth_register_sending_finish(on_close_me_finished);
+
+    DictionaryIterator* iterator;
+    app_message_outbox_begin(&iterator);
+
+    dict_write_uint8(iterator, 0, 8);
+    bluetooth_app_message_outbox_send();
+
+    window_status_show_error("Closing...");
 }
 
 static void receive_watch_packet(const DictionaryIterator* received)

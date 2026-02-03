@@ -2,6 +2,7 @@
 
 #include "action_list.h"
 #include "data_loading.h"
+#include "connection/packets.h"
 
 const int32_t SINGLE_SCROLL_HEIGHT = 32;
 
@@ -65,7 +66,7 @@ static void button_back_single(ClickRecognizerRef recognizer, void* context)
     }
     else
     {
-        window_stack_pop(true);
+        send_close_me();
     }
 }
 

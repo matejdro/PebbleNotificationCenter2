@@ -59,6 +59,7 @@ class WatchappConnectionImplTest {
       notificationDetailsPusher,
       actionHandler,
       notificationsRepository,
+      watch
    )
 
    @Test
@@ -258,6 +259,24 @@ class WatchappConnectionImplTest {
             )
          )
       )
+   }
+
+   @Test
+   fun `Close app upon receiving close me packet`() = scope.runTest {
+      receiveStandardHelloPacket(bufferSize = 123u)
+      runCurrent()
+
+      sender.sentPackets.clear()
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(8u),
+         )
+      )
+      runCurrent()
+
+      result shouldBe ReceiveResult.Ack
+      watchappOpenController.watchappClosedToTheLastApp.shouldBe(WatchIdentifier("watch"))
    }
 
    private suspend fun receiveStandardHelloPacket(version: UInt = 0u, bufferSize: UInt = 1000u): ReceiveResult =

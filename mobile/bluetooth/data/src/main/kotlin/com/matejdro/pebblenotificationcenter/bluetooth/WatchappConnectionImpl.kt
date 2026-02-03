@@ -34,6 +34,7 @@ class WatchappConnectionImpl(
    private val notificationDetailsPusher: NotificationDetailsPusher,
    private val actionHandler: ActionHandler,
    private val notificationRepository: NotificationRepository,
+   private val watch: WatchIdentifier,
 ) : WatchAppConnection {
    private var watchBufferSize: Int = 0
 
@@ -69,6 +70,11 @@ class WatchappConnectionImpl(
             logcat { "Action handling success: $success" }
 
             if (success) ReceiveResult.Ack else ReceiveResult.Nack
+         }
+
+         8u -> {
+            watchappOpenController.closeWatchappToTheLastApp(watch)
+            ReceiveResult.Ack
          }
 
          else -> {

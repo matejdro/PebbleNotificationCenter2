@@ -97,6 +97,10 @@ Sent from the watch when selects an action from the action menu
 
 * `1` - id of the notification bucket (uint8)
 * `2` - index of the action
+* 
+### Close me (packet 8)
+
+Sent from the watch when it wants to close. Phone app will open the last app, closing the NC in the process.
 
 # Buckets
 
