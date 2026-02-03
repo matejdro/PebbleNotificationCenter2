@@ -88,9 +88,8 @@ static void button_down_repeating(const ClickRecognizerRef recognizer, void* con
 
 static void button_up_multi(const ClickRecognizerRef recognizer, void* context)
 {
-    if (click_number_of_clicks_counted(recognizer) != 2 || window_notification_data.menu_displayed)
+    if (window_notification_data.menu_displayed)
     {
-        button_up_single(recognizer, context);
         return;
     }
 
@@ -106,9 +105,8 @@ static void button_up_multi(const ClickRecognizerRef recognizer, void* context)
 
 static void button_down_multi(const ClickRecognizerRef recognizer, void* context)
 {
-    if (click_number_of_clicks_counted(recognizer) != 2 || window_notification_data.menu_displayed)
+    if (window_notification_data.menu_displayed)
     {
-        button_down_single(recognizer, context);
         return;
     }
 
@@ -124,11 +122,16 @@ static void button_down_multi(const ClickRecognizerRef recognizer, void* context
 
 void window_notification_buttons_config()
 {
-    window_multi_click_subscribe(BUTTON_ID_UP, 1, 2, 150, false, button_up_multi);
-    window_multi_click_subscribe(BUTTON_ID_DOWN, 1, 2, 150, false, button_down_multi);
+    window_multi_click_subscribe(BUTTON_ID_UP, 2, 2, 150, false, button_up_multi);
+    window_multi_click_subscribe(BUTTON_ID_DOWN, 2, 2, 150, false, button_down_multi);
 
     window_single_repeating_click_subscribe(BUTTON_ID_UP, 100, button_up_repeating);
     window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 100, button_down_repeating);
+
+    // regular button single click action is delayed since the watch is waiting to determine whether we hold the button
+    // or not. This is not necessary in our case, so we can just use "button down" event instead
+    window_raw_click_subscribe(BUTTON_ID_UP, button_up_single, NULL, NULL);
+    window_raw_click_subscribe(BUTTON_ID_DOWN, button_down_single, NULL, NULL);
 
     window_single_click_subscribe(BUTTON_ID_SELECT, button_select_single);
     window_single_click_subscribe(BUTTON_ID_BACK, button_back_single);
