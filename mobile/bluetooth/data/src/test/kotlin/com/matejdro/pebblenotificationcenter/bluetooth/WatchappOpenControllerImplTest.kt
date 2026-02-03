@@ -94,4 +94,26 @@ class WatchappOpenControllerImplTest {
       )
       pebbleSender.stoppedApps.shouldBeEmpty()
    }
+
+   @Test
+   fun `Do not update the value when the previously open app is the notification center`() = scope.runTest {
+      val otherApp = UUID.fromString("caf5e298-d9e7-44a9-9177-d5ed6acb719a")
+      pebbleInfoRetriever.setActiveApp(WatchIdentifier("TheWatch"), Watchapp(otherApp, "Important app", Watchapp.Type.WATCHAPP))
+      controller.openWatchapp()
+      pebbleSender.startedApps.clear()
+
+      pebbleInfoRetriever.setActiveApp(
+         WatchIdentifier("TheWatch"),
+         Watchapp(WATCHAPP_UUID, "Notification Center", Watchapp.Type.WATCHAPP)
+      )
+      controller.openWatchapp()
+      pebbleSender.startedApps.clear()
+
+      controller.closeWatchappToTheLastApp(WatchIdentifier("TheWatch"))
+
+      pebbleSender.startedApps.shouldContainExactly(
+         FakePebbleSender.AppLifecycleEvent(otherApp, listOf(WatchIdentifier("TheWatch")))
+      )
+      pebbleSender.stoppedApps.shouldBeEmpty()
+   }
 }

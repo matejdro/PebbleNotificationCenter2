@@ -41,7 +41,11 @@ class WatchappOpenControllerImpl(
       val connectedWatches = pebbleInfoRetriever.getConnectedWatches().first()
       for (watch in connectedWatches) {
          val watchId = watch.id
-         lastOpenedApps[watchId] = pebbleInfoRetriever.getActiveApp(watchId).first()?.id
+
+         val openedApp = pebbleInfoRetriever.getActiveApp(watchId).first()?.id
+         if (openedApp != WATCHAPP_UUID) {
+            lastOpenedApps[watchId] = openedApp
+         }
 
          pebbleSender.startAppOnTheWatch(WATCHAPP_UUID, listOf(watchId))
       }
