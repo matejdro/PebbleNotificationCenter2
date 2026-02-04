@@ -3,6 +3,7 @@ package com.matejdro.pebblenotificationcenter.bluetooth
 import com.matejdro.bucketsync.BucketSyncRepository
 import com.matejdro.bucketsync.BucketSyncRepository.Companion.MAX_BUCKET_ID
 import com.matejdro.pebble.bluetooth.common.util.LimitingStringEncoder
+import com.matejdro.pebble.bluetooth.common.util.fixPebbleIndentation
 import com.matejdro.pebble.bluetooth.common.util.writeUByte
 import com.matejdro.pebble.bluetooth.common.util.writeUInt
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
@@ -56,7 +57,7 @@ class WatchSyncerImpl(
       val leftoverSize = BucketSyncRepository.MAX_BUCKET_SIZE_BYTES - buffer.size.toInt()
       buffer.write(
          utf8Encoder.encodeSizeLimited(
-            notificationData.body,
+            notificationData.body.fixPebbleIndentation(),
             leftoverSize,
             true
          ).encodedString

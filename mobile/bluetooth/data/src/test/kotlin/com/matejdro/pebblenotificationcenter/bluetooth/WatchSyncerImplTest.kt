@@ -395,6 +395,53 @@ class WatchSyncerImplTest {
       bucketSyncRepository.checkForNextUpdate(1u).shouldBeNull()
    }
 
+   @Test
+   fun `Fix indentation of the body`() = runTest {
+      init()
+      watchSyncer.syncNotification(
+         ParsedNotification(
+            "key",
+            "com.app",
+            "a",
+            "b",
+            " c",
+            // 19:18:25 GMT | Sunday, January 4, 2026
+            Instant.ofEpochSecond(1_767_554_305)
+         )
+      )
+
+      bucketSyncRepository.awaitNextUpdate(0u)
+         .also { println(it.bucketsToUpdate.first().data.toHexString()) } shouldBe BucketUpdate(
+         1u,
+         listOf(2u),
+         listOf(
+            Bucket(
+               2u,
+               byteArrayOf(
+                  // Timestamp, in 4 bytes
+                  0x69,
+                  0x5a,
+                  0xbd.toByte(),
+                  0x01,
+
+                  // UTF8 Bytes for the title, followed by null terminator
+                  97,
+                  0,
+
+                  // UTF8 Bytes for the subtitle, followed by null terminator
+                  98,
+                  0,
+
+                  // UTF8 Bytes for the body
+                  194.toByte(), // UTF8 marker
+                  160.toByte(), // Non-breaking space, not the input regular space
+                  99, // c
+               )
+            )
+         )
+      )
+   }
+
    private suspend fun init() {
       bucketSyncRepository.init(1, 2..BucketSyncRepository.MAX_BUCKET_ID)
    }

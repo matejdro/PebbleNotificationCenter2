@@ -3,6 +3,7 @@ package com.matejdro.pebblenotificationcenter.bluetooth
 import com.matejdro.pebble.bluetooth.common.PacketQueue
 import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionScope
 import com.matejdro.pebble.bluetooth.common.util.LimitingStringEncoder
+import com.matejdro.pebble.bluetooth.common.util.fixPebbleIndentation
 import com.matejdro.pebble.bluetooth.common.util.writeUByte
 import com.matejdro.pebble.bluetooth.common.util.writeUShort
 import com.matejdro.pebblenotificationcenter.notification.NotificationRepository
@@ -51,7 +52,10 @@ class NotificationDetailsPusherImpl(
          )
 
          val maxTextSize = maxPacketSize - packetBeforeText.sizeInBytes()
-         val encodedText = stringEncoder.encodeSizeLimited(notification?.systemData?.body.orEmpty(), maxTextSize).encodedString
+         val encodedText = stringEncoder.encodeSizeLimited(
+            notification?.systemData?.body.orEmpty().fixPebbleIndentation(),
+            maxTextSize
+         ).encodedString
          buffer.write(encodedText)
 
          val packet = packetBeforeText + mapOf(

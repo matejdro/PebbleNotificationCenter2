@@ -371,6 +371,46 @@ class NotificationDetailsPusherImplTest {
       notificationRepository.notificationsMarkedAsRead.shouldContainExactly(12)
    }
 
+   @Test
+   fun `Fix indentation of the text`() = scope.runTest {
+      setup()
+
+      notificationRepository.putNotification(
+         12,
+         ProcessedNotification(
+            ParsedNotification(
+               "",
+               "",
+               "",
+               "",
+               " c",
+               Instant.MIN,
+            )
+         )
+      )
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+
+      runCurrent()
+
+      sender.sentData.shouldContainExactly(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt8(5),
+            1u to PebbleDictionaryItem.Bytes(
+               byteArrayOf(
+                  12, // Notification id
+
+                  0, // No actions in this test
+
+                  // UTF8 Bytes for the text
+                  194.toByte(), // UTF8 marker
+                  160.toByte(), // Non-breaking space, not the input regular space
+                  99, // c
+               )
+            )
+         )
+      )
+   }
+
    private fun TestScope.setup() {
       backgroundScope.launch {
          packetQueue.runQueue()
