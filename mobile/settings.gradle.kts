@@ -48,6 +48,9 @@ include(":bluetooth:api")
 include(":bluetooth:data")
 include(":bluetooth:test")
 include(":navigation-impl")
+include(":rules:api")
+include(":rules:data")
+include(":rules:ui")
 include(":tools:ui")
 
 // Projects from PebbleCommons

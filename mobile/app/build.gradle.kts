@@ -89,6 +89,17 @@ dependencyAnalysis {
    }
 }
 
+sqldelight {
+   databases {
+      create("Database") {
+         packageName.set("com.matejdro.notificationcenter")
+         schemaOutputDirectory.set(file("src/main/sqldelight/databases"))
+
+         dependency(project(projects.rules.data.path))
+      }
+   }
+}
+
 dependencies {
    implementation(projects.bluetoothCommon)
    implementation(projects.bluetooth.api)
@@ -106,6 +117,9 @@ dependencies {
    implementation(projects.notification.data)
    implementation(projects.bucketsync.api)
    implementation(projects.bucketsync.data)
+   implementation(projects.rules.api)
+   implementation(projects.rules.data)
+   implementation(projects.rules.ui)
    implementation(projects.tools.ui)
    implementation(projects.sharedResources)
 
