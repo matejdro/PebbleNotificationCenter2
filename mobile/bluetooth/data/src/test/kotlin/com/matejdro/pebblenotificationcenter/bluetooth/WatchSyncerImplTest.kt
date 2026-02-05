@@ -410,8 +410,7 @@ class WatchSyncerImplTest {
          )
       )
 
-      bucketSyncRepository.awaitNextUpdate(0u)
-         .also { println(it.bucketsToUpdate.first().data.toHexString()) } shouldBe BucketUpdate(
+      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
          1u,
          listOf(2u),
          listOf(
