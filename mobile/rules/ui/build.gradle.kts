@@ -14,11 +14,13 @@ android {
 dependencies {
    api(projects.rules.api)
    api(projects.common)
+   api(libs.kotlin.coroutines)
+   api(libs.kotlinova.navigation)
 
    implementation(projects.commonCompose)
    implementation(libs.kotlinova.core)
 
-   testImplementation(projects.common.test)
    testImplementation(testFixtures(projects.rules.api))
+   testImplementation(libs.kotlin.coroutines)
    testImplementation(libs.kotlinova.core.test)
 }
