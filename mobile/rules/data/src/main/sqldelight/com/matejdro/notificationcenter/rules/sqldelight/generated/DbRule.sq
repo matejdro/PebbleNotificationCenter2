@@ -1,0 +1,19 @@
+CREATE TABLE dbRule (
+    id INTEGER PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM dbRule;
+
+selectSingle:
+SELECT * FROM dbRule WHERE id = ? LIMIT 1;
+
+insert:
+INSERT INTO dbRule (name) VALUES (?);
+
+delete:
+DELETE FROM dbRule WHERE id = :id;
+
+update:
+REPLACE INTO dbRule VALUES ?;

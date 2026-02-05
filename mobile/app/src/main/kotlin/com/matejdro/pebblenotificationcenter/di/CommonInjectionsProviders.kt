@@ -7,6 +7,9 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.work.WorkManager
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import com.matejdro.notificationcenter.Database
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
@@ -48,4 +51,10 @@ interface CommonInjectionsProviders {
 
    @Provides
    fun provideWorkManager(context: Context): WorkManager = WorkManager.getInstance(context)
+
+   @Provides
+   @SingleIn(AppScope::class)
+   fun provideSqliteDriver(context: Context): SqlDriver {
+      return AndroidSqliteDriver(Database.Schema, context, "database.db")
+   }
 }

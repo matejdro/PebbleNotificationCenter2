@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.matejdro.catapult.${NAME}"
+    namespace = "com.matejdro.notificationcenter.${NAME}"
 
     buildFeatures {
         androidResources = true
