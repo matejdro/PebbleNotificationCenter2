@@ -3,6 +3,8 @@ plugins {
    compose
    di
    navigation
+   parcelize
+   showkase
 }
 
 android {
