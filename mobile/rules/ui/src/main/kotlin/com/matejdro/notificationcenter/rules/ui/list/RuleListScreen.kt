@@ -1,7 +1,6 @@
 package com.matejdro.notificationcenter.rules.ui.list
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -17,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -111,19 +109,24 @@ private fun RuleListScreenContent(
                   minReorderableIndex = 1,
                   enabled = rule.id > 1,
                   setOrder = setOrder
-               ) {
+               ) { modifier, isDragging ->
                   Text(
                      rule.name,
-                     Modifier
-                        .background(MaterialTheme.colorScheme.surface)
+                     modifier
                         .clickable(onClick = { openDetails(rule.id) })
                         .padding(32.dp)
                         .fillMaxWidth()
                         .animateItem()
-                        .sharedElement(
-                           rememberSharedContentState("ruleName-${rule.id}"),
-                           LocalNavAnimatedContentScope.current
-                        )
+                        .run {
+                           if (!isDragging()) {
+                              sharedElement(
+                                 rememberSharedContentState("ruleName-${rule.id}"),
+                                 LocalNavAnimatedContentScope.current
+                              )
+                           } else {
+                              this
+                           }
+                        }
 
                   )
                }

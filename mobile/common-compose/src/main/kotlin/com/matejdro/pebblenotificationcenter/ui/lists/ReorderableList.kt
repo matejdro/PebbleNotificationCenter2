@@ -59,7 +59,7 @@ fun <T> ReorderableListContainer(
          modifier: Modifier,
          minReorderableIndex: Int,
          enabled: Boolean,
-         content: @Composable ((Modifier) -> Unit),
+         content: @Composable ((Modifier, isDragging: () -> Boolean) -> Unit),
       ) {
          ReorderableItem(
             state = reorderState,
@@ -133,7 +133,8 @@ fun <T> ReorderableListContainer(
                            offset = DpOffset(x = 2.dp, 2.dp),
                         )
                      )
-                     .background(MaterialTheme.colorScheme.surface)
+                     .background(MaterialTheme.colorScheme.surface),
+                  { true }
                )
             },
             modifier = modifier,
@@ -141,7 +142,8 @@ fun <T> ReorderableListContainer(
             content(
                Modifier.graphicsLayer {
                   alpha = if (isDragging) 0f else 1f
-               }
+               },
+               { false },
             )
          }
       }
@@ -166,6 +168,6 @@ interface ReorderableListScope<T> {
       modifier: Modifier = Modifier,
       minReorderableIndex: Int = 0,
       enabled: Boolean = true,
-      content: @Composable ((Modifier) -> Unit),
+      content: @Composable ((Modifier, isDragging: () -> Boolean) -> Unit),
    )
 }
