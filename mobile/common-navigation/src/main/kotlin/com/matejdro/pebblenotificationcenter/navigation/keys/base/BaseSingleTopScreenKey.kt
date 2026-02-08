@@ -9,6 +9,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.ui.graphics.TransformOrigin
+import com.matejdro.pebblenotificationcenter.navigation.animation.PredictiveBackFadeAnimationSpec
 import si.inova.kotlinova.navigation.screenkeys.SingleTopKey
 
 abstract class BaseSingleTopScreenKey : SingleTopKey() {
@@ -29,7 +30,13 @@ abstract class BaseSingleTopScreenKey : SingleTopKey() {
          else -> TransformOrigin.Center
       }
 
-      return (fadeIn() + scaleIn(initialScale = 1.1f, transformOrigin = scaleTransformOrigin)) togetherWith
-         (fadeOut() + scaleOut(targetScale = 0.9f, transformOrigin = scaleTransformOrigin))
+      return (
+         fadeIn(PredictiveBackFadeAnimationSpec()) +
+            scaleIn(initialScale = 1.1f, transformOrigin = scaleTransformOrigin)
+         ) togetherWith
+         (
+            fadeOut(PredictiveBackFadeAnimationSpec()) +
+               scaleOut(targetScale = 0.9f, transformOrigin = scaleTransformOrigin)
+            )
    }
 }
