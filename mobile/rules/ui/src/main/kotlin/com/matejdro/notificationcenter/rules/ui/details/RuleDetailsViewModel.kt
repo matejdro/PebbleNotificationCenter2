@@ -45,6 +45,12 @@ class RuleDetailsViewModel(
 
       rulesRepository.delete(key.id)
    }
+
+   fun renameRule(newName: String) = resources.launchWithExceptionReporting {
+      actionLogger.logAction { "RuleDetailsViewModel.renameRule()" }
+
+      rulesRepository.edit(RuleMetadata(key.id, newName))
+   }
 }
 
 @Stable

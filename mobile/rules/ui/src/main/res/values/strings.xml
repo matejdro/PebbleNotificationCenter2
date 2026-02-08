@@ -6,4 +6,5 @@
     <string name="this_rule_does_not_exist">This rule does not exist</string>
     <string name="delete_rule">Delete rule</string>
     <string name="delete_confirmation_text">Are you sure you want to delete the rule \'%1$s\'? This CANNOT BE UNDONE.</string>
+    <string name="rename_rule">Rename rule</string>
 </resources>

@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -56,7 +57,7 @@ private fun NameEntryScreenContent(
    dismiss: () -> Unit,
    accept: (String) -> Unit,
 ) {
-   val textFieldState = rememberTextFieldState(key.initialText)
+   val textFieldState = rememberTextFieldState(key.initialText, initialSelection = TextRange(0, key.initialText.length))
 
    AlertDialogWithContent(
       title = {

@@ -5,6 +5,7 @@ import com.matejdro.notificationcenter.rules.RuleMetadata
 import com.matejdro.notificationcenter.rules.ui.errors.RuleMissingException
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
@@ -61,5 +62,17 @@ class RuleDetailsViewModelTest {
       runCurrent()
 
       rulesRepository.getAll().first().data.shouldContainExactly(listOf(RuleMetadata(1, "Rule A")))
+   }
+
+   @Test
+   fun `Rename rule`() = scope.runTest {
+      rulesRepository.insert("Rule A")
+      rulesRepository.insert("Rule B")
+
+      viewModel.onServiceRegistered()
+      viewModel.renameRule("Rule C")
+      runCurrent()
+
+      rulesRepository.getSingle(2).first().data shouldBe RuleMetadata(2, "Rule C")
    }
 }

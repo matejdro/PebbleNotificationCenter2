@@ -30,8 +30,10 @@ import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.notificationcenter.rules.RuleMetadata
 import com.matejdro.notificationcenter.rules.ui.R
+import com.matejdro.notificationcenter.rules.ui.dialogs.NameEntryScreenKey
 import com.matejdro.notificationcenter.rules.ui.errors.ruleUserFriendlyMessage
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey
+import com.matejdro.pebblenotificationcenter.navigation.util.rememberNavigationPopup
 import com.matejdro.pebblenotificationcenter.ui.animations.LocalSharedTransitionScope
 import com.matejdro.pebblenotificationcenter.ui.components.ProgressErrorSuccessScaffold
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
@@ -53,6 +55,21 @@ class RuleDetailsScreen(
       val windowSizeClass = calculateWindowSizeClass(LocalContext.current.requireActivity())
 
       val stateOutcome by viewModel.uiState.collectAsState()
+
+      val renameDialog = navigator.rememberNavigationPopup(
+         navigationKey = { oldName: String, resultKey ->
+            NameEntryScreenKey(
+               getString(R.string.rename_rule),
+               resultKey,
+               initialText = oldName
+            )
+         },
+         onResult = {
+            if (!it.isBlank()) {
+               viewModel.renameRule(it)
+            }
+         }
+      )
 
       var showDeleteConfirmation by remember { mutableStateOf(false) }
       if (showDeleteConfirmation) {
@@ -93,9 +110,12 @@ class RuleDetailsScreen(
          RuleDetailsScreenContent(
             it,
             windowSizeClass.widthSizeClass,
+            rename = {
+               renameDialog.trigger(stateOutcome.data?.ruleMetadata?.name.orEmpty())
+            },
             delete = {
                showDeleteConfirmation = true
-            }
+            },
          )
       }
    }
@@ -110,6 +130,7 @@ private fun RuleDetailsScreenContent(
    state: RuleDetailsScreenState,
    windowSizeClass: WindowWidthSizeClass,
    delete: () -> Unit,
+   rename: () -> Unit,
 ) = with(LocalSharedTransitionScope.current) {
    val largeDevice: Boolean = windowSizeClass != WindowWidthSizeClass.Compact
 
@@ -136,6 +157,10 @@ private fun RuleDetailsScreenContent(
             )
          },
          actions = {
+            IconButton(onClick = rename) {
+               Icon(painterResource(R.drawable.ic_rename), contentDescription = stringResource(R.string.rename_rule))
+            }
+
             IconButton(onClick = delete) {
                Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.delete_rule))
             }
@@ -152,6 +177,7 @@ internal fun RuleDetailsScreenContentPreview() {
       RuleDetailsScreenContent(
          state = RuleDetailsScreenState(RuleMetadata(2, "Test Rule")),
          windowSizeClass = WindowWidthSizeClass.Compact,
+         {},
          {},
       )
    }
