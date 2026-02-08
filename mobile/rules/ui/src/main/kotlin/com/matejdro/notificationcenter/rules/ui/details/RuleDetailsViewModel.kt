@@ -39,6 +39,12 @@ class RuleDetailsViewModel(
          )
       }
    }
+
+   fun deleteRule() = resources.launchWithExceptionReporting {
+      actionLogger.logAction { "RuleDetailsViewModel.deleteRule()" }
+
+      rulesRepository.delete(key.id)
+   }
 }
 
 @Stable

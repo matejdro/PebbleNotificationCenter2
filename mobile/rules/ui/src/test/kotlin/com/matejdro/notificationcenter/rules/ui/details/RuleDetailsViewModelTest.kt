@@ -4,6 +4,8 @@ import com.matejdro.notificationcenter.rules.FakeRulesRepository
 import com.matejdro.notificationcenter.rules.RuleMetadata
 import com.matejdro.notificationcenter.rules.ui.errors.RuleMissingException
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey
+import io.kotest.matchers.collections.shouldContainExactly
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -47,5 +49,17 @@ class RuleDetailsViewModelTest {
       runCurrent()
 
       viewModel.uiState.value.shouldBeErrorWith(exceptionType = RuleMissingException::class.java)
+   }
+
+   @Test
+   fun `Delete rule`() = scope.runTest {
+      rulesRepository.insert("Rule A")
+      rulesRepository.insert("Rule B")
+
+      viewModel.onServiceRegistered()
+      viewModel.deleteRule()
+      runCurrent()
+
+      rulesRepository.getAll().first().data.shouldContainExactly(listOf(RuleMetadata(1, "Rule A")))
    }
 }
