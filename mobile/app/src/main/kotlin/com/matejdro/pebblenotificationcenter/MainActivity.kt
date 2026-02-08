@@ -5,6 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -22,6 +24,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.DialogSceneStrategy
 import com.matejdro.pebblenotificationcenter.navigation.scenes.TabListDetailScene
 import com.matejdro.pebblenotificationcenter.navigation.scenes.rememberTabListDetailSceneStrategy
+import com.matejdro.pebblenotificationcenter.ui.animations.LocalSharedTransitionScope
 import com.matejdro.pebblenotificationcenter.ui.theme.NotificationCenterTheme
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.filterNotNull
@@ -94,6 +97,7 @@ class MainActivity : ComponentActivity() {
       }
    }
 
+   @OptIn(ExperimentalSharedTransitionApi::class)
    @Composable
    private fun NavigationRoot(initialHistory: List<ScreenKey>) {
       NotificationCenterTheme {
@@ -102,28 +106,31 @@ class MainActivity : ComponentActivity() {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
          ) {
-            val resultPassingStore = rememberSaveable { ResultPassingStore() }
-            CompositionLocalProvider(
-               LocalDateFormatter provides ComposeAndroidDateTimeFormatter(dateFormatter),
-               LocalResultPassingStore provides resultPassingStore
-            ) {
-               val backstack = navigationInjectionFactory.NavDisplay(
-                  initialHistory = { initialHistory },
-                  entryDecorators = listOf(
-                     rememberSaveableStateHolderNavEntryDecorator(),
-                     NavEntryDecorator<ScreenKey>(
-                        decorate = {
-                           Surface {
-                              it.Content()
+            SharedTransitionLayout {
+               val resultPassingStore = rememberSaveable { ResultPassingStore() }
+               CompositionLocalProvider(
+                  LocalDateFormatter provides ComposeAndroidDateTimeFormatter(dateFormatter),
+                  LocalResultPassingStore provides resultPassingStore,
+                  LocalSharedTransitionScope provides this,
+               ) {
+                  val backstack = navigationInjectionFactory.NavDisplay(
+                     initialHistory = { initialHistory },
+                     entryDecorators = listOf(
+                        rememberSaveableStateHolderNavEntryDecorator(),
+                        NavEntryDecorator<ScreenKey>(
+                           decorate = {
+                              Surface {
+                                 it.Content()
+                              }
                            }
-                        }
-                     )
-                  ),
-                  sceneStrategy = rememberTabListDetailSceneStrategy(tabListDetailSceneFactory) then
-                     remember { DialogSceneStrategy() }
-               )
+                        )
+                     ),
+                     sceneStrategy = rememberTabListDetailSceneStrategy(tabListDetailSceneFactory) then
+                        remember { DialogSceneStrategy() }
+                  )
 
-               mainDeepLinkHandler.HandleNewIntentDeepLinks(this@MainActivity, backstack)
+                  mainDeepLinkHandler.HandleNewIntentDeepLinks(this@MainActivity, backstack)
+               }
             }
          }
       }

@@ -181,6 +181,23 @@ class RulesRepositoryImplTest {
          )
       }
    }
+
+   @Test
+   fun `Get a single rule`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+         cancelAndIgnoreRemainingEvents()
+      }
+
+      repo.insert("Rule A")
+      repo.insert("Rule B")
+      runCurrent()
+
+      repo.getSingle(2).test {
+         runCurrent()
+         expectMostRecentItem() shouldBeSuccessWithData RuleMetadata(2, "Rule A")
+      }
+   }
 }
 
 internal fun createTestRuleQueries(

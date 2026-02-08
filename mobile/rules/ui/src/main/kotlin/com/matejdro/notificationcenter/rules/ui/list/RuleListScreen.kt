@@ -1,6 +1,8 @@
 package com.matejdro.notificationcenter.rules.ui.list
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
@@ -36,9 +38,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.matejdro.notificationcenter.rules.RuleMetadata
 import com.matejdro.notificationcenter.rules.ui.R
+import com.matejdro.pebblenotificationcenter.navigation.instructions.OpenScreenOrReplaceExistingType
+import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleListScreenKey
+import com.matejdro.pebblenotificationcenter.ui.animations.LocalSharedTransitionScope
 import com.matejdro.pebblenotificationcenter.ui.components.AlertDialogWithContent
 import com.matejdro.pebblenotificationcenter.ui.components.ProgressErrorSuccessScaffold
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
@@ -46,12 +52,14 @@ import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
 import com.matejdro.pebblenotificationcenter.ui.lists.ReorderableListContainer
 import si.inova.kotlinova.compose.components.itemsWithDivider
 import si.inova.kotlinova.compose.flow.collectAsStateWithLifecycleAndBlinkingPrevention
+import si.inova.kotlinova.navigation.navigator.Navigator
 import si.inova.kotlinova.navigation.screens.InjectNavigationScreen
 import si.inova.kotlinova.navigation.screens.Screen
 
 @InjectNavigationScreen
 class RuleListScreen(
    private val viewModel: RuleListViewModel,
+   private val navigator: Navigator,
 ) : Screen<RuleListScreenKey>() {
    @Composable
    override fun Content(key: RuleListScreenKey) {
@@ -76,17 +84,24 @@ class RuleListScreen(
             state,
             addNew = { showAddDialog = true },
             setOrder = viewModel::reorder,
+            openDetails = {
+               navigator.navigate(
+                  OpenScreenOrReplaceExistingType(RuleDetailsScreenKey(it))
+               )
+            }
          )
       }
    }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun RuleListScreenContent(
    state: RuleListState,
    addNew: () -> Unit,
    setOrder: (id: Int, toIndex: Int) -> Unit,
-) {
+   openDetails: (id: Int) -> Unit,
+) = with(LocalSharedTransitionScope.current) {
    Scaffold(
       Modifier.fillMaxSize(),
       contentWindowInsets = WindowInsets(),
@@ -118,9 +133,15 @@ private fun RuleListScreenContent(
                      rule.name,
                      Modifier
                         .background(MaterialTheme.colorScheme.surface)
+                        .clickable(onClick = { openDetails(rule.id) })
                         .padding(32.dp)
                         .fillMaxWidth()
                         .animateItem()
+                        .sharedElement(
+                           rememberSharedContentState("ruleName-${rule.id}"),
+                           LocalNavAnimatedContentScope.current
+                        )
+
                   )
                }
             }
@@ -194,6 +215,7 @@ private fun RuleListScreenPreview() {
          ),
          {},
          { _, _ -> },
+         {},
       )
    }
 }

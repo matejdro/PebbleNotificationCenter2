@@ -19,6 +19,8 @@ dependencies {
 
    implementation(projects.commonCompose)
    implementation(libs.kotlinova.core)
+   implementation(libs.androidx.compose.material3.sizeClasses)
+   implementation(libs.androidx.navigation3)
 
    testImplementation(testFixtures(projects.rules.api))
    testImplementation(libs.kotlin.coroutines)

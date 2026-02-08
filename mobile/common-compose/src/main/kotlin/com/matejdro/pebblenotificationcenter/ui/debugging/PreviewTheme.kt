@@ -1,12 +1,17 @@
 package com.matejdro.pebblenotificationcenter.ui.debugging
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import androidx.annotation.ColorInt
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil3.ColorImage
 import coil3.ImageLoader
 import coil3.annotation.DelicateCoilApi
@@ -18,27 +23,36 @@ import coil3.compose.asPainter
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import coil3.size.pxOrElse
+import com.matejdro.pebblenotificationcenter.ui.animations.LocalSharedTransitionScope
 import com.matejdro.pebblenotificationcenter.ui.theme.NotificationCenterTheme
 import si.inova.kotlinova.compose.time.ComposeAndroidDateTimeFormatter
 import si.inova.kotlinova.compose.time.LocalDateFormatter
 import si.inova.kotlinova.core.time.AndroidDateTimeFormatter
 import si.inova.kotlinova.core.time.FakeAndroidDateTimeFormatter
 
-@OptIn(DelicateCoilApi::class, ExperimentalCoilApi::class)
+@OptIn(DelicateCoilApi::class, ExperimentalCoilApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
 @Suppress("ModifierMissing") // This is intentional
+// AnimatedContent is only used to provide its scope
+@SuppressLint("UnusedContentLambdaTargetStateParameter", "UnusedSharedTransitionModifierParameter")
 fun PreviewTheme(
    formatter: AndroidDateTimeFormatter = FakeAndroidDateTimeFormatter(),
    fill: Boolean = true,
    content: @Composable () -> Unit,
 ) {
-   CompositionLocalProvider(
-      LocalDateFormatter provides ComposeAndroidDateTimeFormatter(formatter),
-      LocalAsyncImagePreviewHandler provides ColorCyclingAsyncImagePreviewHandler()
-   ) {
-      // Disable Material You on previews (and screenshot tests) to improve reproducibility
-      NotificationCenterTheme(dynamicColor = false) {
-         Surface(modifier = if (fill) Modifier.fillMaxSize() else Modifier, content = content)
+   AnimatedContent(Unit) {
+      SharedTransitionScope {
+         CompositionLocalProvider(
+            LocalDateFormatter provides ComposeAndroidDateTimeFormatter(formatter),
+            LocalAsyncImagePreviewHandler provides ColorCyclingAsyncImagePreviewHandler(),
+            LocalSharedTransitionScope provides this,
+            LocalNavAnimatedContentScope provides this@AnimatedContent,
+         ) {
+            // Disable Material You on previews (and screenshot tests) to improve reproducibility
+            NotificationCenterTheme(dynamicColor = false) {
+               Surface(modifier = if (fill) Modifier.fillMaxSize() else Modifier, content = content)
+            }
+         }
       }
    }
 }

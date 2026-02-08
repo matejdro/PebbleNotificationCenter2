@@ -1,6 +1,7 @@
 package com.matejdro.notificationcenter.rules
 
 import app.cash.sqldelight.async.coroutines.awaitAsList
+import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import com.matejdro.notificationcenter.rules.sqldelight.generated.DbRuleQueries
 import dev.zacsweers.metro.AppScope
@@ -29,6 +30,12 @@ class RulesRepositoryImpl(
       }.flowOnDefault()
    }
 
+   override fun getSingle(id: Int): Flow<Outcome<RuleMetadata?>> {
+      return queries.selectSingle(id.toLong()).asFlow().map {
+         Outcome.Success(it.awaitAsOneOrNull()?.toRuleMetadata())
+      }.flowOnDefault()
+   }
+
    override suspend fun insert(name: String) = withDefault<Unit> {
       queries.insert(name)
    }
@@ -37,7 +44,7 @@ class RulesRepositoryImpl(
       queries.update(ruleMetadata.name, ruleMetadata.id.toLong())
    }
 
-   override suspend fun delete(id: Int) {
+   override suspend fun delete(id: Int) = withDefault<Unit> {
       require(id > 1) { "Default rule cannot be deleted" }
       queries.delete(id.toLong())
    }
