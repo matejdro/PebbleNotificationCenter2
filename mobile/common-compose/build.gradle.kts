@@ -13,6 +13,7 @@ android {
 
 dependencies {
    implementation(libs.androidx.core)
+   implementation(libs.androidx.navigation3)
    implementation(libs.kotlinova.core)
    implementation(libs.kotlinova.compose)
    implementation(libs.kotlin.coroutines)

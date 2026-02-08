@@ -44,4 +44,10 @@ class FakeRulesRepository : RulesRepository {
          }
       }
    }
+
+   override fun getSingle(id: Int): Flow<Outcome<RuleMetadata?>> {
+      return rules.map { list ->
+         Outcome.Success(list.firstOrNull { it.id == id })
+      }
+   }
 }

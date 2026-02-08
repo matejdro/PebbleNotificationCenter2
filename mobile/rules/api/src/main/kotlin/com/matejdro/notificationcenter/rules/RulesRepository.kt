@@ -5,6 +5,7 @@ import si.inova.kotlinova.core.outcome.Outcome
 
 interface RulesRepository {
    fun getAll(): Flow<Outcome<List<RuleMetadata>>>
+   fun getSingle(id: Int): Flow<Outcome<RuleMetadata?>>
    suspend fun insert(name: String)
    suspend fun edit(ruleMetadata: RuleMetadata)
 
