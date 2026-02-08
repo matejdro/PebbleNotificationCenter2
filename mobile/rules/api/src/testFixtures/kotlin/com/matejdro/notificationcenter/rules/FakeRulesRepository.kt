@@ -34,4 +34,14 @@ class FakeRulesRepository : RulesRepository {
          ruleList.filter { rule -> rule.id != id }
       }
    }
+
+   override suspend fun reorder(id: Int, toIndex: Int) {
+      rules.update { list ->
+         val existing = list.first { it.id == id }
+         list.toMutableList().apply {
+            remove(existing)
+            add(toIndex, existing)
+         }
+      }
+   }
 }

@@ -47,4 +47,23 @@ class RuleListViewModelTest {
          )
       )
    }
+
+   @Test
+   fun `Reorder rules`() = scope.runTest {
+      repo.insert("Rule A")
+      repo.insert("Rule B")
+      repo.insert("Rule C")
+
+      viewModel.onServiceRegistered()
+      viewModel.reorder(2, 0)
+      runCurrent()
+
+      viewModel.uiState.value shouldBeSuccessWithData RuleListState(
+         listOf(
+            RuleMetadata(2, "Rule B"),
+            RuleMetadata(1, "Rule A"),
+            RuleMetadata(3, "Rule C"),
+         )
+      )
+   }
 }

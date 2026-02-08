@@ -1,5 +1,6 @@
 package com.matejdro.notificationcenter.rules.ui.list
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
@@ -11,11 +12,13 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,6 +43,7 @@ import com.matejdro.pebblenotificationcenter.ui.components.AlertDialogWithConten
 import com.matejdro.pebblenotificationcenter.ui.components.ProgressErrorSuccessScaffold
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
+import com.matejdro.pebblenotificationcenter.ui.lists.ReorderableListContainer
 import si.inova.kotlinova.compose.components.itemsWithDivider
 import si.inova.kotlinova.compose.flow.collectAsStateWithLifecycleAndBlinkingPrevention
 import si.inova.kotlinova.navigation.screens.InjectNavigationScreen
@@ -70,7 +74,8 @@ class RuleListScreen(
       ProgressErrorSuccessScaffold(stateOutcome, modifier = Modifier.safeDrawingPadding()) { state ->
          RuleListScreenContent(
             state,
-            addNew = { showAddDialog = true }
+            addNew = { showAddDialog = true },
+            setOrder = viewModel::reorder,
          )
       }
    }
@@ -80,6 +85,7 @@ class RuleListScreen(
 private fun RuleListScreenContent(
    state: RuleListState,
    addNew: () -> Unit,
+   setOrder: (id: Int, toIndex: Int) -> Unit,
 ) {
    Scaffold(
       Modifier.fillMaxSize(),
@@ -94,18 +100,30 @@ private fun RuleListScreenContent(
          }
       },
    ) { paddingValues ->
-      LazyColumn(
-         contentPadding = WindowInsets.safeDrawing.asPaddingValues(),
-         modifier = Modifier.padding(paddingValues)
-      ) {
-         itemsWithDivider(state.rules, key = { it.id }) {
-            Text(
-               it.name,
-               Modifier
-                  .padding(32.dp)
-                  .fillMaxWidth()
-                  .animateItem()
-            )
+      val listState = rememberLazyListState()
+      ReorderableListContainer(state.rules, listState) { rules ->
+         LazyColumn(
+            contentPadding = WindowInsets.safeDrawing.asPaddingValues(),
+            modifier = Modifier.padding(paddingValues)
+         ) {
+            itemsWithDivider(rules, key = { it.id }) { rule ->
+               ReorderableListItem(
+                  rule.id,
+                  rule,
+                  minReorderableIndex = 1,
+                  enabled = rule.id > 1,
+                  setOrder = setOrder
+               ) {
+                  Text(
+                     rule.name,
+                     Modifier
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(32.dp)
+                        .fillMaxWidth()
+                        .animateItem()
+                  )
+               }
+            }
          }
       }
    }
@@ -175,6 +193,7 @@ private fun RuleListScreenPreview() {
             )
          ),
          {},
+         { _, _ -> },
       )
    }
 }
