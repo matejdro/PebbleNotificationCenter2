@@ -31,4 +31,20 @@ class RuleListViewModelTest {
          )
       )
    }
+
+   @Test
+   fun `Add a rule`() = scope.runTest {
+      repo.insert("Rule A")
+
+      viewModel.onServiceRegistered()
+      viewModel.addRule("Rule B")
+      runCurrent()
+
+      viewModel.uiState.value shouldBeSuccessWithData RuleListState(
+         listOf(
+            RuleMetadata(1, "Rule A"),
+            RuleMetadata(2, "Rule B"),
+         )
+      )
+   }
 }

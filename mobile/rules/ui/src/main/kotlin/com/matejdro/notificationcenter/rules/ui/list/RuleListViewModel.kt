@@ -37,6 +37,11 @@ class RuleListViewModel(
          emitAll(rulesFlow)
       }
    }
+
+   fun addRule(ruleName: String) = resources.launchWithExceptionReporting {
+      actionLogger.logAction { "RuleListViewModel.addRule($ruleName)" }
+      rulesRepository.insert(ruleName)
+   }
 }
 
 data class RuleListState(
