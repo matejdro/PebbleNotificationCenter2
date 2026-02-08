@@ -99,7 +99,7 @@ dependencyAnalysis {
       }
 
       bundle("PebbleKit2") {
-         includeGroup("com.github.pebble-dev.PebbleKitAndroid2")
+         includeGroup("io.rebble.pebblekit2")
       }
 
       bundle("Navigation3") {
