@@ -9,4 +9,5 @@ interface RulesRepository {
    suspend fun edit(ruleMetadata: RuleMetadata)
 
    suspend fun delete(id: Int)
+   suspend fun reorder(id: Int, toIndex: Int)
 }

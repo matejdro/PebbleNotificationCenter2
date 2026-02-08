@@ -5,6 +5,7 @@ import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import app.cash.turbine.test
 import com.matejdro.notificationcenter.rules.sqldelight.generated.Database
 import com.matejdro.notificationcenter.rules.sqldelight.generated.DbRuleQueries
+import io.kotest.assertions.throwables.shouldThrow
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
@@ -84,6 +85,100 @@ class RulesRepositoryImplTest {
       assertThrows<IllegalArgumentException>() {
          repo.delete(1)
          runCurrent()
+      }
+   }
+
+   @Test
+   fun `Move rule downwards`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         repo.insert("Rule B")
+         repo.insert("Rule C")
+         repo.insert("Rule D")
+         runCurrent()
+
+         repo.reorder(3, 5)
+         runCurrent()
+
+         expectMostRecentItem() shouldBeSuccessWithData listOf(
+            RuleMetadata(1, "Default Settings"),
+            RuleMetadata(2, "Rule A"),
+            RuleMetadata(4, "Rule C"),
+            RuleMetadata(5, "Rule D"),
+            RuleMetadata(3, "Rule B"),
+         )
+      }
+   }
+
+   @Test
+   fun `Move rule upwards`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         repo.insert("Rule B")
+         repo.insert("Rule C")
+         repo.insert("Rule D")
+         runCurrent()
+
+         repo.reorder(5, 1)
+         runCurrent()
+
+         expectMostRecentItem() shouldBeSuccessWithData listOf(
+            RuleMetadata(1, "Default Settings"),
+            RuleMetadata(2, "Rule A"),
+            RuleMetadata(5, "Rule D"),
+            RuleMetadata(3, "Rule B"),
+            RuleMetadata(4, "Rule C"),
+         )
+      }
+   }
+
+   @Test
+   fun `Disallow moving to the first place`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         repo.insert("Rule B")
+         repo.insert("Rule C")
+         repo.insert("Rule D")
+         runCurrent()
+
+         shouldThrow<IllegalArgumentException> {
+            repo.reorder(5, 0)
+            runCurrent()
+         }
+
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
+
+   @Test
+   fun `Handle reordering after delete`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         repo.insert("Rule B")
+         repo.insert("Rule C")
+         repo.insert("Rule D")
+         runCurrent()
+
+         repo.delete(3)
+         runCurrent()
+
+         repo.reorder(2, 3)
+         runCurrent()
+
+         expectMostRecentItem() shouldBeSuccessWithData listOf(
+            RuleMetadata(1, "Default Settings"),
+            RuleMetadata(4, "Rule C"),
+            RuleMetadata(2, "Rule A"),
+            RuleMetadata(5, "Rule D"),
+         )
       }
    }
 }

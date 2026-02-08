@@ -52,21 +52,24 @@ fun <T> ReorderableListContainer(
 
    val scope = object : ReorderableListScope<T> {
       @Composable
-      override fun ReorderableListItem(
-         key: Any,
+      override fun <K : Any> ReorderableListItem(
+         key: K,
          data: T,
-         setOrder: (toIndex: Int) -> Unit,
+         setOrder: (key: K, toIndex: Int) -> Unit,
          modifier: Modifier,
-         content: @Composable (Modifier) -> Unit,
+         minReorderableIndex: Int,
+         enabled: Boolean,
+         content: @Composable ((Modifier) -> Unit),
       ) {
          ReorderableItem(
             state = reorderState,
             key = key,
             data = data,
+            enabled = enabled,
             onDragEnter = { state ->
                reorderingList = reorderingList.toMutableList().apply {
                   val index = indexOf(data)
-                  if (index == -1) return@ReorderableItem
+                  if (index < minReorderableIndex) return@ReorderableItem
                   remove(state.data)
                   add(index, state.data)
 
@@ -115,7 +118,8 @@ fun <T> ReorderableListContainer(
 
                dragging = false
                lastDragIndex = -1
-               setOrder(reorderingList.indexOf(it.data))
+               @Suppress("UNCHECKED_CAST")
+               setOrder(it.key as K, reorderingList.indexOf(it.data))
             },
             draggableContent = {
                content(
@@ -155,11 +159,13 @@ fun <T> ReorderableListContainer(
 @Stable
 interface ReorderableListScope<T> {
    @Composable
-   fun ReorderableListItem(
-      key: Any,
+   fun <K : Any> ReorderableListItem(
+      key: K,
       data: T,
-      setOrder: (toIndex: Int) -> Unit,
+      setOrder: (key: K, toIndex: Int) -> Unit,
       modifier: Modifier = Modifier,
+      minReorderableIndex: Int = 0,
+      enabled: Boolean = true,
       content: @Composable ((Modifier) -> Unit),
    )
 }

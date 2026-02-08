@@ -1,19 +1,48 @@
 CREATE TABLE dbRule (
     id INTEGER PRIMARY KEY NOT NULL,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    sortOrder INTEGER NOT NULL
 );
 
 selectAll:
-SELECT * FROM dbRule;
+    SELECT * FROM dbRule ORDER BY sortOrder ASC;
 
 selectSingle:
-SELECT * FROM dbRule WHERE id = ? LIMIT 1;
+    SELECT * FROM dbRule WHERE id = ? LIMIT 1;
 
 insert:
-INSERT INTO dbRule (name) VALUES (?);
+    INSERT INTO dbRule (name, sortOrder) VALUES (
+        ?,
+        (SELECT COALESCE(MAX(sortOrder) + 1, 0) FROM dbRule)
+    );
 
-delete:
-DELETE FROM dbRule WHERE id = :id;
+delete {
+    UPDATE dbRule
+    SET sortOrder = sortOrder - 1
+    WHERE sortOrder > (SELECT sortOrder FROM dbRule WHERE id = :id);
+
+    DELETE FROM dbRule WHERE id = :id;
+}
 
 update:
-REPLACE INTO dbRule VALUES ?;
+    UPDATE dbRule SET name = ? WHERE id = :id;
+
+reorderUpwards {
+    UPDATE dbRule
+    SET sortOrder = sortOrder - 1
+    WHERE (sortOrder BETWEEN :fromIndex AND :toIndex);
+
+    UPDATE dbRule
+    SET sortOrder = :toIndex
+    WHERE id = :id;
+}
+
+reorderDownwards {
+    UPDATE dbRule
+    SET sortOrder = sortOrder + 1
+    WHERE (sortOrder BETWEEN :toIndex AND :fromIndex);
+
+    UPDATE dbRule
+    SET sortOrder = :toIndex
+    WHERE id = :id;
+}

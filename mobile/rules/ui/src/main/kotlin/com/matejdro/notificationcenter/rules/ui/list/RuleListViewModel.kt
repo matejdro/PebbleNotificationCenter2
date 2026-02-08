@@ -42,6 +42,11 @@ class RuleListViewModel(
       actionLogger.logAction { "RuleListViewModel.addRule($ruleName)" }
       rulesRepository.insert(ruleName)
    }
+
+   fun reorder(id: Int, toIndex: Int) = resources.launchWithExceptionReporting {
+      actionLogger.logAction { "RuleListViewModel.reorder($id, $toIndex)" }
+      rulesRepository.reorder(id, toIndex)
+   }
 }
 
 data class RuleListState(
