@@ -1,20 +1,42 @@
 package com.matejdro.notificationcenter.rules.ui.list
 
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.matejdro.notificationcenter.rules.RuleMetadata
+import com.matejdro.notificationcenter.rules.ui.R
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleListScreenKey
+import com.matejdro.pebblenotificationcenter.ui.components.AlertDialogWithContent
 import com.matejdro.pebblenotificationcenter.ui.components.ProgressErrorSuccessScaffold
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
@@ -31,8 +53,25 @@ class RuleListScreen(
    override fun Content(key: RuleListScreenKey) {
       val stateOutcome = viewModel.uiState.collectAsStateWithLifecycleAndBlinkingPrevention().value
 
+      var showAddDialog by remember { mutableStateOf(false) }
+      if (showAddDialog) {
+         NameEntryDialog(
+            stringResource(R.string.add_a_new_rule),
+            dismiss = { showAddDialog = false },
+            accept = {
+               if (!it.isBlank()) {
+                  viewModel.addRule(it)
+               }
+               showAddDialog = false
+            }
+         )
+      }
+
       ProgressErrorSuccessScaffold(stateOutcome, modifier = Modifier.safeDrawingPadding()) { state ->
-         RuleListScreenContent(state)
+         RuleListScreenContent(
+            state,
+            addNew = { showAddDialog = true }
+         )
       }
    }
 }
@@ -40,11 +79,19 @@ class RuleListScreen(
 @Composable
 private fun RuleListScreenContent(
    state: RuleListState,
+   addNew: () -> Unit,
 ) {
    Scaffold(
       Modifier.fillMaxSize(),
       contentWindowInsets = WindowInsets(),
       floatingActionButton = {
+         FloatingActionButton(
+            onClick = addNew,
+            modifier = Modifier
+               .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+         ) {
+            Icon(painterResource(R.drawable.ic_add), stringResource(R.string.new_rule))
+         }
       },
    ) { paddingValues ->
       LazyColumn(
@@ -64,6 +111,58 @@ private fun RuleListScreenContent(
    }
 }
 
+@Composable
+private fun NameEntryDialog(
+   title: String,
+   dismiss: () -> Unit,
+   accept: (text: String) -> Unit,
+) {
+   val textFieldState = rememberTextFieldState("")
+
+   AlertDialogWithContent(
+      title = {
+         Text(text = title)
+      },
+      onDismissRequest = {
+         dismiss()
+      },
+      confirmButton = {
+         TextButton(
+            onClick = {
+               accept(textFieldState.text.toString())
+            }
+         ) {
+            Text(stringResource(R.string.ok))
+         }
+      },
+      dismissButton = {
+         TextButton(
+            onClick = {
+               dismiss()
+            }
+         ) {
+            Text(stringResource(R.string.cancel))
+         }
+      },
+   ) {
+      val focusRequester = remember { FocusRequester() }
+
+      TextField(
+         textFieldState,
+         Modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester),
+         onKeyboardAction = { accept(textFieldState.text.toString()) },
+         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+         lineLimits = TextFieldLineLimits.SingleLine,
+      )
+
+      LaunchedEffect(Unit) {
+         focusRequester.requestFocus()
+      }
+   }
+}
+
 @FullScreenPreviews
 @Composable
 private fun RuleListScreenPreview() {
@@ -74,7 +173,8 @@ private fun RuleListScreenPreview() {
                RuleMetadata(1, "Rule A"),
                RuleMetadata(2, "Rule B"),
             )
-         )
+         ),
+         {},
       )
    }
 }
