@@ -1,6 +1,7 @@
 package com.matejdro.notificationcenter.rules.ui.details
 
 import androidx.compose.runtime.Stable
+import androidx.datastore.preferences.core.Preferences
 import com.matejdro.notificationcenter.rules.RuleMetadata
 import com.matejdro.notificationcenter.rules.RulesRepository
 import com.matejdro.notificationcenter.rules.ui.errors.RuleMissingException
@@ -9,10 +10,11 @@ import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKe
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import si.inova.kotlinova.core.outcome.CoroutineResourceManager
 import si.inova.kotlinova.core.outcome.Outcome
-import si.inova.kotlinova.core.outcome.mapData
 import si.inova.kotlinova.navigation.services.ContributesScopedService
 import si.inova.kotlinova.navigation.services.SingleScreenViewModel
 
@@ -31,9 +33,17 @@ class RuleDetailsViewModel(
       actionLogger.logAction { "RuleDetailsViewModel.onServiceRegistered()" }
       resources.launchResourceControlTask(_uiState) {
          emitAll(
-            rulesRepository.getSingle(key.id).map { rule ->
-               rule.mapData {
-                  RuleDetailsScreenState(it ?: throw RuleMissingException())
+            rulesRepository.getSingle(key.id).flatMapLatest { ruleOutcome ->
+               when (ruleOutcome) {
+                  is Outcome.Error -> flowOf(Outcome.Error(ruleOutcome.exception))
+                  is Outcome.Progress -> flowOf(Outcome.Progress())
+                  is Outcome.Success -> {
+                     val rule = ruleOutcome.data ?: throw RuleMissingException()
+
+                     rulesRepository.getRulePreferences(key.id).map { preferences ->
+                        Outcome.Success(RuleDetailsScreenState(rule, preferences))
+                     }
+                  }
                }
             }
          )
@@ -51,7 +61,15 @@ class RuleDetailsViewModel(
 
       rulesRepository.edit(RuleMetadata(key.id, newName))
    }
+
+   fun <T> updatePreference(key: Preferences.Key<T>, value: T) = resources.launchWithExceptionReporting {
+      actionLogger.logAction { "RuleDetailsViewModel.updatePreference($key, ${value ?: "null"})" }
+
+      rulesRepository.updateRulePreference(this@RuleDetailsViewModel.key.id) {
+         it[key] = value
+      }
+   }
 }
 
 @Stable
-data class RuleDetailsScreenState(val ruleMetadata: RuleMetadata)
+data class RuleDetailsScreenState(val ruleMetadata: RuleMetadata, val preferences: Preferences)

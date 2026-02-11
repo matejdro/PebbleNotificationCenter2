@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.notificationcenter.rules.RuleMetadata
@@ -175,7 +176,7 @@ private fun RuleDetailsScreenContent(
 internal fun RuleDetailsScreenContentPreview() {
    PreviewTheme {
       RuleDetailsScreenContent(
-         state = RuleDetailsScreenState(RuleMetadata(2, "Test Rule")),
+         state = RuleDetailsScreenState(RuleMetadata(2, "Test Rule"), emptyPreferences()),
          windowSizeClass = WindowWidthSizeClass.Compact,
          {},
          {},

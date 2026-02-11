@@ -20,9 +20,10 @@ dependencies {
    api(libs.kotlinova.navigation)
 
    implementation(projects.commonCompose)
-   implementation(libs.kotlinova.core)
    implementation(libs.androidx.compose.material3.sizeClasses)
+   implementation(libs.androidx.datastore.preferences)
    implementation(libs.androidx.navigation3)
+   implementation(libs.kotlinova.core)
 
    testImplementation(testFixtures(projects.rules.api))
    testImplementation(libs.kotlin.coroutines)

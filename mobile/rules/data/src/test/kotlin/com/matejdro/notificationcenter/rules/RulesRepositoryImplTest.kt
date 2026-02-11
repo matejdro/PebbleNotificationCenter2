@@ -5,7 +5,12 @@ import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import app.cash.turbine.test
 import com.matejdro.notificationcenter.rules.sqldelight.generated.Database
 import com.matejdro.notificationcenter.rules.sqldelight.generated.DbRuleQueries
+import com.matejdro.notificationcenter.rules.util.FakeDatastoreManager
+import dispatch.core.IOCoroutineScope
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.maps.shouldBeEmpty
+import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
@@ -15,7 +20,11 @@ import si.inova.kotlinova.core.test.outcomes.shouldBeSuccessWithData
 
 class RulesRepositoryImplTest {
    private val scope = TestScopeWithDispatcherProvider()
-   private val repo = RulesRepositoryImpl(createTestRuleQueries())
+   private val repo = RulesRepositoryImpl(
+      IOCoroutineScope(scope.backgroundScope.coroutineContext),
+      createTestRuleQueries(),
+      FakeDatastoreManager()
+   )
 
    @Test
    fun `Return starting rule by default`() = scope.runTest {
@@ -196,6 +205,63 @@ class RulesRepositoryImplTest {
       repo.getSingle(2).test {
          runCurrent()
          expectMostRecentItem() shouldBeSuccessWithData RuleMetadata(2, "Rule A")
+      }
+   }
+
+   @Test
+   fun `Return empty preferences for added rules`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         runCurrent()
+
+         repo.getRulePreferences(2).first().asMap().shouldBeEmpty()
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
+
+   @Test
+   fun `Store preferences`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         runCurrent()
+
+         repo.updateRulePreference(1) {
+            it[RuleOption.filterAppPackage] = "package.default"
+         }
+         repo.updateRulePreference(2) {
+            it[RuleOption.filterAppPackage] = "package.A"
+         }
+         runCurrent()
+
+         repo.getRulePreferences(1).first()[RuleOption.filterAppPackage] shouldBe "package.default"
+         repo.getRulePreferences(2).first()[RuleOption.filterAppPackage] shouldBe "package.A"
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
+
+   @Test
+   fun `Clear preferences after deleting`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         runCurrent()
+
+         repo.updateRulePreference(2) {
+            it[RuleOption.filterAppPackage] = "package.default"
+         }
+
+         repo.delete(2)
+         runCurrent()
+         repo.insert("Rule A")
+         runCurrent()
+
+         repo.getRulePreferences(2).first().asMap().shouldBeEmpty()
+         cancelAndIgnoreRemainingEvents()
       }
    }
 }

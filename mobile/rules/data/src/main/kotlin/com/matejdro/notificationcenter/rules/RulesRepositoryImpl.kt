@@ -1,23 +1,41 @@
 package com.matejdro.notificationcenter.rules
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.MutablePreferences
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import com.matejdro.notificationcenter.rules.sqldelight.generated.DbRuleQueries
+import com.matejdro.notificationcenter.rules.util.DatastoreManager
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
+import dispatch.core.IOCoroutineScope
 import dispatch.core.flowOnDefault
 import dispatch.core.withDefault
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.job
 import si.inova.kotlinova.core.outcome.Outcome
 
 @Inject
 @ContributesBinding(AppScope::class)
+@SingleIn(AppScope::class)
 class RulesRepositoryImpl(
+   private val ioScope: IOCoroutineScope,
    private val queries: DbRuleQueries,
+   private val dataStoreManager: DatastoreManager,
 ) : RulesRepository {
+   private val stores = HashMap<Int, DataStoreWrapper>()
+
    override fun getAll(): Flow<Outcome<List<RuleMetadata>>> {
       return queries.selectAll().asFlow().map { query ->
          val list = query.awaitAsList()
@@ -47,6 +65,13 @@ class RulesRepositoryImpl(
    override suspend fun delete(id: Int) = withDefault<Unit> {
       require(id > 1) { "Default rule cannot be deleted" }
       queries.delete(id.toLong())
+
+      val dataStore = synchronized(stores) {
+         stores.remove(id)
+      }
+      dataStore?.coroutineScope?.cancel()
+
+      dataStoreManager.deleteDataStore(id.toString())
    }
 
    override suspend fun reorder(id: Int, toIndex: Int) = withDefault<Unit> {
@@ -59,4 +84,33 @@ class RulesRepositoryImpl(
          queries.reorderDownwards(toIndex = toIndex.toLong(), fromIndex = rule.sortOrder, id = id.toLong())
       }
    }
+
+   override fun getRulePreferences(id: Int): Flow<Preferences> {
+      return flow {
+         val dataStore = getDataStore(id)
+         emitAll(dataStore.data)
+      }
+   }
+
+   override suspend fun updateRulePreference(
+      id: Int,
+      transform: suspend (MutablePreferences) -> Unit,
+   ) {
+      getDataStore(id).edit(transform)
+   }
+
+   private fun getDataStore(id: Int): DataStore<Preferences> {
+      stores[id]?.let { return it.dataStore }
+
+      return synchronized(stores) {
+         stores.getOrPut(id) {
+            val dataStoreScope = CoroutineScope(ioScope.coroutineContext + SupervisorJob(ioScope.coroutineContext.job))
+            val dataStore = dataStoreManager.createDatastore(dataStoreScope, id.toString())
+            DataStoreWrapper(dataStoreScope, dataStore)
+         }.dataStore
+      }
+   }
+
+   // The only way to close the data store is to close its coroutine scope, so we need to remember it
+   private data class DataStoreWrapper(val coroutineScope: CoroutineScope, val dataStore: DataStore<Preferences>)
 }

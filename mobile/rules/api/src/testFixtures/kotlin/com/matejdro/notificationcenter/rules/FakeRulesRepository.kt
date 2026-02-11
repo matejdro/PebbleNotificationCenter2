@@ -1,5 +1,8 @@
 package com.matejdro.notificationcenter.rules
 
+import androidx.datastore.preferences.core.MutablePreferences
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -8,6 +11,7 @@ import si.inova.kotlinova.core.outcome.Outcome
 
 class FakeRulesRepository : RulesRepository {
    private val rules = MutableStateFlow<List<RuleMetadata>>(emptyList())
+   private val preferences = HashMap<Int, MutableStateFlow<Preferences>>()
 
    override fun getAll(): Flow<Outcome<List<RuleMetadata>>> {
       return rules.map { Outcome.Success(it) }
@@ -33,6 +37,8 @@ class FakeRulesRepository : RulesRepository {
       rules.update { ruleList ->
          ruleList.filter { rule -> rule.id != id }
       }
+
+      preferences.remove(id)
    }
 
    override suspend fun reorder(id: Int, toIndex: Int) {
@@ -49,5 +55,19 @@ class FakeRulesRepository : RulesRepository {
       return rules.map { list ->
          Outcome.Success(list.firstOrNull { it.id == id })
       }
+   }
+
+   override fun getRulePreferences(id: Int): Flow<Preferences> {
+      return preferences.getOrPut(id) { MutableStateFlow(emptyPreferences()) }
+   }
+
+   override suspend fun updateRulePreference(
+      id: Int,
+      transform: suspend (MutablePreferences) -> Unit,
+   ) {
+      preferences.getOrPut(id) { MutableStateFlow(emptyPreferences()) }
+         .update { preference ->
+            preference.toMutablePreferences().apply { transform(this) }.toPreferences()
+         }
    }
 }

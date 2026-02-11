@@ -16,8 +16,9 @@ sqldelight {
 
 dependencies {
    api(projects.rules.api)
+   api(libs.dispatch)
 
-   implementation(libs.dispatch)
+   implementation(libs.androidx.datastore.preferences)
    implementation(libs.kotlinova.core)
 
    testImplementation(libs.kotlin.coroutines)
