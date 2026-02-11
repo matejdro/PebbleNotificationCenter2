@@ -7,15 +7,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
-class FakeDatastoreManager : DatastoreManager {
+class FakeDatastoreFactory : DatastoreFactory {
    override fun createDatastore(
       scope: CoroutineScope,
       name: String,
    ): DataStore<Preferences> {
       return InMemoryDataStore(emptyPreferences())
-   }
-
-   override fun deleteDataStore(name: String) {
    }
 }
 

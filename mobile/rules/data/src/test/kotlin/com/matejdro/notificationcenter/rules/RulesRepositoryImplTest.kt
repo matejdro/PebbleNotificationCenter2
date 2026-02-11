@@ -5,7 +5,7 @@ import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import app.cash.turbine.test
 import com.matejdro.notificationcenter.rules.sqldelight.generated.Database
 import com.matejdro.notificationcenter.rules.sqldelight.generated.DbRuleQueries
-import com.matejdro.notificationcenter.rules.util.FakeDatastoreManager
+import com.matejdro.notificationcenter.rules.util.FakeDatastoreFactory
 import dispatch.core.IOCoroutineScope
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.maps.shouldBeEmpty
@@ -23,7 +23,7 @@ class RulesRepositoryImplTest {
    private val repo = RulesRepositoryImpl(
       IOCoroutineScope(scope.backgroundScope.coroutineContext),
       createTestRuleQueries(),
-      FakeDatastoreManager()
+      FakeDatastoreFactory()
    )
 
    @Test

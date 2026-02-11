@@ -4,11 +4,12 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import com.matejdro.notificationcenter.rules.sqldelight.generated.DbRuleQueries
-import com.matejdro.notificationcenter.rules.util.DatastoreManager
+import com.matejdro.notificationcenter.rules.util.DatastoreFactory
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -18,7 +19,6 @@ import dispatch.core.flowOnDefault
 import dispatch.core.withDefault
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
@@ -32,7 +32,7 @@ import si.inova.kotlinova.core.outcome.Outcome
 class RulesRepositoryImpl(
    private val ioScope: IOCoroutineScope,
    private val queries: DbRuleQueries,
-   private val dataStoreManager: DatastoreManager,
+   private val dataStoreFactory: DatastoreFactory,
 ) : RulesRepository {
    private val stores = HashMap<Int, DataStoreWrapper>()
 
@@ -65,13 +65,7 @@ class RulesRepositoryImpl(
    override suspend fun delete(id: Int) = withDefault<Unit> {
       require(id > 1) { "Default rule cannot be deleted" }
       queries.delete(id.toLong())
-
-      val dataStore = synchronized(stores) {
-         stores.remove(id)
-      }
-      dataStore?.coroutineScope?.cancel()
-
-      dataStoreManager.deleteDataStore(id.toString())
+      getDataStore(id).updateData { emptyPreferences() }
    }
 
    override suspend fun reorder(id: Int, toIndex: Int) = withDefault<Unit> {
@@ -105,7 +99,7 @@ class RulesRepositoryImpl(
       return synchronized(stores) {
          stores.getOrPut(id) {
             val dataStoreScope = CoroutineScope(ioScope.coroutineContext + SupervisorJob(ioScope.coroutineContext.job))
-            val dataStore = dataStoreManager.createDatastore(dataStoreScope, id.toString())
+            val dataStore = dataStoreFactory.createDatastore(dataStoreScope, id.toString())
             DataStoreWrapper(dataStoreScope, dataStore)
          }.dataStore
       }
