@@ -1,5 +1,6 @@
 package com.matejdro.notificationcenter.rules.ui.dialogs
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -16,11 +17,10 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.notificationcenter.rules.ui.R
-import com.matejdro.pebblenotificationcenter.ui.components.AlertDialogWithContent
+import com.matejdro.pebblenotificationcenter.ui.components.AlertDialogInnerContent
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
 import kotlinx.parcelize.IgnoredOnParcel
@@ -59,21 +59,9 @@ private fun NameEntryScreenContent(
 ) {
    val textFieldState = rememberTextFieldState(key.initialText, initialSelection = TextRange(0, key.initialText.length))
 
-   AlertDialogWithContent(
+   AlertDialogInnerContent(
       title = {
          Text(text = key.title)
-      },
-      onDismissRequest = {
-         dismiss()
-      },
-      confirmButton = {
-         TextButton(
-            onClick = {
-               accept(textFieldState.text.toString())
-            }
-         ) {
-            Text(stringResource(R.string.ok))
-         }
       },
       dismissButton = {
          TextButton(
@@ -84,31 +72,41 @@ private fun NameEntryScreenContent(
             Text(stringResource(R.string.cancel))
          }
       },
-   ) {
-      val focusRequester = remember { FocusRequester() }
+      confirmButton = {
+         TextButton(
+            onClick = {
+               accept(textFieldState.text.toString())
+            }
+         ) {
+            Text(stringResource(R.string.ok))
+         }
+      },
+      content = {
+         val focusRequester = remember { FocusRequester() }
 
-      TextField(
-         textFieldState,
-         Modifier
-            .fillMaxWidth()
-            .focusRequester(focusRequester),
-         onKeyboardAction = { accept(textFieldState.text.toString()) },
-         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-         lineLimits = TextFieldLineLimits.SingleLine,
-      )
+         TextField(
+            textFieldState,
+            Modifier
+               .fillMaxWidth()
+               .focusRequester(focusRequester),
+            onKeyboardAction = { accept(textFieldState.text.toString()) },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            lineLimits = TextFieldLineLimits.SingleLine,
+         )
 
-      LaunchedEffect(Unit) {
-         focusRequester.requestFocus()
-      }
-   }
+         LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+         }
+      },
+   )
 }
 
 @ShowkaseComposable(group = "test")
 @Composable
 @FullScreenPreviews
 internal fun NameEntryScreenPreview() {
-   Dialog({}) {
-      PreviewTheme {
+   PreviewTheme {
+      Box {
          NameEntryScreenContent(
             NameEntryScreenKey("Enter text:", ResultKey(0), "Hello"),
             {},

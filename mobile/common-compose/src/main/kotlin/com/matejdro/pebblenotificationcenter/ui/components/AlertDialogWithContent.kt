@@ -46,41 +46,60 @@ fun AlertDialogWithContent(
       onDismissRequest = onDismissRequest,
       modifier = modifier,
       content = {
-         Surface(
-            shape = MaterialTheme.shapes.large,
-            color = AlertDialogDefaults.containerColor,
-            tonalElevation = AlertDialogDefaults.TonalElevation,
-         ) {
-            Layout(
-               modifier = Modifier
-                  .padding(24.dp),
-               measurePolicy = DialogMeasuePolicy,
-               content = {
-                  Box(Modifier.padding(bottom = 16.dp)) {
-                     title?.let {
-                        CompositionLocalProvider(
-                           LocalTextStyle provides MaterialTheme.typography.headlineSmall
-                        ) {
-                           it()
-                        }
-                     }
-                  }
-
-                  Box {
-                     content()
-                  }
-
-                  Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                     neutralButton()
-                     Spacer(Modifier.weight(1f))
-                     dismissButton()
-                     confirmButton()
-                  }
-               }
-            )
-         }
+         AlertDialogInnerContent(
+            title = title,
+            neutralButton = neutralButton,
+            dismissButton = dismissButton,
+            confirmButton = confirmButton,
+            content = content
+         )
       }
    )
+}
+
+@Composable
+fun AlertDialogInnerContent(
+   modifier: Modifier = Modifier,
+   title: @Composable (() -> Unit)? = null,
+   neutralButton: @Composable (() -> Unit) = {},
+   dismissButton: @Composable (() -> Unit) = {},
+   confirmButton: @Composable (() -> Unit) = {},
+   content: @Composable (() -> Unit),
+) {
+   Surface(
+      modifier = modifier,
+      shape = MaterialTheme.shapes.large,
+      color = AlertDialogDefaults.containerColor,
+      tonalElevation = AlertDialogDefaults.TonalElevation,
+   ) {
+      Layout(
+         modifier = Modifier
+            .padding(24.dp),
+         measurePolicy = DialogMeasuePolicy,
+         content = {
+            Box(Modifier.padding(bottom = 16.dp)) {
+               title?.let {
+                  CompositionLocalProvider(
+                     LocalTextStyle provides MaterialTheme.typography.headlineSmall
+                  ) {
+                     it()
+                  }
+               }
+            }
+
+            Box {
+               content()
+            }
+
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+               neutralButton()
+               Spacer(Modifier.weight(1f))
+               dismissButton()
+               confirmButton()
+            }
+         }
+      )
+   }
 }
 
 private object DialogMeasuePolicy : MeasurePolicy {
