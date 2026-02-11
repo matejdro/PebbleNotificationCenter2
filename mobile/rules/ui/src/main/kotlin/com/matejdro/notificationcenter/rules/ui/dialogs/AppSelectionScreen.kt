@@ -77,10 +77,13 @@ private fun AppSelectionScreenContent(
 ) {
    var appList by remember { mutableStateOf<List<App>>(emptyList()) }
 
-   val packageManager = LocalContext.current.packageManager
-   LaunchedEffect(packageManager) {
-      appList = withContext(Dispatchers.Default) {
-         packageManager.getInstalledPackages(0)
+   val context = LocalContext.current
+   LaunchedEffect(context) {
+      withContext(Dispatchers.Default) {
+         val packageManager = context.packageManager
+         val anyAppEntry = App("", context.getString(R.string.any_app))
+
+         appList = listOf(anyAppEntry) + packageManager.getInstalledPackages(0)
             .mapNotNull {
                val info = it.applicationInfo ?: return@mapNotNull null
                App(it.packageName, packageManager.getApplicationLabel(info).toString())
