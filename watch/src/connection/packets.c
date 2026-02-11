@@ -76,15 +76,16 @@ static void on_close_me_finished(const bool success)
         }
         else
         {
-            // After this method is finished, all callbacks will be unregistered, so we cannot send data yet.
-            // Send it after 1ms
-            app_timer_register(1, send_close_me, NULL);
+            // Retry sending after a while
+            app_timer_register(250, send_close_me, NULL);
         }
     }
 }
 
 void send_close_me()
 {
+    window_status_show_error("Closing...");
+
     bluetooth_register_sending_finish(on_close_me_finished);
 
     DictionaryIterator* iterator;
@@ -93,7 +94,6 @@ void send_close_me()
     dict_write_uint8(iterator, 0, 8);
     bluetooth_app_message_outbox_send();
 
-    window_status_show_error("Closing...");
 }
 
 static void receive_watch_packet(const DictionaryIterator* received)
