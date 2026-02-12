@@ -1,8 +1,11 @@
 package com.matejdro.pebblenotificationcenter
 
 import android.app.PendingIntent
+import android.os.Build
+import android.os.Process
 import com.matejdro.pebblenotificationcenter.notification.NotificationService
 import com.matejdro.pebblenotificationcenter.notification.NotificationServiceController
+import com.matejdro.pebblenotificationcenter.notification.model.LightNotificationChannel
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -29,5 +32,17 @@ class NotificationServiceControllerImpl : NotificationServiceController {
       pendingIntent.send()
 
       return true
+   }
+
+   override fun getNotificationChannels(pkg: String): List<LightNotificationChannel> {
+      val service = NotificationService.instance ?: return emptyList()
+
+      return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+         service.getNotificationChannels(pkg, Process.myUserHandle()).orEmpty().map {
+            LightNotificationChannel(it.id, it.name.toString())
+         }
+      } else {
+         emptyList()
+      }
    }
 }
