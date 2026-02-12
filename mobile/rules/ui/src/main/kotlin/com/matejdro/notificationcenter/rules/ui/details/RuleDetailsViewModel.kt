@@ -101,7 +101,12 @@ class RuleDetailsViewModel(
       actionLogger.logAction { "RuleDetailsViewModel.changeTargetApp(appPkg = $appPkg, channelIds = $channelIds)" }
 
       rulesRepository.updateRulePreference(this@RuleDetailsViewModel.key.id) {
-         it[RuleOption.conditionAppPackage] = appPkg
+         if (appPkg.isNotEmpty()) {
+            it[RuleOption.conditionAppPackage] = appPkg
+         } else {
+            it.remove(RuleOption.conditionAppPackage)
+         }
+
          it[RuleOption.conditionNotificationChannels] = channelIds.toSet()
       }
    }

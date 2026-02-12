@@ -15,18 +15,18 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import si.inova.kotlinova.core.outcome.Outcome
+import si.inova.kotlinova.core.test.TestScopeWithDispatcherProvider
 import si.inova.kotlinova.core.test.outcomes.shouldBeErrorWith
 import si.inova.kotlinova.core.test.outcomes.shouldBeSuccessWithData
 import si.inova.kotlinova.core.test.outcomes.testCoroutineResourceManager
 
 class RuleDetailsViewModelTest {
-   private val scope = TestScope()
+   private val scope = TestScopeWithDispatcherProvider()
    private val rulesRepository = FakeRulesRepository()
    private val appNameProvider: AppNameProvider = AppNameProvider {
       "Name of $it"
@@ -189,6 +189,25 @@ class RuleDetailsViewModelTest {
       viewModel.uiState.value.shouldBeInstanceOf<Outcome.Success<RuleDetailsScreenState>>().data.apply {
          targetAppName shouldBe "Name of pkg2"
          targetChannelNames shouldBe listOf("Channelu 3")
+      }
+   }
+
+   @Test
+   fun `Update target to null when blank`() = scope.runTest {
+      insertDefaultRules()
+      rulesRepository.updateRulePreference(2) {
+         it[RuleOption.conditionAppPackage] = "pkg"
+      }
+
+      viewModel.onServiceRegistered()
+      runCurrent()
+
+      viewModel.changeTargetApp("", emptyList())
+      runCurrent()
+
+      viewModel.uiState.value.shouldBeInstanceOf<Outcome.Success<RuleDetailsScreenState>>().data.apply {
+         targetAppName shouldBe null
+         targetChannelNames shouldBe emptyList()
       }
    }
 

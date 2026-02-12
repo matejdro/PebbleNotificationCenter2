@@ -78,7 +78,7 @@ internal fun appPickingDialog(
             AppSelectionScreenKey(resultKey)
          },
          onResult = {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (it.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                lastSelectedPkg = it
                channelPickerDialog.trigger(it)
             } else {
