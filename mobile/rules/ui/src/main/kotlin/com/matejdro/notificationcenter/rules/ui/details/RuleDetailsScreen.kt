@@ -1,6 +1,5 @@
 package com.matejdro.notificationcenter.rules.ui.details
 
-import android.os.Build
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,14 +9,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -25,7 +22,6 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,12 +41,8 @@ import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.notificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
 import com.matejdro.notificationcenter.rules.RuleMetadata
 import com.matejdro.notificationcenter.rules.ui.R
-import com.matejdro.notificationcenter.rules.ui.dialogs.AppSelectionScreenKey
-import com.matejdro.notificationcenter.rules.ui.dialogs.ChannelSelectionScreenKey
-import com.matejdro.notificationcenter.rules.ui.dialogs.NameEntryScreenKey
 import com.matejdro.notificationcenter.rules.ui.errors.ruleUserFriendlyMessage
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey
-import com.matejdro.pebblenotificationcenter.navigation.util.rememberNavigationPopup
 import com.matejdro.pebblenotificationcenter.navigation.util.trigger
 import com.matejdro.pebblenotificationcenter.ui.animations.LocalSharedTransitionScope
 import com.matejdro.pebblenotificationcenter.ui.components.ProgressErrorSuccessScaffold
@@ -74,78 +66,21 @@ class RuleDetailsScreen(
 
       val stateOutcome by viewModel.uiState.collectAsState()
 
-      val renameDialog = key("rename") {
-         navigator.rememberNavigationPopup(
-            navigationKey = { oldName: String, resultKey ->
-               NameEntryScreenKey(
-                  getString(R.string.rename_rule),
-                  resultKey,
-                  initialText = oldName
-               )
-            },
-            onResult = {
-               if (!it.isBlank()) {
-                  viewModel.renameRule(it)
-               }
-            }
-         )
-      }
-      var lastSelectedPkg by remember { mutableStateOf<String?>(null) }
+      val renameDialog = renameDialog(navigator, { viewModel.renameRule(it) })
 
-      val channelPickerDialog = key("channels") {
-         navigator.rememberNavigationPopup(
-            navigationKey = { pkg: String, resultKey ->
-               ChannelSelectionScreenKey(pkg, resultKey)
-            },
-            onResult = { channels ->
-               lastSelectedPkg?.let { pkg -> viewModel.changeTargetApp(pkg, channels) }
-            }
-         )
-      }
-
-      val appPickerDialog = key("apps") {
-         navigator.rememberNavigationPopup(
-            navigationKey = { _: Unit, resultKey ->
-               AppSelectionScreenKey(resultKey)
-            },
-            onResult = {
-               if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                  lastSelectedPkg = it
-                  channelPickerDialog.trigger(it)
-               } else {
-                  viewModel.changeTargetApp(it, emptyList())
-               }
-            }
-         )
-      }
+      val appPickerDialog = appPickingDialog(
+         navigator,
+         { pkg, channels -> viewModel.changeTargetApp(pkg, channels) },
+      )
 
       var showDeleteConfirmation by remember { mutableStateOf(false) }
       if (showDeleteConfirmation) {
-         AlertDialog(
-            title = { Text(stringResource(R.string.delete_rule)) },
-            text = {
-               Text(
-                  stringResource(
-                     R.string.delete_confirmation_text,
-                     stateOutcome.data?.ruleMetadata?.name.orEmpty()
-                  )
-               )
-            },
-
-            onDismissRequest = { showDeleteConfirmation = false },
-            confirmButton = {
-               TextButton(onClick = {
-                  showDeleteConfirmation = false
-                  viewModel.deleteRule()
-                  navigator.goBack()
-               }) {
-                  Text(stringResource(R.string.delete_rule))
-               }
-            },
-            dismissButton = {
-               TextButton(onClick = { showDeleteConfirmation = false }) {
-                  Text(stringResource(R.string.cancel))
-               }
+         DeleteDialog(
+            stateOutcome,
+            { showDeleteConfirmation = false },
+            {
+               viewModel.deleteRule()
+               navigator.goBack()
             }
          )
       }
