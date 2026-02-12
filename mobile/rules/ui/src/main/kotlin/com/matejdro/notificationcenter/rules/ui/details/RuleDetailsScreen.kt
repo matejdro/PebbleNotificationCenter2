@@ -3,6 +3,7 @@ package com.matejdro.notificationcenter.rules.ui.details
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -154,54 +155,62 @@ private fun RuleDetailsScreenContent(
          }
       )
 
+      Conditions(state, changeTargetApp)
+   }
+}
+
+@Composable
+private fun ColumnScope.Conditions(
+   state: RuleDetailsScreenState,
+   changeTargetApp: () -> Unit,
+) {
+   Text(
+      stringResource(R.string.conditions),
+      style = MaterialTheme.typography.headlineMedium,
+      modifier = Modifier.padding(16.dp)
+   )
+
+   if (state.targetAppName == null) {
+      Text(stringResource(R.string.no_conditions), modifier = Modifier.padding(horizontal = 16.dp))
+   } else {
       Text(
-         stringResource(R.string.conditions),
-         style = MaterialTheme.typography.headlineMedium,
-         modifier = Modifier.padding(16.dp)
+         stringResource(R.string.conditions_header),
+         modifier = Modifier.padding(horizontal = 16.dp)
       )
-
-      if (state.targetAppName == null) {
-         Text(stringResource(R.string.no_conditions), modifier = Modifier.padding(horizontal = 16.dp))
-      } else {
-         Text(
-            stringResource(R.string.conditions_header),
-            modifier = Modifier.padding(horizontal = 16.dp)
-         )
-         val appText = buildAnnotatedString {
-            append(stringResource(R.string.app_condition_prefix))
-            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-               append(state.targetAppName)
-            }
-         }
-         Text(appText, modifier = Modifier.padding(horizontal = 16.dp))
-
-         val channels = state.targetChannelNames
-         if (channels.isNotEmpty()) {
-            val channelsText = buildAnnotatedString {
-               if (channels.size == 1) {
-                  append(stringResource(R.string.single_channel_condition_prefix))
-               } else {
-                  append(stringResource(R.string.multi_channel_condition_prefix))
-               }
-
-               channels.forEachIndexed { index, channel ->
-                  withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                     append(channel)
-                  }
-
-                  if (index != channels.lastIndex) {
-                     append(", ")
-                  }
-               }
-            }
-            Text(channelsText, modifier = Modifier.padding(horizontal = 16.dp))
+      val appText = buildAnnotatedString {
+         append(stringResource(R.string.app_condition_prefix))
+         withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+            append(state.targetAppName)
          }
       }
+      Text(appText, modifier = Modifier.padding(horizontal = 16.dp))
 
-      if (state.ruleMetadata.id != RULE_ID_DEFAULT_SETTINGS) {
-         FlowRow(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = changeTargetApp) { Text(stringResource(R.string.change_target_app)) }
+      val channels = state.targetChannelNames
+      if (channels.isNotEmpty()) {
+         val channelsText = buildAnnotatedString {
+            if (channels.size == 1) {
+               append(stringResource(R.string.single_channel_condition_prefix))
+            } else {
+               append(stringResource(R.string.multi_channel_condition_prefix))
+            }
+
+            channels.forEachIndexed { index, channel ->
+               withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                  append(channel)
+               }
+
+               if (index != channels.lastIndex) {
+                  append(", ")
+               }
+            }
          }
+         Text(channelsText, modifier = Modifier.padding(horizontal = 16.dp))
+      }
+   }
+
+   if (state.ruleMetadata.id != RULE_ID_DEFAULT_SETTINGS) {
+      FlowRow(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+         Button(onClick = changeTargetApp) { Text(stringResource(R.string.change_target_app)) }
       }
    }
 }
