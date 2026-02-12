@@ -3,11 +3,15 @@ package com.matejdro.notificationcenter.rules.ui.details
 import androidx.compose.runtime.Stable
 import androidx.datastore.preferences.core.Preferences
 import com.matejdro.notificationcenter.rules.RuleMetadata
+import com.matejdro.notificationcenter.rules.RuleOption
 import com.matejdro.notificationcenter.rules.RulesRepository
 import com.matejdro.notificationcenter.rules.ui.errors.RuleMissingException
 import com.matejdro.pebblenotificationcenter.common.logging.ActionLogger
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey
+import com.matejdro.pebblenotificationcenter.notification.NotificationServiceController
+import com.matejdro.pebblenotificationcenter.notification.api.AppNameProvider
 import dev.zacsweers.metro.Inject
+import dispatch.core.withDefault
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -25,6 +29,8 @@ class RuleDetailsViewModel(
    private val resources: CoroutineResourceManager,
    private val actionLogger: ActionLogger,
    private val rulesRepository: RulesRepository,
+   private val appNameProvider: AppNameProvider,
+   private val notificationServiceController: NotificationServiceController,
 ) : SingleScreenViewModel<RuleDetailsScreenKey>(resources.scope) {
    private val _uiState = MutableStateFlow<Outcome<RuleDetailsScreenState>>(Outcome.Progress())
    val uiState: StateFlow<Outcome<RuleDetailsScreenState>> = _uiState
@@ -41,7 +47,28 @@ class RuleDetailsViewModel(
                      val rule = ruleOutcome.data ?: throw RuleMissingException()
 
                      rulesRepository.getRulePreferences(key.id).map { preferences ->
-                        Outcome.Success(RuleDetailsScreenState(rule, preferences))
+                        val targetAppPackage = preferences[RuleOption.conditionAppPackage]
+                        val targetAppName = withDefault { targetAppPackage?.let(appNameProvider::getAppName) }
+
+                        val targetChannelNames = targetAppPackage?.let { pkg ->
+                           val channelIds = preferences[RuleOption.conditionNotificationChannels]
+                           if (!channelIds.isNullOrEmpty()) {
+                              val allChannels = withDefault { notificationServiceController.getNotificationChannels(pkg) }
+
+                              channelIds.map { id -> allChannels.firstOrNull { it.id == id }?.title ?: id }
+                           } else {
+                              emptyList()
+                           }
+                        }.orEmpty()
+
+                        Outcome.Success(
+                           RuleDetailsScreenState(
+                              ruleMetadata = rule,
+                              preferences = preferences,
+                              targetAppName = targetAppName,
+                              targetChannelNames = targetChannelNames,
+                           )
+                        )
                      }
                   }
                }
@@ -69,7 +96,21 @@ class RuleDetailsViewModel(
          it[key] = value
       }
    }
+
+   fun changeTargetApp(appPkg: String, channelIds: List<String>) = resources.launchWithExceptionReporting {
+      actionLogger.logAction { "RuleDetailsViewModel.changeTargetApp(appPkg = $appPkg, channelIds = $channelIds)" }
+
+      rulesRepository.updateRulePreference(this@RuleDetailsViewModel.key.id) {
+         it[RuleOption.conditionAppPackage] = appPkg
+         it[RuleOption.conditionNotificationChannels] = channelIds.toSet()
+      }
+   }
 }
 
 @Stable
-data class RuleDetailsScreenState(val ruleMetadata: RuleMetadata, val preferences: Preferences)
+data class RuleDetailsScreenState(
+   val ruleMetadata: RuleMetadata,
+   val preferences: Preferences,
+   val targetAppName: String? = null,
+   val targetChannelNames: List<String> = emptyList(),
+)

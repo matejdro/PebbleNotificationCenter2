@@ -12,4 +12,11 @@
     <string name="any_app">Any app</string>
     <string name="affected_channels">Affected Channels</string>
     <string name="select_all">Select all</string>
+    <string name="change_target_app">Change target app</string>
+    <string name="no_conditions">Below settings apply to all notifications</string>
+    <string name="conditions_header">Below settings only apply to the notifications that match ALL of the following:</string>
+    <string name="conditions">Conditions</string>
+    <string name="app_condition_prefix">"• Originating app is "</string>
+    <string name="single_channel_condition_prefix">"• Originating channel is "</string>
+    <string name="multi_channel_condition_prefix">"• Originating channel is one of "</string>
 </resources>

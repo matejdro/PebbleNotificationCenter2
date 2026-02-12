@@ -6,16 +6,21 @@ import com.matejdro.notificationcenter.rules.FakeRulesRepository
 import com.matejdro.notificationcenter.rules.RuleMetadata
 import com.matejdro.notificationcenter.rules.RuleOption
 import com.matejdro.notificationcenter.rules.ui.errors.RuleMissingException
+import com.matejdro.pebblenotificationcenter.FakeNotificationServiceController
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey
+import com.matejdro.pebblenotificationcenter.notification.api.AppNameProvider
+import com.matejdro.pebblenotificationcenter.notification.model.LightNotificationChannel
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import si.inova.kotlinova.core.outcome.Outcome
 import si.inova.kotlinova.core.test.outcomes.shouldBeErrorWith
 import si.inova.kotlinova.core.test.outcomes.shouldBeSuccessWithData
 import si.inova.kotlinova.core.test.outcomes.testCoroutineResourceManager
@@ -23,11 +28,17 @@ import si.inova.kotlinova.core.test.outcomes.testCoroutineResourceManager
 class RuleDetailsViewModelTest {
    private val scope = TestScope()
    private val rulesRepository = FakeRulesRepository()
+   private val appNameProvider: AppNameProvider = AppNameProvider {
+      "Name of $it"
+   }
+   private val notificationServiceController = FakeNotificationServiceController()
 
    private val viewModel = RuleDetailsViewModel(
       scope.testCoroutineResourceManager(),
       {},
-      rulesRepository
+      rulesRepository,
+      appNameProvider,
+      notificationServiceController,
    )
 
    @BeforeEach
@@ -37,8 +48,7 @@ class RuleDetailsViewModelTest {
 
    @Test
    fun `Provide rule on startup`() = scope.runTest {
-      rulesRepository.insert("Rule A")
-      rulesRepository.insert("Rule B")
+      insertDefaultRules()
 
       viewModel.onServiceRegistered()
       runCurrent()
@@ -58,8 +68,7 @@ class RuleDetailsViewModelTest {
 
    @Test
    fun `Delete rule`() = scope.runTest {
-      rulesRepository.insert("Rule A")
-      rulesRepository.insert("Rule B")
+      insertDefaultRules()
 
       viewModel.onServiceRegistered()
       viewModel.deleteRule()
@@ -70,8 +79,7 @@ class RuleDetailsViewModelTest {
 
    @Test
    fun `Rename rule`() = scope.runTest {
-      rulesRepository.insert("Rule A")
-      rulesRepository.insert("Rule B")
+      insertDefaultRules()
 
       viewModel.onServiceRegistered()
       viewModel.renameRule("Rule C")
@@ -82,43 +90,110 @@ class RuleDetailsViewModelTest {
 
    @Test
    fun `Provide preferences`() = scope.runTest {
-      rulesRepository.insert("Rule A")
-      rulesRepository.insert("Rule B")
+      insertDefaultRules()
       rulesRepository.updateRulePreference(2) {
-         it[RuleOption.filterAppPackage] = "pkg"
+         it[RuleOption.conditionAppPackage] = "pkg"
       }
 
       viewModel.onServiceRegistered()
 
       viewModel.uiState.test {
          runCurrent()
-         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.filterAppPackage] shouldBe "pkg"
+         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.conditionAppPackage] shouldBe "pkg"
 
          rulesRepository.updateRulePreference(2) {
-            it[RuleOption.filterAppPackage] = "pkg2"
+            it[RuleOption.conditionAppPackage] = "pkg2"
          }
          runCurrent()
-         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.filterAppPackage] shouldBe "pkg2"
+         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.conditionAppPackage] shouldBe "pkg2"
       }
    }
 
    @Test
    fun `Update preferences`() = scope.runTest {
-      rulesRepository.insert("Rule A")
-      rulesRepository.insert("Rule B")
+      insertDefaultRules()
       rulesRepository.updateRulePreference(2) {
-         it[RuleOption.filterAppPackage] = "pkg"
+         it[RuleOption.conditionAppPackage] = "pkg"
       }
 
       viewModel.onServiceRegistered()
 
       viewModel.uiState.test {
          runCurrent()
-         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.filterAppPackage] shouldBe "pkg"
+         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.conditionAppPackage] shouldBe "pkg"
 
-         viewModel.updatePreference(RuleOption.filterAppPackage, "pkg2")
+         viewModel.updatePreference(RuleOption.conditionAppPackage, "pkg2")
          runCurrent()
-         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.filterAppPackage] shouldBe "pkg2"
+         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.conditionAppPackage] shouldBe "pkg2"
       }
+   }
+
+   @Test
+   fun `Provide target app`() = scope.runTest {
+      insertDefaultRules()
+      rulesRepository.updateRulePreference(2) {
+         it[RuleOption.conditionAppPackage] = "pkg"
+         it[RuleOption.conditionNotificationChannels] = setOf("C1", "C2")
+      }
+
+      notificationServiceController.putNotificationChannels(
+         "pkg",
+         listOf(
+            LightNotificationChannel("C1", "Channel 1"),
+            LightNotificationChannel("C2", "Channel 2"),
+            LightNotificationChannel("C3", "Channel 3"),
+         )
+      )
+
+      viewModel.onServiceRegistered()
+      runCurrent()
+
+      viewModel.uiState.value.shouldBeInstanceOf<Outcome.Success<RuleDetailsScreenState>>().data.apply {
+         targetAppName shouldBe "Name of pkg"
+         targetChannelNames shouldBe listOf("Channel 1", "Channel 2")
+      }
+   }
+
+   @Test
+   fun `Update target app`() = scope.runTest {
+      insertDefaultRules()
+      rulesRepository.updateRulePreference(2) {
+         it[RuleOption.conditionAppPackage] = "pkg"
+         it[RuleOption.conditionNotificationChannels] = setOf("C1", "C2")
+      }
+
+      notificationServiceController.putNotificationChannels(
+         "pkg",
+         listOf(
+            LightNotificationChannel("C1", "Channel 1"),
+            LightNotificationChannel("C2", "Channel 2"),
+            LightNotificationChannel("C3", "Channel 3"),
+         )
+      )
+
+      notificationServiceController.putNotificationChannels(
+         "pkg2",
+         listOf(
+            LightNotificationChannel("C1", "Channelu 1"),
+            LightNotificationChannel("C2", "Channelu 2"),
+            LightNotificationChannel("C3", "Channelu 3"),
+         )
+      )
+
+      viewModel.onServiceRegistered()
+      runCurrent()
+
+      viewModel.changeTargetApp("pkg2", listOf("C3"))
+      runCurrent()
+
+      viewModel.uiState.value.shouldBeInstanceOf<Outcome.Success<RuleDetailsScreenState>>().data.apply {
+         targetAppName shouldBe "Name of pkg2"
+         targetChannelNames shouldBe listOf("Channelu 3")
+      }
+   }
+
+   private suspend fun insertDefaultRules() {
+      rulesRepository.insert("Rule A")
+      rulesRepository.insert("Rule B")
    }
 }

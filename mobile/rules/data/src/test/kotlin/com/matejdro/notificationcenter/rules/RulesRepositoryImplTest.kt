@@ -230,15 +230,15 @@ class RulesRepositoryImplTest {
          runCurrent()
 
          repo.updateRulePreference(1) {
-            it[RuleOption.filterAppPackage] = "package.default"
+            it[RuleOption.conditionAppPackage] = "package.default"
          }
          repo.updateRulePreference(2) {
-            it[RuleOption.filterAppPackage] = "package.A"
+            it[RuleOption.conditionAppPackage] = "package.A"
          }
          runCurrent()
 
-         repo.getRulePreferences(1).first()[RuleOption.filterAppPackage] shouldBe "package.default"
-         repo.getRulePreferences(2).first()[RuleOption.filterAppPackage] shouldBe "package.A"
+         repo.getRulePreferences(1).first()[RuleOption.conditionAppPackage] shouldBe "package.default"
+         repo.getRulePreferences(2).first()[RuleOption.conditionAppPackage] shouldBe "package.A"
          cancelAndIgnoreRemainingEvents()
       }
    }
@@ -252,7 +252,7 @@ class RulesRepositoryImplTest {
          runCurrent()
 
          repo.updateRulePreference(2) {
-            it[RuleOption.filterAppPackage] = "package.default"
+            it[RuleOption.conditionAppPackage] = "package.default"
          }
 
          repo.delete(2)

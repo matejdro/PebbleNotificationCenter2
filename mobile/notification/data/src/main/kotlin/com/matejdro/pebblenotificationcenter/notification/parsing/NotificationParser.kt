@@ -7,6 +7,7 @@ import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
+import com.matejdro.pebblenotificationcenter.notification.api.AppNameProvider
 import com.matejdro.pebblenotificationcenter.notification.model.NativeAction
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import dev.zacsweers.metro.Inject
