@@ -24,6 +24,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
+import com.matejdro.notificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
 import com.matejdro.notificationcenter.rules.RuleMetadata
 import com.matejdro.notificationcenter.rules.ui.R
 import com.matejdro.notificationcenter.rules.ui.dialogs.NameEntryScreenKey
@@ -106,8 +107,8 @@ private fun RuleListScreenContent(
                ReorderableListItem(
                   rule.id,
                   rule,
-                  minReorderableIndex = 1,
-                  enabled = rule.id > 1,
+                  minReorderableIndex = RULE_ID_DEFAULT_SETTINGS,
+                  enabled = rule.id > RULE_ID_DEFAULT_SETTINGS,
                   setOrder = setOrder
                ) { modifier, isDragging ->
                   Text(

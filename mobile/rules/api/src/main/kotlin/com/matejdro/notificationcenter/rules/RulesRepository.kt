@@ -18,3 +18,5 @@ interface RulesRepository {
 
    suspend fun updateRulePreference(id: Int, transform: suspend (MutablePreferences) -> Unit)
 }
+
+const val RULE_ID_DEFAULT_SETTINGS = 1

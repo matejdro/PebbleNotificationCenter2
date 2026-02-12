@@ -63,13 +63,13 @@ class RulesRepositoryImpl(
    }
 
    override suspend fun delete(id: Int) = withDefault<Unit> {
-      require(id > 1) { "Default rule cannot be deleted" }
+      require(id > RULE_ID_DEFAULT_SETTINGS) { "Default rule cannot be deleted" }
       queries.delete(id.toLong())
       getDataStore(id).updateData { emptyPreferences() }
    }
 
    override suspend fun reorder(id: Int, toIndex: Int) = withDefault<Unit> {
-      require(id > 1 && toIndex > 0) { "Default rule cannot be reordered" }
+      require(id > RULE_ID_DEFAULT_SETTINGS && toIndex > 0) { "Default rule cannot be reordered" }
       val rule = queries.selectSingle(id.toLong()).executeAsOne()
 
       if (rule.sortOrder > toIndex) {
