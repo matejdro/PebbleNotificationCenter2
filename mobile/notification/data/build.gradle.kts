@@ -16,6 +16,7 @@ custom {
 dependencies {
    api(projects.bluetooth.api)
    api(projects.notification.api)
+   api(projects.rules.api)
    api(libs.dispatch)
 
    implementation(projects.commonAndroid)
@@ -25,6 +26,7 @@ dependencies {
 
    testImplementation(projects.bluetooth.test)
    testImplementation(projects.notification.test)
+   testImplementation(testFixtures(projects.rules.api))
    testImplementation(libs.kotlinova.core.test)
 
    androidTestImplementation(libs.androidx.test.runner)
