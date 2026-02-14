@@ -48,8 +48,8 @@ internal fun ColumnScope.Settings(
          stringResource(R.string.setting_master_switch_title),
          listOf(
             stringResource(R.string.setting_master_switch_show),
-            stringResource(R.string.setting_master_switch_hide),
             stringResource(R.string.setting_master_switch_mute),
+            stringResource(R.string.setting_master_switch_hide),
          ),
          stringResource(R.string.setting_master_switch_description_suffix)
       )
