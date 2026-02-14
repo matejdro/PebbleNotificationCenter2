@@ -1,14 +1,14 @@
 package com.matejdro.notificationcenter.rules
 
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.core.stringSetPreferencesKey
 import com.matejdro.notificationcenter.rules.keys.EnumPreferenceKeyWithDefault
+import com.matejdro.notificationcenter.rules.keys.NullableStringPreferenceKeyWithDefault
+import com.matejdro.notificationcenter.rules.keys.StringSetPreferenceKeyWithDefault
 
 object RuleOption {
-   val conditionAppPackage = stringPreferencesKey("condition_app_package")
-   val conditionNotificationChannels = stringSetPreferencesKey("condition_notification_channels")
-   val conditionWhitelistRegexes = stringSetPreferencesKey("condition_whitelist_regexes")
-   val conditionBlacklistRegexes = stringSetPreferencesKey("condition_blacklist_regexes")
+   val conditionAppPackage = NullableStringPreferenceKeyWithDefault("condition_app_package", null)
+   val conditionNotificationChannels = StringSetPreferenceKeyWithDefault("condition_notification_channels", emptySet())
+   val conditionWhitelistRegexes = StringSetPreferenceKeyWithDefault("condition_whitelist_regexes", emptySet())
+   val conditionBlacklistRegexes = StringSetPreferenceKeyWithDefault("condition_blacklist_regexes", emptySet())
 
    val masterSwitch = EnumPreferenceKeyWithDefault("master_switch", MasterSwitch.SHOW)
 

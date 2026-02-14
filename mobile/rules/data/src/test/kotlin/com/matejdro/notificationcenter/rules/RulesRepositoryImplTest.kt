@@ -3,6 +3,8 @@ package com.matejdro.notificationcenter.rules
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import app.cash.turbine.test
+import com.matejdro.notificationcenter.rules.keys.get
+import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.notificationcenter.rules.sqldelight.generated.Database
 import com.matejdro.notificationcenter.rules.sqldelight.generated.DbRuleQueries
 import com.matejdro.notificationcenter.rules.util.FakeDatastoreFactory

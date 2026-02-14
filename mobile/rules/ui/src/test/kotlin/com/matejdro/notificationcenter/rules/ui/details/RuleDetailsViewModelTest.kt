@@ -5,6 +5,8 @@ import app.cash.turbine.test
 import com.matejdro.notificationcenter.rules.FakeRulesRepository
 import com.matejdro.notificationcenter.rules.RuleMetadata
 import com.matejdro.notificationcenter.rules.RuleOption
+import com.matejdro.notificationcenter.rules.keys.get
+import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.notificationcenter.rules.ui.errors.RuleMissingException
 import com.matejdro.pebblenotificationcenter.FakeNotificationServiceController
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey

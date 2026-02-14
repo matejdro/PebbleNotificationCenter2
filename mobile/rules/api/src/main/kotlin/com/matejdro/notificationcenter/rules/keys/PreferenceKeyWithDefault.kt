@@ -3,10 +3,22 @@ package com.matejdro.notificationcenter.rules.keys
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 
 class StringPreferenceKeyWithDefault(name: String, default: String) : DirectKeyWithDefault<String>(name, default) {
    override val key: Preferences.Key<String>
       get() = stringPreferencesKey(name)
+}
+
+class NullableStringPreferenceKeyWithDefault(name: String, default: String?) : DirectKeyWithDefault<String?>(name, default) {
+   @Suppress("UNCHECKED_CAST")
+   override val key: Preferences.Key<String?>
+      get() = stringPreferencesKey(name) as Preferences.Key<String?>
+}
+
+class StringSetPreferenceKeyWithDefault(name: String, default: Set<String>) : DirectKeyWithDefault<Set<String>>(name, default) {
+   override val key: Preferences.Key<Set<String>>
+      get() = stringSetPreferencesKey(name)
 }
 
 @Suppress("FunctionNaming") // It's a factory function
@@ -29,7 +41,7 @@ class EnumPreferenceKeyWithDefault<T : Enum<T>>(name: String, default: T, privat
 
 abstract class ProxyPreferenceKeyWithDefault<T, P>(protected val name: String, protected val default: T) :
    PreferenceKeyWithDefault<T> {
-   abstract val key: Preferences.Key<P>
+   abstract override val key: Preferences.Key<P>
 
    abstract fun serialize(value: T): P
    abstract fun deserialize(value: P): T
@@ -44,7 +56,7 @@ abstract class ProxyPreferenceKeyWithDefault<T, P>(protected val name: String, p
 }
 
 abstract class DirectKeyWithDefault<T>(protected val name: String, protected val default: T) : PreferenceKeyWithDefault<T> {
-   abstract val key: Preferences.Key<T>
+   abstract override val key: Preferences.Key<T>
 
    override fun get(preferences: Preferences): T {
       return preferences[key] ?: default
@@ -56,6 +68,7 @@ abstract class DirectKeyWithDefault<T>(protected val name: String, protected val
 }
 
 interface PreferenceKeyWithDefault<T> {
+   val key: Preferences.Key<*>
    fun get(preferences: Preferences): T
    fun put(preferences: MutablePreferences, value: T)
 }
@@ -66,6 +79,10 @@ operator fun <T> Preferences.get(key: PreferenceKeyWithDefault<T>): T {
 
 operator fun <T> MutablePreferences.set(key: PreferenceKeyWithDefault<T>, value: T) {
    key.put(this, value)
+}
+
+fun <T> MutablePreferences.remove(key: PreferenceKeyWithDefault<T>) {
+   remove(key.key)
 }
 
 interface SetPreference {

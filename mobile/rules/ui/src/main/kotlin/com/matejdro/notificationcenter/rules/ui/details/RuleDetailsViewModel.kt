@@ -6,6 +6,8 @@ import com.matejdro.notificationcenter.rules.RuleMetadata
 import com.matejdro.notificationcenter.rules.RuleOption
 import com.matejdro.notificationcenter.rules.RulesRepository
 import com.matejdro.notificationcenter.rules.keys.PreferenceKeyWithDefault
+import com.matejdro.notificationcenter.rules.keys.get
+import com.matejdro.notificationcenter.rules.keys.remove
 import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.notificationcenter.rules.ui.errors.RuleMissingException
 import com.matejdro.pebblenotificationcenter.common.logging.ActionLogger
@@ -54,7 +56,7 @@ class RuleDetailsViewModel(
 
                         val targetChannelNames = targetAppPackage?.let { pkg ->
                            val channelIds = preferences[RuleOption.conditionNotificationChannels]
-                           if (!channelIds.isNullOrEmpty()) {
+                           if (!channelIds.isEmpty()) {
                               val allChannels = withDefault { notificationServiceController.getNotificationChannels(pkg) }
 
                               channelIds.map { id -> allChannels.firstOrNull { it.id == id }?.title ?: id }
