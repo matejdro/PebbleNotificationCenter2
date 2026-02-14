@@ -25,6 +25,7 @@ dependencies {
    implementation(libs.androidx.compose.material3.sizeClasses)
    implementation(libs.androidx.datastore.preferences)
    implementation(libs.androidx.navigation3)
+   implementation(libs.composePreference)
    implementation(libs.dispatch)
    implementation(libs.kotlinova.core)
 

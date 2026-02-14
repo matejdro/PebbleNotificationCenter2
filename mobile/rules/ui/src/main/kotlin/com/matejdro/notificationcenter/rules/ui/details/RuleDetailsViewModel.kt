@@ -5,6 +5,8 @@ import androidx.datastore.preferences.core.Preferences
 import com.matejdro.notificationcenter.rules.RuleMetadata
 import com.matejdro.notificationcenter.rules.RuleOption
 import com.matejdro.notificationcenter.rules.RulesRepository
+import com.matejdro.notificationcenter.rules.keys.PreferenceKeyWithDefault
+import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.notificationcenter.rules.ui.errors.RuleMissingException
 import com.matejdro.pebblenotificationcenter.common.logging.ActionLogger
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey
@@ -90,6 +92,14 @@ class RuleDetailsViewModel(
    }
 
    fun <T> updatePreference(key: Preferences.Key<T>, value: T) = resources.launchWithExceptionReporting {
+      actionLogger.logAction { "RuleDetailsViewModel.updatePreference($key, ${value ?: "null"})" }
+
+      rulesRepository.updateRulePreference(this@RuleDetailsViewModel.key.id) {
+         it[key] = value
+      }
+   }
+
+   fun <T> updatePreference(key: PreferenceKeyWithDefault<T>, value: T) = resources.launchWithExceptionReporting {
       actionLogger.logAction { "RuleDetailsViewModel.updatePreference($key, ${value ?: "null"})" }
 
       rulesRepository.updateRulePreference(this@RuleDetailsViewModel.key.id) {

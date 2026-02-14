@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -41,6 +44,8 @@ import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.notificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
 import com.matejdro.notificationcenter.rules.RuleMetadata
+import com.matejdro.notificationcenter.rules.keys.PreferenceKeyWithDefault
+import com.matejdro.notificationcenter.rules.keys.SetPreference
 import com.matejdro.notificationcenter.rules.ui.R
 import com.matejdro.notificationcenter.rules.ui.errors.ruleUserFriendlyMessage
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey
@@ -102,6 +107,10 @@ class RuleDetailsScreen(
             },
             changeTargetApp = {
                appPickerDialog.trigger()
+            },
+            setPreference = SetPreference { key, value ->
+               @Suppress("UNCHECKED_CAST")
+               viewModel.updatePreference(key as PreferenceKeyWithDefault<Any?>, value)
             }
          )
       }
@@ -119,6 +128,7 @@ private fun RuleDetailsScreenContent(
    delete: () -> Unit,
    rename: () -> Unit,
    changeTargetApp: () -> Unit,
+   setPreference: SetPreference,
 ) = with(LocalSharedTransitionScope.current) {
    val largeDevice: Boolean = windowSizeClass != WindowWidthSizeClass.Compact
 
@@ -156,6 +166,10 @@ private fun RuleDetailsScreenContent(
       )
 
       Conditions(state, changeTargetApp)
+
+      HorizontalDivider(color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(vertical = 16.dp))
+
+      Settings(state.preferences, setPreference)
    }
 }
 
@@ -167,7 +181,9 @@ private fun ColumnScope.Conditions(
    Text(
       stringResource(R.string.conditions),
       style = MaterialTheme.typography.headlineMedium,
-      modifier = Modifier.padding(16.dp)
+      modifier = Modifier
+         .padding(16.dp)
+         .semantics { heading() }
    )
 
    if (state.targetAppName == null) {
@@ -209,7 +225,7 @@ private fun ColumnScope.Conditions(
    }
 
    if (state.ruleMetadata.id != RULE_ID_DEFAULT_SETTINGS) {
-      FlowRow(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+      FlowRow(Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
          Button(onClick = changeTargetApp) { Text(stringResource(R.string.change_target_app)) }
       }
    }
@@ -226,6 +242,7 @@ internal fun RuleDetailsScreenContentPreview() {
          {},
          {},
          {},
+         SetPreference { _, _ -> }
       )
    }
 }
@@ -246,6 +263,7 @@ internal fun RuleDetailsScreenWithTargetAppPreview() {
          {},
          {},
          {},
+         SetPreference { _, _ -> }
       )
    }
 }
@@ -266,6 +284,7 @@ internal fun RuleDetailsScreenWithTargetAppAndChannelsPreview() {
          {},
          {},
          {},
+         SetPreference { _, _ -> }
       )
    }
 }
@@ -286,6 +305,7 @@ internal fun RuleDetailsScreenWithTargetAppAndSingleChannelPreview() {
          {},
          {},
          {},
+         SetPreference { _, _ -> }
       )
    }
 }
@@ -304,6 +324,7 @@ internal fun RuleDetailsScreenWithDefaultSettingsPreview() {
          {},
          {},
          {},
+         SetPreference { _, _ -> }
       )
    }
 }

@@ -19,4 +19,14 @@
     <string name="app_condition_prefix">"• Originating app is "</string>
     <string name="single_channel_condition_prefix">"• Originating channel is "</string>
     <string name="multi_channel_condition_prefix">"• Originating channel is one of "</string>
+    <string name="setting_master_switch_description_suffix">\n\nMaster switch for all notifications matched by this rule\n\n •
+        Show = Show
+        notifications normally\n • Mute = Show notifications in the app, but do not popup or vibrate the watch\n • Hide = Hide
+        notifications from the watch entirely
+    </string>
+    <string name="setting_master_switch_show">Show</string>
+    <string name="setting_master_switch_mute">Mute</string>
+    <string name="setting_master_switch_hide">Hide</string>
+    <string name="setting_master_switch_title">Master switch</string>
+    <string name="settings">Settings</string>
 </resources>
