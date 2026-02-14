@@ -1,6 +1,8 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import android.content.Context
+import com.matejdro.notificationcenter.rules.RuleOption
+import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.bluetooth.WatchSyncer
 import com.matejdro.pebblenotificationcenter.bluetooth.WatchappOpenController
 import com.matejdro.pebblenotificationcenter.notification.model.Action
@@ -20,6 +22,7 @@ class NotificationProcessor(
    private val context: Context,
    private val watchSyncer: WatchSyncer,
    private val openController: WatchappOpenController,
+   private val ruleResolver: RuleResolver,
 ) : NotificationRepository {
    private val notifications = HashMap<Int, ProcessedNotification>()
    private val notificationsByKey = HashMap<String, ProcessedNotification>()
@@ -27,6 +30,13 @@ class NotificationProcessor(
    private var nextVibration: AtomicReference<IntArray?> = AtomicReference(null)
 
    suspend fun onNotificationPosted(parsedNotification: ParsedNotification, suppressVibration: Boolean = false) {
+      val (_, settings) = ruleResolver.resolveRules(parsedNotification)
+      val masterSwitch = settings[RuleOption.masterSwitch]
+      if (masterSwitch == RuleOption.MasterSwitch.HIDE) {
+         onNotificationDismissed(parsedNotification.key)
+         return
+      }
+
       val actions = processActions(parsedNotification)
 
       val initialProcessedNotification = ProcessedNotification(parsedNotification, 0, actions, unread = !suppressVibration)
@@ -51,7 +61,13 @@ class NotificationProcessor(
          previousNotification.systemData.body == parsedNotification.body
 
       val noisy = !suppressVibration && !parsedNotification.isSilent
-      if (noisy && !parsedNotification.isFilteredByDoNotDisturb && !identicalText) {
+      @Suppress("ComplexCondition") // Lots of unrelated checks
+      if (
+         masterSwitch != RuleOption.MasterSwitch.MUTE &&
+         noisy &&
+         !parsedNotification.isFilteredByDoNotDisturb &&
+         !identicalText
+      ) {
          nextVibration.set(
             // Until settings are there, just hardcode jackhammer
             @Suppress("MagicNumber")

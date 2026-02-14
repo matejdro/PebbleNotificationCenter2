@@ -1,6 +1,10 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import android.app.createPendingIntent
+import com.matejdro.notificationcenter.rules.FakeRulesRepository
+import com.matejdro.notificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
+import com.matejdro.notificationcenter.rules.RuleOption
+import com.matejdro.notificationcenter.rules.keys.setTo
 import com.matejdro.pebblenotificationcenter.bluetooth.FakeWatchSyncer
 import com.matejdro.pebblenotificationcenter.bluetooth.FakeWatchappOpenController
 import com.matejdro.pebblenotificationcenter.notification.model.Action
@@ -8,10 +12,13 @@ import com.matejdro.pebblenotificationcenter.notification.model.NativeAction
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import io.kotest.assertions.assertSoftly
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -25,11 +32,17 @@ class NotificationProcessorTest {
 
    private val openController = FakeWatchappOpenController()
 
-   private val processor = NotificationProcessor(context, watchSyncer, openController)
+   private val rulesRepository = FakeRulesRepository()
+
+   private val processor = NotificationProcessor(context, watchSyncer, openController, RuleResolver(rulesRepository))
 
    @BeforeEach
    fun setUp() {
       context.resources.putString(R.string.dismiss, "Dismiss")
+
+      runBlocking {
+         rulesRepository.insert("Default Rule")
+      }
    }
 
    @Test
@@ -364,5 +377,97 @@ class NotificationProcessorTest {
             bucketId = 1
          )
       )
+   }
+
+   @Test
+   fun `It should forward received notifications to the watch syncer even with master switch set to MUTE`() = runTest {
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.MUTE
+      )
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification)
+
+      watchSyncer.syncedNotifications.map { it.systemData }.shouldContainExactly(notification)
+   }
+
+   @Test
+   fun `It should ignore received notifications with master switch set to hide`() = runTest {
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+      )
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification)
+
+      watchSyncer.syncedNotifications.shouldBeEmpty()
+   }
+
+   @Test
+   fun `It should not vibrate when the master switch is set to mute`() = runTest {
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.MUTE
+      )
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isSilent = false
+      )
+
+      processor.onNotificationPosted(notification)
+
+      openController.watchappOpened shouldBe false
+      processor.pollNextVibration().shouldBeNull()
+   }
+
+   @Test
+   fun `It should hide existing notification when an update has a hide master switch set`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification)
+      runCurrent()
+
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+      )
+      processor.onNotificationPosted(notification)
+
+      watchSyncer.clearedNotifications.shouldContainExactly("key")
    }
 }

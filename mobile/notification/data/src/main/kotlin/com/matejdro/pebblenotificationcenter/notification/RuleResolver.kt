@@ -7,10 +7,12 @@ import com.matejdro.notificationcenter.rules.RulesRepository
 import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.common.preferences.plus
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import si.inova.kotlinova.core.outcome.Outcome
 
+@Inject
 class RuleResolver(private val rulesRepository: RulesRepository) {
    suspend fun resolveRules(notification: ParsedNotification): ResolvedRules {
       val rules = rulesRepository.getAll().firstSuccessOrThrow()
