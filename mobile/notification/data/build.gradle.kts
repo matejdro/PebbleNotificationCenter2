@@ -17,12 +17,14 @@ dependencies {
    api(projects.bluetooth.api)
    api(projects.notification.api)
    api(projects.rules.api)
+   api(libs.androidx.datastore.preferences)
    api(libs.dispatch)
 
    implementation(projects.commonAndroid)
    implementation(libs.androidx.core)
    implementation(libs.logcat)
    implementation(libs.kotlin.coroutines)
+   implementation(libs.kotlinova.core)
 
    testImplementation(projects.bluetooth.test)
    testImplementation(projects.notification.test)
