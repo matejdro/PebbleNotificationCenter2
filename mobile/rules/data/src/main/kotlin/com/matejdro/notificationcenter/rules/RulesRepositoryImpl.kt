@@ -9,6 +9,8 @@ import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import com.matejdro.notificationcenter.rules.keys.PreferenceKeyWithDefault
 import com.matejdro.notificationcenter.rules.keys.PreferencePair
+import com.matejdro.notificationcenter.rules.keys.get
+import com.matejdro.notificationcenter.rules.keys.remove
 import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.notificationcenter.rules.sqldelight.generated.DbRuleQueries
 import com.matejdro.notificationcenter.rules.util.DatastoreFactory
@@ -23,6 +25,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.job
@@ -92,10 +95,16 @@ class RulesRepositoryImpl(
       id: Int,
       vararg preferencesToSet: PreferencePair<*>,
    ) {
+      val defaultRules = if (id != RULE_ID_DEFAULT_SETTINGS) getDataStore(RULE_ID_DEFAULT_SETTINGS).data.first() else null
+
       getDataStore(id).edit { mutablePrefs ->
          for ((key, value) in preferencesToSet) {
-            @Suppress("UNCHECKED_CAST")
-            mutablePrefs[key as PreferenceKeyWithDefault<Any?>] = value
+            if (defaultRules != null && value == defaultRules[key]) {
+               mutablePrefs.remove(key)
+            } else {
+               @Suppress("UNCHECKED_CAST")
+               mutablePrefs[key as PreferenceKeyWithDefault<Any?>] = value
+            }
          }
       }
    }

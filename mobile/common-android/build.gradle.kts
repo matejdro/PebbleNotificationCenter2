@@ -13,4 +13,5 @@ dependencyAnalysis {
 
 dependencies {
    api(libs.kotlinova.navigation)
+   implementation(libs.androidx.datastore.preferences)
 }

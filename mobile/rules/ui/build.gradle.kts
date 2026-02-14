@@ -20,6 +20,7 @@ dependencies {
    api(libs.kotlin.coroutines)
    api(libs.kotlinova.navigation)
 
+   implementation(projects.commonAndroid)
    implementation(projects.commonCompose)
    implementation(libs.accompanist.drawablepainter)
    implementation(libs.androidx.compose.material3.sizeClasses)

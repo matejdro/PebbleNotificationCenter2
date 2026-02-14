@@ -269,6 +269,59 @@ class RulesRepositoryImplTest {
          cancelAndIgnoreRemainingEvents()
       }
    }
+
+   @Test
+   fun `Clear preference if it is identical to the default settings`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         runCurrent()
+         repo.updateRulePreferences(
+            1,
+            RuleOption.conditionAppPackage setTo "package.default",
+         )
+         repo.updateRulePreferences(
+            2,
+            RuleOption.conditionAppPackage setTo "package.A",
+         )
+         runCurrent()
+
+         repo.getRulePreferences(2).first().contains(RuleOption.conditionAppPackage.key) shouldBe true
+
+         repo.updateRulePreferences(
+            2,
+            RuleOption.conditionAppPackage setTo "package.default",
+         )
+         runCurrent()
+
+         repo.getRulePreferences(2).first().contains(RuleOption.conditionAppPackage.key) shouldBe false
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
+
+   @Test
+   fun `Do not check for default settings identity when setting default settings`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         runCurrent()
+         repo.updateRulePreferences(
+            1,
+            RuleOption.conditionAppPackage setTo "package.default",
+         )
+         runCurrent()
+
+         repo.updateRulePreferences(
+            1,
+            RuleOption.conditionAppPackage setTo "package.default",
+         )
+         runCurrent()
+
+         repo.getRulePreferences(1).first().contains(RuleOption.conditionAppPackage.key) shouldBe true
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
 }
 
 internal fun createTestRuleQueries(

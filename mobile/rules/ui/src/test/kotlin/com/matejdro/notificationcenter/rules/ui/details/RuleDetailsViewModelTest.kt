@@ -60,7 +60,7 @@ class RuleDetailsViewModelTest {
 
    @Test
    fun `Show error on missing rule`() = scope.runTest {
-      rulesRepository.insert("Rule A")
+      rulesRepository.insert("Default Rule")
 
       viewModel.onServiceRegistered()
       runCurrent()
@@ -76,7 +76,7 @@ class RuleDetailsViewModelTest {
       viewModel.deleteRule()
       runCurrent()
 
-      rulesRepository.getAll().first().data.shouldContainExactly(listOf(RuleMetadata(1, "Rule A")))
+      rulesRepository.getAll().first().data.shouldContainExactly(listOf(RuleMetadata(1, "Default Rule")))
    }
 
    @Test
@@ -219,8 +219,45 @@ class RuleDetailsViewModelTest {
       }
    }
 
+   @Test
+   fun `Provide default rule preference when override is not set`() = scope.runTest {
+      insertDefaultRules()
+      rulesRepository.updateRulePreferences(
+         1,
+         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE,
+      )
+
+      viewModel.onServiceRegistered()
+
+      viewModel.uiState.test {
+         runCurrent()
+         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.HIDE
+
+         rulesRepository.updateRulePreferences(
+            1,
+            RuleOption.masterSwitch setTo RuleOption.MasterSwitch.MUTE,
+         )
+         runCurrent()
+         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.MUTE
+
+         rulesRepository.updateRulePreferences(
+            2,
+            RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW,
+         )
+         runCurrent()
+         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.SHOW
+
+         rulesRepository.updateRulePreferences(
+            1,
+            RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE,
+         )
+         runCurrent()
+         expectNoEvents()
+      }
+   }
+
    private suspend fun insertDefaultRules() {
-      rulesRepository.insert("Rule A")
+      rulesRepository.insert("Default Rule")
       rulesRepository.insert("Rule B")
    }
 }

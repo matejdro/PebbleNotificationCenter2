@@ -2,6 +2,8 @@ package com.matejdro.notificationcenter.rules.ui.details
 
 import androidx.compose.runtime.Stable
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
+import com.matejdro.notificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
 import com.matejdro.notificationcenter.rules.RuleMetadata
 import com.matejdro.notificationcenter.rules.RuleOption
 import com.matejdro.notificationcenter.rules.RulesRepository
@@ -10,6 +12,7 @@ import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.notificationcenter.rules.keys.setTo
 import com.matejdro.notificationcenter.rules.ui.errors.RuleMissingException
 import com.matejdro.pebblenotificationcenter.common.logging.ActionLogger
+import com.matejdro.pebblenotificationcenter.common.preferences.plus
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey
 import com.matejdro.pebblenotificationcenter.notification.NotificationServiceController
 import com.matejdro.pebblenotificationcenter.notification.api.AppNameProvider
@@ -17,11 +20,14 @@ import dev.zacsweers.metro.Inject
 import dispatch.core.withDefault
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import si.inova.kotlinova.core.outcome.CoroutineResourceManager
 import si.inova.kotlinova.core.outcome.Outcome
+import si.inova.kotlinova.core.outcome.mapDataSuspend
 import si.inova.kotlinova.navigation.services.ContributesScopedService
 import si.inova.kotlinova.navigation.services.SingleScreenViewModel
 
@@ -41,39 +47,47 @@ class RuleDetailsViewModel(
    override fun onServiceRegistered() {
       actionLogger.logAction { "RuleDetailsViewModel.onServiceRegistered()" }
       resources.launchResourceControlTask(_uiState) {
+         val ruleFlow = rulesRepository.getSingle(key.id).distinctUntilChanged()
+
+         val defaultSettingsPreferenceFlow = if (key.id != RULE_ID_DEFAULT_SETTINGS) {
+            rulesRepository.getRulePreferences(RULE_ID_DEFAULT_SETTINGS)
+         } else {
+            flowOf(emptyPreferences())
+         }
+
+         val preferencesFlow = defaultSettingsPreferenceFlow.flatMapLatest { defaultPreferences ->
+            rulesRepository.getRulePreferences(key.id).map { overridePreferences ->
+               defaultPreferences + overridePreferences
+            }
+         }.distinctUntilChanged()
+
          emitAll(
-            rulesRepository.getSingle(key.id).flatMapLatest { ruleOutcome ->
-               when (ruleOutcome) {
-                  is Outcome.Error -> flowOf(Outcome.Error(ruleOutcome.exception))
-                  is Outcome.Progress -> flowOf(Outcome.Progress())
-                  is Outcome.Success -> {
-                     val rule = ruleOutcome.data ?: throw RuleMissingException()
-
-                     rulesRepository.getRulePreferences(key.id).map { preferences ->
-                        val targetAppPackage = preferences[RuleOption.conditionAppPackage]
-                        val targetAppName = withDefault { targetAppPackage?.let(appNameProvider::getAppName) }
-
-                        val targetChannelNames = targetAppPackage?.let { pkg ->
-                           val channelIds = preferences[RuleOption.conditionNotificationChannels]
-                           if (!channelIds.isEmpty()) {
-                              val allChannels = withDefault { notificationServiceController.getNotificationChannels(pkg) }
-
-                              channelIds.map { id -> allChannels.firstOrNull { it.id == id }?.title ?: id }
-                           } else {
-                              emptyList()
-                           }
-                        }.orEmpty()
-
-                        Outcome.Success(
-                           RuleDetailsScreenState(
-                              ruleMetadata = rule,
-                              preferences = preferences,
-                              targetAppName = targetAppName,
-                              targetChannelNames = targetChannelNames,
-                           )
-                        )
-                     }
+            combine(ruleFlow, preferencesFlow) { ruleOutcome, preferences ->
+               ruleOutcome.mapDataSuspend { rule ->
+                  if (rule == null) {
+                     throw RuleMissingException()
                   }
+
+                  val targetAppPackage = preferences[RuleOption.conditionAppPackage]
+                  val targetAppName = withDefault { targetAppPackage?.let(appNameProvider::getAppName) }
+
+                  val targetChannelNames = targetAppPackage?.let { pkg ->
+                     val channelIds = preferences[RuleOption.conditionNotificationChannels]
+                     if (!channelIds.isEmpty()) {
+                        val allChannels = withDefault { notificationServiceController.getNotificationChannels(pkg) }
+
+                        channelIds.map { id -> allChannels.firstOrNull { it.id == id }?.title ?: id }
+                     } else {
+                        emptyList()
+                     }
+                  }.orEmpty()
+
+                  RuleDetailsScreenState(
+                     ruleMetadata = rule,
+                     preferences = preferences,
+                     targetAppName = targetAppName,
+                     targetChannelNames = targetChannelNames,
+                  )
                }
             }
          )

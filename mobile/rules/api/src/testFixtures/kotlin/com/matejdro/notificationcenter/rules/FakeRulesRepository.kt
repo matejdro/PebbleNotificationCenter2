@@ -4,6 +4,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import com.matejdro.notificationcenter.rules.keys.PreferenceKeyWithDefault
 import com.matejdro.notificationcenter.rules.keys.PreferencePair
+import com.matejdro.notificationcenter.rules.keys.set
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -71,7 +72,7 @@ class FakeRulesRepository : RulesRepository {
             preference.toMutablePreferences().also { mutablePrefs ->
                for ((key, value) in preferencesToSet) {
                   @Suppress("UNCHECKED_CAST")
-                  mutablePrefs[key as PreferenceKeyWithDefault<Any>] = value
+                  mutablePrefs[key as PreferenceKeyWithDefault<Any?>] = value
                }
             }.toPreferences()
          }
