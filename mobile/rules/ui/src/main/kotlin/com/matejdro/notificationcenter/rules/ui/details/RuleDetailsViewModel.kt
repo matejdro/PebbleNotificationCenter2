@@ -7,8 +7,7 @@ import com.matejdro.notificationcenter.rules.RuleOption
 import com.matejdro.notificationcenter.rules.RulesRepository
 import com.matejdro.notificationcenter.rules.keys.PreferenceKeyWithDefault
 import com.matejdro.notificationcenter.rules.keys.get
-import com.matejdro.notificationcenter.rules.keys.remove
-import com.matejdro.notificationcenter.rules.keys.set
+import com.matejdro.notificationcenter.rules.keys.setTo
 import com.matejdro.notificationcenter.rules.ui.errors.RuleMissingException
 import com.matejdro.pebblenotificationcenter.common.logging.ActionLogger
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey
@@ -93,34 +92,22 @@ class RuleDetailsViewModel(
       rulesRepository.edit(RuleMetadata(key.id, newName))
    }
 
-   fun <T> updatePreference(key: Preferences.Key<T>, value: T) = resources.launchWithExceptionReporting {
-      actionLogger.logAction { "RuleDetailsViewModel.updatePreference($key, ${value ?: "null"})" }
-
-      rulesRepository.updateRulePreference(this@RuleDetailsViewModel.key.id) {
-         it[key] = value
-      }
-   }
-
    fun <T> updatePreference(key: PreferenceKeyWithDefault<T>, value: T) = resources.launchWithExceptionReporting {
       actionLogger.logAction { "RuleDetailsViewModel.updatePreference($key, ${value ?: "null"})" }
 
-      rulesRepository.updateRulePreference(this@RuleDetailsViewModel.key.id) {
-         it[key] = value
-      }
+      rulesRepository.updateRulePreferences(this@RuleDetailsViewModel.key.id, key setTo value)
    }
 
    fun changeTargetApp(appPkg: String, channelIds: List<String>) = resources.launchWithExceptionReporting {
       actionLogger.logAction { "RuleDetailsViewModel.changeTargetApp(appPkg = $appPkg, channelIds = $channelIds)" }
 
-      rulesRepository.updateRulePreference(this@RuleDetailsViewModel.key.id) {
-         if (appPkg.isNotEmpty()) {
-            it[RuleOption.conditionAppPackage] = appPkg
-         } else {
-            it.remove(RuleOption.conditionAppPackage)
-         }
+      val nullableAppPkg = appPkg.takeIf(String::isNotBlank)
 
-         it[RuleOption.conditionNotificationChannels] = channelIds.toSet()
-      }
+      rulesRepository.updateRulePreferences(
+         this@RuleDetailsViewModel.key.id,
+         RuleOption.conditionAppPackage setTo nullableAppPkg,
+         RuleOption.conditionNotificationChannels setTo channelIds.toSet()
+      )
    }
 }
 

@@ -1,8 +1,9 @@
 package com.matejdro.notificationcenter.rules
 
-import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
+import com.matejdro.notificationcenter.rules.keys.PreferenceKeyWithDefault
+import com.matejdro.notificationcenter.rules.keys.PreferencePair
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -61,13 +62,18 @@ class FakeRulesRepository : RulesRepository {
       return preferences.getOrPut(id) { MutableStateFlow(emptyPreferences()) }
    }
 
-   override suspend fun updateRulePreference(
+   override suspend fun updateRulePreferences(
       id: Int,
-      transform: suspend (MutablePreferences) -> Unit,
+      vararg preferencesToSet: PreferencePair<*>,
    ) {
       preferences.getOrPut(id) { MutableStateFlow(emptyPreferences()) }
          .update { preference ->
-            preference.toMutablePreferences().apply { transform(this) }.toPreferences()
+            preference.toMutablePreferences().also { mutablePrefs ->
+               for ((key, value) in preferencesToSet) {
+                  @Suppress("UNCHECKED_CAST")
+                  mutablePrefs[key as PreferenceKeyWithDefault<Any>] = value
+               }
+            }.toPreferences()
          }
    }
 }

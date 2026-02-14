@@ -4,7 +4,7 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import app.cash.turbine.test
 import com.matejdro.notificationcenter.rules.keys.get
-import com.matejdro.notificationcenter.rules.keys.set
+import com.matejdro.notificationcenter.rules.keys.setTo
 import com.matejdro.notificationcenter.rules.sqldelight.generated.Database
 import com.matejdro.notificationcenter.rules.sqldelight.generated.DbRuleQueries
 import com.matejdro.notificationcenter.rules.util.FakeDatastoreFactory
@@ -231,12 +231,14 @@ class RulesRepositoryImplTest {
          repo.insert("Rule A")
          runCurrent()
 
-         repo.updateRulePreference(1) {
-            it[RuleOption.conditionAppPackage] = "package.default"
-         }
-         repo.updateRulePreference(2) {
-            it[RuleOption.conditionAppPackage] = "package.A"
-         }
+         repo.updateRulePreferences(
+            1,
+            RuleOption.conditionAppPackage setTo "package.default",
+         )
+         repo.updateRulePreferences(
+            2,
+            RuleOption.conditionAppPackage setTo "package.A",
+         )
          runCurrent()
 
          repo.getRulePreferences(1).first()[RuleOption.conditionAppPackage] shouldBe "package.default"
@@ -253,9 +255,10 @@ class RulesRepositoryImplTest {
          repo.insert("Rule A")
          runCurrent()
 
-         repo.updateRulePreference(2) {
-            it[RuleOption.conditionAppPackage] = "package.default"
-         }
+         repo.updateRulePreferences(
+            2,
+            RuleOption.conditionAppPackage setTo "package.default",
+         )
 
          repo.delete(2)
          runCurrent()

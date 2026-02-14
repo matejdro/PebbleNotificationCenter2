@@ -1,13 +1,15 @@
 package com.matejdro.notificationcenter.rules
 
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
+import com.matejdro.notificationcenter.rules.keys.PreferenceKeyWithDefault
+import com.matejdro.notificationcenter.rules.keys.PreferencePair
+import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.notificationcenter.rules.sqldelight.generated.DbRuleQueries
 import com.matejdro.notificationcenter.rules.util.DatastoreFactory
 import dev.zacsweers.metro.AppScope
@@ -86,11 +88,16 @@ class RulesRepositoryImpl(
       }
    }
 
-   override suspend fun updateRulePreference(
+   override suspend fun updateRulePreferences(
       id: Int,
-      transform: suspend (MutablePreferences) -> Unit,
+      vararg preferencesToSet: PreferencePair<*>,
    ) {
-      getDataStore(id).edit(transform)
+      getDataStore(id).edit { mutablePrefs ->
+         for ((key, value) in preferencesToSet) {
+            @Suppress("UNCHECKED_CAST")
+            mutablePrefs[key as PreferenceKeyWithDefault<Any?>] = value
+         }
+      }
    }
 
    private fun getDataStore(id: Int): DataStore<Preferences> {

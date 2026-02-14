@@ -1,7 +1,7 @@
 package com.matejdro.notificationcenter.rules
 
-import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
+import com.matejdro.notificationcenter.rules.keys.PreferencePair
 import kotlinx.coroutines.flow.Flow
 import si.inova.kotlinova.core.outcome.Outcome
 
@@ -16,7 +16,7 @@ interface RulesRepository {
 
    fun getRulePreferences(id: Int): Flow<Preferences>
 
-   suspend fun updateRulePreference(id: Int, transform: suspend (MutablePreferences) -> Unit)
+   suspend fun updateRulePreferences(id: Int, vararg preferencesToSet: PreferencePair<*>)
 }
 
 const val RULE_ID_DEFAULT_SETTINGS = 1

@@ -6,7 +6,7 @@ import com.matejdro.notificationcenter.rules.FakeRulesRepository
 import com.matejdro.notificationcenter.rules.RuleMetadata
 import com.matejdro.notificationcenter.rules.RuleOption
 import com.matejdro.notificationcenter.rules.keys.get
-import com.matejdro.notificationcenter.rules.keys.set
+import com.matejdro.notificationcenter.rules.keys.setTo
 import com.matejdro.notificationcenter.rules.ui.errors.RuleMissingException
 import com.matejdro.pebblenotificationcenter.FakeNotificationServiceController
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey
@@ -93,9 +93,10 @@ class RuleDetailsViewModelTest {
    @Test
    fun `Provide preferences`() = scope.runTest {
       insertDefaultRules()
-      rulesRepository.updateRulePreference(2) {
-         it[RuleOption.conditionAppPackage] = "pkg"
-      }
+      rulesRepository.updateRulePreferences(
+         2,
+         RuleOption.conditionAppPackage setTo "pkg",
+      )
 
       viewModel.onServiceRegistered()
 
@@ -103,9 +104,10 @@ class RuleDetailsViewModelTest {
          runCurrent()
          expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.conditionAppPackage] shouldBe "pkg"
 
-         rulesRepository.updateRulePreference(2) {
-            it[RuleOption.conditionAppPackage] = "pkg2"
-         }
+         rulesRepository.updateRulePreferences(
+            2,
+            RuleOption.conditionAppPackage setTo "pkg2",
+         )
          runCurrent()
          expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.conditionAppPackage] shouldBe "pkg2"
       }
@@ -114,9 +116,10 @@ class RuleDetailsViewModelTest {
    @Test
    fun `Update preferences`() = scope.runTest {
       insertDefaultRules()
-      rulesRepository.updateRulePreference(2) {
-         it[RuleOption.conditionAppPackage] = "pkg"
-      }
+      rulesRepository.updateRulePreferences(
+         2,
+         RuleOption.conditionAppPackage setTo "pkg",
+      )
 
       viewModel.onServiceRegistered()
 
@@ -133,10 +136,11 @@ class RuleDetailsViewModelTest {
    @Test
    fun `Provide target app`() = scope.runTest {
       insertDefaultRules()
-      rulesRepository.updateRulePreference(2) {
-         it[RuleOption.conditionAppPackage] = "pkg"
-         it[RuleOption.conditionNotificationChannels] = setOf("C1", "C2")
-      }
+      rulesRepository.updateRulePreferences(
+         2,
+         RuleOption.conditionAppPackage setTo "pkg",
+         RuleOption.conditionNotificationChannels setTo setOf("C1", "C2"),
+      )
 
       notificationServiceController.putNotificationChannels(
          "pkg",
@@ -159,10 +163,11 @@ class RuleDetailsViewModelTest {
    @Test
    fun `Update target app`() = scope.runTest {
       insertDefaultRules()
-      rulesRepository.updateRulePreference(2) {
-         it[RuleOption.conditionAppPackage] = "pkg"
-         it[RuleOption.conditionNotificationChannels] = setOf("C1", "C2")
-      }
+      rulesRepository.updateRulePreferences(
+         2,
+         RuleOption.conditionAppPackage setTo "pkg",
+         RuleOption.conditionNotificationChannels setTo setOf("C1", "C2"),
+      )
 
       notificationServiceController.putNotificationChannels(
          "pkg",
@@ -197,9 +202,10 @@ class RuleDetailsViewModelTest {
    @Test
    fun `Update target to null when blank`() = scope.runTest {
       insertDefaultRules()
-      rulesRepository.updateRulePreference(2) {
-         it[RuleOption.conditionAppPackage] = "pkg"
-      }
+      rulesRepository.updateRulePreferences(
+         2,
+         RuleOption.conditionAppPackage setTo "pkg",
+      )
 
       viewModel.onServiceRegistered()
       runCurrent()
