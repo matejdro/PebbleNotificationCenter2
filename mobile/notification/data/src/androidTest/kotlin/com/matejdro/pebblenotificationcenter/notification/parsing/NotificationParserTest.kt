@@ -43,7 +43,8 @@ class NotificationParserTest {
          "SMS App",
          "Title",
          "Description",
-         Instant.ofEpochMilli(0L)
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
       )
    }
 
@@ -61,7 +62,8 @@ class NotificationParserTest {
          "SMS App",
          "",
          "Description",
-         Instant.ofEpochMilli(0L)
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
       )
    }
 
@@ -91,7 +93,8 @@ class NotificationParserTest {
          "SMS App",
          "Title",
          "Long description",
-         Instant.ofEpochMilli(0L)
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
       )
    }
 
@@ -120,6 +123,7 @@ class NotificationParserTest {
             "Alice: Message 2\n" +
             "Bob: Message 1",
          Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
       )
    }
 
@@ -146,6 +150,7 @@ class NotificationParserTest {
             "Alice: Message 2\n" +
             "Message 1",
          Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
       )
    }
 
@@ -172,6 +177,7 @@ class NotificationParserTest {
             "Message 2\n" +
             "Message 3",
          Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
       )
    }
 
@@ -193,7 +199,8 @@ class NotificationParserTest {
          "SMS App",
          "Title",
          "Description",
-         Instant.ofEpochMilli(1234L)
+         Instant.ofEpochMilli(1234L),
+         channel = testChannelOrNull(),
       )
    }
 
@@ -212,7 +219,8 @@ class NotificationParserTest {
          "SMS App",
          "",
          "A very very long long title title\nDescription",
-         Instant.ofEpochMilli(0L)
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
       )
    }
 
@@ -231,7 +239,8 @@ class NotificationParserTest {
          "SMS App",
          "Title",
          "Description",
-         Instant.ofEpochMilli(0L)
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
       )
    }
 
@@ -256,6 +265,7 @@ class NotificationParserTest {
          "Title",
          "Description",
          Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
          isSilent = false
       )
    }
@@ -281,6 +291,7 @@ class NotificationParserTest {
          "Title",
          "Description",
          Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
          isSilent = false
       )
    }
@@ -306,6 +317,7 @@ class NotificationParserTest {
          "Title",
          "Description",
          Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
          isSilent = false
       )
    }
@@ -331,6 +343,7 @@ class NotificationParserTest {
          "Title",
          "Description",
          Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
          isSilent = false
       )
    }
@@ -359,7 +372,8 @@ class NotificationParserTest {
          "Title",
          "Description",
          Instant.ofEpochMilli(0L),
-         isSilent = false
+         isSilent = false,
+         channel = "TEST_CHANNEL_VIB",
       )
    }
 
@@ -385,7 +399,8 @@ class NotificationParserTest {
          "Title",
          "Description",
          Instant.ofEpochMilli(0L),
-         isSilent = false
+         isSilent = false,
+         channel = "TEST_CHANNEL_NOISE",
       )
    }
 
@@ -404,7 +419,8 @@ class NotificationParserTest {
          "SMS App",
          "Title",
          "Description",
-         Instant.ofEpochMilli(0L)
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
       )
    }
 
@@ -428,6 +444,7 @@ class NotificationParserTest {
             "Title",
             "Description",
             Instant.ofEpochMilli(0L),
+            channel = testChannelOrNull(),
             isFilteredByDoNotDisturb = true,
          )
    }
@@ -452,6 +469,7 @@ class NotificationParserTest {
             "Title",
             "Description",
             Instant.ofEpochMilli(0L),
+            channel = testChannelOrNull(),
             isFilteredByDoNotDisturb = false,
          )
    }
@@ -475,7 +493,8 @@ class NotificationParserTest {
          "SMS App",
          "Title",
          "Description",
-         Instant.ofEpochMilli(4321L)
+         Instant.ofEpochMilli(4321L),
+         channel = testChannelOrNull(),
       )
    }
 
@@ -511,6 +530,14 @@ class NotificationParserTest {
       }
 
       return NotificationChannel("TEST_CHANNEL", "Test", NotificationManager.IMPORTANCE_LOW)
+   }
+
+   private fun testChannelOrNull(): String? {
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+         return null
+      }
+
+      return "TEST_CHANNEL"
    }
 }
 

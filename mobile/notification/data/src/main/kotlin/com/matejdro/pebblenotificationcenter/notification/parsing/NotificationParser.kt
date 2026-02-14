@@ -31,7 +31,7 @@ class NotificationParser(
          return null
       }
 
-      val isSilent = getIsSilent(notification, channel)
+      val (channelId, isSilent) = processChannel(notification, channel)
 
       val timestampMillis = if (NotificationCompat.getShowWhen(notification)) {
          notification.`when`
@@ -47,7 +47,8 @@ class NotificationParser(
          Instant.ofEpochMilli(timestampMillis),
          isSilent = isSilent,
          isFilteredByDoNotDisturb = ranking?.matchesInterruptionFilter() == false,
-         nativeActions = notification.parseActions()
+         nativeActions = notification.parseActions(),
+         channel = channelId
       )
    }
 
@@ -87,20 +88,29 @@ class NotificationParser(
       return Pair(updatedSubtitle, updatedText)
    }
 
-   private fun getIsSilent(notification: Notification, channel: Any?): Boolean {
-      val isSilentChannel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+   private fun processChannel(notification: Notification, channel: Any?): Pair<String?, Boolean> {
+      val channelId: String?
+      val isSilentChannel: Boolean
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
          val channelCast: NotificationChannel? = channel as NotificationChannel?
 
-         channelCast == null || (channelCast.importance < NotificationManager.IMPORTANCE_DEFAULT && !channelCast.shouldVibrate())
+         channelId = channelCast?.id
+         @Suppress("Indentation") // Ktlint false positive
+         isSilentChannel =
+            channelCast == null ||
+            (channelCast.importance < NotificationManager.IMPORTANCE_DEFAULT && !channelCast.shouldVibrate())
       } else {
-         true
+         channelId = null
+         isSilentChannel = true
       }
 
       @Suppress("DEPRECATION") // We still need to support legacy pre-channel notifications
-      return isSilentChannel &&
+      val isSilent = isSilentChannel &&
          notification.vibrate == null &&
          notification.sound == null &&
          (notification.defaults and (NotificationCompat.DEFAULT_SOUND or NotificationCompat.DEFAULT_VIBRATE)) == 0
+
+      return channelId to isSilent
    }
 
    private fun Notification.parseMessagingStyle(): String? {
