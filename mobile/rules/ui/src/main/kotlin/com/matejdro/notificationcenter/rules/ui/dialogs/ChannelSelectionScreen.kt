@@ -14,6 +14,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +47,7 @@ import si.inova.kotlinova.navigation.screens.InjectNavigationScreen
 import si.inova.kotlinova.navigation.screens.Screen
 
 @InjectNavigationScreen
+@Stable
 class ChannelSelectionScreen(
    private val navigator: Navigator,
    private val notificationServiceController: NotificationServiceController,

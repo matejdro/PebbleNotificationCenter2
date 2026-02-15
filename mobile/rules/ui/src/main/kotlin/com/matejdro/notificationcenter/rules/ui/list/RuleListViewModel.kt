@@ -49,6 +49,7 @@ class RuleListViewModel(
    }
 }
 
+@Stable
 data class RuleListState(
    val rules: List<RuleMetadata>,
 )
