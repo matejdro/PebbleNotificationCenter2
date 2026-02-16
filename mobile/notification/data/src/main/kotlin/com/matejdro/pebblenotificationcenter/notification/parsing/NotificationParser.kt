@@ -95,9 +95,7 @@ class NotificationParser(
          val channelCast: NotificationChannel? = channel as NotificationChannel?
 
          channelId = channelCast?.id
-         @Suppress("Indentation") // Ktlint false positive
-         isSilentChannel =
-            channelCast == null ||
+         isSilentChannel = channelCast == null ||
             (channelCast.importance < NotificationManager.IMPORTANCE_DEFAULT && !channelCast.shouldVibrate())
       } else {
          channelId = null
