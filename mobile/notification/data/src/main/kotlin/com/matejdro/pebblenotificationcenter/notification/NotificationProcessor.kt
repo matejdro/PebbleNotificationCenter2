@@ -30,7 +30,12 @@ class NotificationProcessor(
    private var nextVibration: AtomicReference<IntArray?> = AtomicReference(null)
 
    suspend fun onNotificationPosted(parsedNotification: ParsedNotification, suppressVibration: Boolean = false) {
-      val (_, settings) = ruleResolver.resolveRules(parsedNotification)
+      val (affectedRules, settings) = ruleResolver.resolveRules(parsedNotification)
+      logcat { "Notification ${parsedNotification.key} rules: $affectedRules" }
+      for (setting in settings.asMap()) {
+         logcat { "   ${setting.key} = ${setting.value}" }
+      }
+
       val masterSwitch = settings[RuleOption.masterSwitch]
       if (masterSwitch == RuleOption.MasterSwitch.HIDE) {
          onNotificationDismissed(parsedNotification.key)
