@@ -5,6 +5,7 @@
     <string name="cancel">Cancel</string>
     <string name="this_rule_does_not_exist">This rule does not exist</string>
     <string name="delete_rule">Delete rule</string>
+    <string name="delete_condition">Delete condition</string>
     <string name="delete_confirmation_text">Are you sure you want to delete the rule \'%1$s\'? This CANNOT BE UNDONE.</string>
     <string name="rename_rule">Rename rule</string>
     <string name="select_the_app">Select the app</string>
@@ -29,4 +30,8 @@
     <string name="setting_master_switch_hide">Hide</string>
     <string name="setting_master_switch_title">Master switch</string>
     <string name="settings">Settings</string>
+    <string name="whitelist_regex_condition_prefix">"• Notification contains "</string>
+    <string name="blacklist_regex_condition_prefix">"• Notification does not contain "</string>
+    <string name="enter_regular_expression">Enter regular expression</string>
+    <string name="edit_regular_expression">Edit regular expression</string>
 </resources>

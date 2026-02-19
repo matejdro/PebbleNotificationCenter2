@@ -87,6 +87,8 @@ class RuleDetailsViewModel(
                      preferences = preferences,
                      targetAppName = targetAppName,
                      targetChannelNames = targetChannelNames,
+                     whitelistRegexes = preferences[RuleOption.conditionWhitelistRegexes].toList(),
+                     blacklistRegexes = preferences[RuleOption.conditionBlacklistRegexes].toList()
                   )
                }
             }
@@ -123,6 +125,37 @@ class RuleDetailsViewModel(
          RuleOption.conditionNotificationChannels setTo channelIds.toSet()
       )
    }
+
+   fun addRegex(whitelist: Boolean, regex: String) = resources.launchWithExceptionReporting {
+      actionLogger.logAction { "RuleDetailsViewModel.addRegex(whitelist = $whitelist, regex = $regex)" }
+
+      updateRegexes(whitelist) {
+         it + regex
+      }
+   }
+
+   fun editRegex(whitelist: Boolean, index: Int, newValue: String?) = resources.launchWithExceptionReporting {
+      actionLogger.logAction {
+         "RuleDetailsViewModel.editRegex(whitelist = $whitelist, index = $index, newValue = ${newValue ?: "null"})"
+      }
+
+      updateRegexes(whitelist) { list ->
+         if (newValue != null) {
+            list.mapIndexed { listIndex, existingValue -> if (listIndex == index) newValue else existingValue }
+         } else {
+            list.filterIndexed { listIndex, _ -> listIndex != index }
+         }
+      }
+   }
+
+   private suspend fun updateRegexes(whitelist: Boolean, update: (List<String>) -> List<String>) {
+      val data = uiState.value.data ?: return
+      val existingValue = if (whitelist) data.whitelistRegexes else data.blacklistRegexes
+      val targetPreference = if (whitelist) RuleOption.conditionWhitelistRegexes else RuleOption.conditionBlacklistRegexes
+      val newSet = update(existingValue).toSet()
+
+      rulesRepository.updateRulePreferences(key.id, targetPreference setTo newSet)
+   }
 }
 
 @Stable
@@ -131,4 +164,6 @@ data class RuleDetailsScreenState(
    val preferences: Preferences,
    val targetAppName: String? = null,
    val targetChannelNames: List<String> = emptyList(),
+   val whitelistRegexes: List<String> = emptyList(),
+   val blacklistRegexes: List<String> = emptyList(),
 )

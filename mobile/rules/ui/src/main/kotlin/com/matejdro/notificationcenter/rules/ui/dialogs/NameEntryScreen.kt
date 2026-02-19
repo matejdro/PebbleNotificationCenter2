@@ -1,5 +1,6 @@
 package com.matejdro.notificationcenter.rules.ui.dialogs
 
+import android.os.Parcelable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
@@ -17,6 +18,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.DialogProperties
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.notificationcenter.rules.ui.R
@@ -45,7 +47,11 @@ class NameEntryScreen(private val navigator: Navigator) : Screen<NameEntryScreen
          dismiss = { navigator.goBack() },
          accept = {
             navigator.goBack()
-            resultPassingStore.sendResult(key.result, it)
+            resultPassingStore.sendResult(key.result, NameEntryScreenKey.Result.Text(it))
+         },
+         thirdButtonClick = {
+            navigator.goBack()
+            resultPassingStore.sendResult(key.result, NameEntryScreenKey.Result.ThirdButtonClicked)
          }
       )
    }
@@ -56,6 +62,7 @@ private fun NameEntryScreenContent(
    key: NameEntryScreenKey,
    dismiss: () -> Unit,
    accept: (String) -> Unit,
+   thirdButtonClick: () -> Unit,
 ) {
    val textFieldState = rememberTextFieldState(key.initialText, initialSelection = TextRange(0, key.initialText.length))
 
@@ -76,9 +83,19 @@ private fun NameEntryScreenContent(
          TextButton(
             onClick = {
                accept(textFieldState.text.toString())
-            }
+            },
+            enabled = textFieldState.text.isNotBlank()
          ) {
             Text(stringResource(R.string.ok))
+         }
+      },
+      neutralButton = {
+         key.thirdButtonText?.let { thirdButtonText ->
+            TextButton(
+               onClick = thirdButtonClick,
+            ) {
+               Text(thirdButtonText)
+            }
          }
       },
       content = {
@@ -90,7 +107,7 @@ private fun NameEntryScreenContent(
                .fillMaxWidth()
                .focusRequester(focusRequester),
             onKeyboardAction = { accept(textFieldState.text.toString()) },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, autoCorrectEnabled = key.enableAutocorrect),
             lineLimits = TextFieldLineLimits.SingleLine,
          )
 
@@ -110,7 +127,49 @@ internal fun NameEntryScreenPreview() {
          NameEntryScreenContent(
             NameEntryScreenKey("Enter text:", ResultKey(0), "Hello"),
             {},
-            {}
+            {},
+            {},
+         )
+      }
+   }
+}
+
+@ShowkaseComposable(group = "test")
+@Composable
+@Preview
+internal fun NameEntryScreenWithThirdButtonPreview() {
+   PreviewTheme {
+      Box {
+         NameEntryScreenContent(
+            NameEntryScreenKey(
+               "Enter text:",
+               ResultKey(0),
+               "Hello",
+               thirdButtonText = "Delete"
+            ),
+            {},
+            {},
+            {},
+         )
+      }
+   }
+}
+
+@ShowkaseComposable(group = "test")
+@Composable
+@Preview
+internal fun NameEntryScreenBlankPreview() {
+   PreviewTheme {
+      Box {
+         NameEntryScreenContent(
+            NameEntryScreenKey(
+               "Enter text:",
+               ResultKey(0),
+               "",
+            ),
+            {},
+            {},
+            {},
          )
       }
    }
@@ -119,9 +178,20 @@ internal fun NameEntryScreenPreview() {
 @Parcelize
 data class NameEntryScreenKey(
    val title: String,
-   val result: ResultKey<String>,
+   val result: ResultKey<Result>,
    val initialText: String = "",
+   val thirdButtonText: String? = null,
+   val enableAutocorrect: Boolean = true,
 ) : ScreenKey(), DialogKey {
    @IgnoredOnParcel
    override val dialogProperties: DialogProperties = DialogProperties()
+
+   @Parcelize
+   sealed class Result : Parcelable {
+      @Parcelize
+      data object ThirdButtonClicked : Result()
+
+      @Parcelize
+      data class Text(val text: String) : Result()
+   }
 }

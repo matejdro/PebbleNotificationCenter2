@@ -55,8 +55,12 @@ class RuleListScreen(
       val addDialog = navigator.rememberNavigationPopup(
          navigationKey = { _: Unit, resultKey -> NameEntryScreenKey(getString(R.string.new_rule), resultKey) },
          onResult = {
-            if (!it.isBlank()) {
-               viewModel.addRule(it)
+            if (it !is NameEntryScreenKey.Result.Text) {
+               return@rememberNavigationPopup
+            }
+
+            if (!it.text.isBlank()) {
+               viewModel.addRule(it.text)
             }
          }
       )

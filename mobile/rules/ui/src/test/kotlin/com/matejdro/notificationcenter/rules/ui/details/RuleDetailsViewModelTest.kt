@@ -256,6 +256,110 @@ class RuleDetailsViewModelTest {
       }
    }
 
+   @Test
+   fun `Add whitelist regular expression`() = scope.runTest {
+      insertDefaultRules()
+
+      viewModel.onServiceRegistered()
+      runCurrent()
+
+      viewModel.addRegex(whitelist = true, regex = "Test.*")
+      runCurrent()
+
+      viewModel.uiState.value.shouldBeInstanceOf<Outcome.Success<RuleDetailsScreenState>>().data.whitelistRegexes
+         .shouldContainExactly("Test.*")
+   }
+
+   @Test
+   fun `Add blacklist regular expression`() = scope.runTest {
+      insertDefaultRules()
+
+      viewModel.onServiceRegistered()
+      runCurrent()
+
+      viewModel.addRegex(whitelist = false, regex = "ABC+")
+      runCurrent()
+
+      viewModel.uiState.value.shouldBeInstanceOf<Outcome.Success<RuleDetailsScreenState>>().data.blacklistRegexes
+         .shouldContainExactly("ABC+")
+   }
+
+   @Test
+   fun `Edit whitelist regular expression`() = scope.runTest {
+      insertDefaultRules()
+
+      rulesRepository.updateRulePreferences(
+         2,
+         RuleOption.conditionWhitelistRegexes setTo setOf("R1", "R2", "R3")
+      )
+
+      viewModel.onServiceRegistered()
+      runCurrent()
+
+      viewModel.editRegex(whitelist = true, index = 1, "R2.5")
+      runCurrent()
+
+      viewModel.uiState.value.shouldBeInstanceOf<Outcome.Success<RuleDetailsScreenState>>().data.whitelistRegexes
+         .shouldContainExactly("R1", "R2.5", "R3")
+   }
+
+   @Test
+   fun `Edit blacklist regular expression`() = scope.runTest {
+      insertDefaultRules()
+
+      rulesRepository.updateRulePreferences(
+         2,
+         RuleOption.conditionBlacklistRegexes setTo setOf("R1", "R2", "R3")
+      )
+
+      viewModel.onServiceRegistered()
+      runCurrent()
+
+      viewModel.editRegex(whitelist = false, index = 1, "R2.5")
+      runCurrent()
+
+      viewModel.uiState.value.shouldBeInstanceOf<Outcome.Success<RuleDetailsScreenState>>().data.blacklistRegexes
+         .shouldContainExactly("R1", "R2.5", "R3")
+   }
+
+   @Test
+   fun `Delete whitelist regular expression`() = scope.runTest {
+      insertDefaultRules()
+
+      rulesRepository.updateRulePreferences(
+         2,
+         RuleOption.conditionWhitelistRegexes setTo setOf("R1", "R2", "R3")
+      )
+
+      viewModel.onServiceRegistered()
+      runCurrent()
+
+      viewModel.editRegex(whitelist = true, index = 0, null)
+      runCurrent()
+
+      viewModel.uiState.value.shouldBeInstanceOf<Outcome.Success<RuleDetailsScreenState>>().data.whitelistRegexes
+         .shouldContainExactly("R2", "R3")
+   }
+
+   @Test
+   fun `Delete blacklist regular expression`() = scope.runTest {
+      insertDefaultRules()
+
+      rulesRepository.updateRulePreferences(
+         2,
+         RuleOption.conditionBlacklistRegexes setTo setOf("R1", "R2", "R3")
+      )
+
+      viewModel.onServiceRegistered()
+      runCurrent()
+
+      viewModel.editRegex(whitelist = false, index = 0, null)
+      runCurrent()
+
+      viewModel.uiState.value.shouldBeInstanceOf<Outcome.Success<RuleDetailsScreenState>>().data.blacklistRegexes
+         .shouldContainExactly("R2", "R3")
+   }
+
    private suspend fun insertDefaultRules() {
       rulesRepository.insert("Default Rule")
       rulesRepository.insert("Rule B")

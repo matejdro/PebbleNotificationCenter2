@@ -102,9 +102,87 @@ internal fun renameDialog(navigator: Navigator, acceptName: (String) -> Unit): P
          )
       },
       onResult = {
-         if (!it.isBlank()) {
-            acceptName(it)
+         if (it !is NameEntryScreenKey.Result.Text) {
+            return@rememberNavigationPopup
+         }
+
+         if (!it.text.isBlank()) {
+            acceptName(it.text)
          }
       }
    )
 }
+
+@Composable
+internal fun addRegexDialog(
+   navigator: Navigator,
+   accept: (whitelist: Boolean, name: String) -> Unit,
+): PopupTrigger<Boolean> = key("addRegex") {
+   var lastWhitelist by remember { mutableStateOf(false) }
+
+   val popup = navigator.rememberNavigationPopup(
+      navigationKey = { _: Unit, resultKey ->
+         NameEntryScreenKey(
+            getString(R.string.enter_regular_expression),
+            resultKey,
+            enableAutocorrect = false
+         )
+      },
+      onResult = {
+         if (it !is NameEntryScreenKey.Result.Text) {
+            return@rememberNavigationPopup
+         }
+
+         accept(lastWhitelist, it.text)
+      }
+   )
+
+   PopupTrigger { whitelist ->
+      lastWhitelist = whitelist
+      popup.trigger(Unit)
+   }
+}
+
+@Composable
+internal fun editRegexDialog(
+   navigator: Navigator,
+   accept: (whitelist: Boolean, index: Int, name: String?) -> Unit,
+): PopupTrigger<EditRegexData> = key("editRegex") {
+   var lastData by remember { mutableStateOf<EditRegexData?>(null) }
+
+   val popup = navigator.rememberNavigationPopup(
+      navigationKey = { existingText: String, resultKey ->
+         NameEntryScreenKey(
+            getString(R.string.edit_regular_expression),
+            resultKey,
+            initialText = existingText,
+            enableAutocorrect = false,
+            thirdButtonText = getString(R.string.delete_condition)
+         )
+      },
+      onResult = {
+         val data = lastData ?: return@rememberNavigationPopup
+         val resultValue = when (it) {
+            is NameEntryScreenKey.Result.Text -> {
+               it.text
+            }
+
+            NameEntryScreenKey.Result.ThirdButtonClicked -> null
+         }
+
+         accept(data.whitelist, data.index, resultValue)
+         lastData = null
+      }
+   )
+
+   PopupTrigger { data ->
+      lastData = data
+      popup.trigger(data.existingText)
+   }
+}
+
+internal data class EditRegexData(
+   val whitelist: Boolean,
+   val existingText: String,
+   val index: Int,
+)

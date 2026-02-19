@@ -61,6 +61,8 @@ class RuleDetailsScreen(
       val stateOutcome by viewModel.uiState.collectAsState()
 
       val renameDialog = renameDialog(navigator, { viewModel.renameRule(it) })
+      val addRegexDialog = addRegexDialog(navigator, viewModel::addRegex)
+      val editRegexDialog = editRegexDialog(navigator, viewModel::editRegex)
 
       val appPickerDialog = appPickingDialog(
          navigator,
@@ -99,7 +101,17 @@ class RuleDetailsScreen(
             setPreference = SetPreference { key, value ->
                @Suppress("UNCHECKED_CAST")
                viewModel.updatePreference(key as PreferenceKeyWithDefault<Any?>, value)
-            }
+            },
+            changeRegex = { index, whitelist ->
+               val regexText = if (whitelist) {
+                  stateOutcome.data?.whitelistRegexes?.elementAtOrNull(index)
+               } else {
+                  stateOutcome.data?.blacklistRegexes?.elementAtOrNull(index)
+               } ?: return@RuleDetailsScreenContent
+
+               editRegexDialog.trigger(EditRegexData(whitelist, regexText, index))
+            },
+            addRegex = addRegexDialog::trigger,
          )
       }
    }
@@ -117,6 +129,8 @@ private fun RuleDetailsScreenContent(
    rename: () -> Unit,
    changeTargetApp: () -> Unit,
    setPreference: SetPreference,
+   changeRegex: (index: Int, whitelist: Boolean) -> Unit,
+   addRegex: (whitelist: Boolean) -> Unit,
 ) = with(LocalSharedTransitionScope.current) {
    val largeDevice: Boolean = windowSizeClass != WindowWidthSizeClass.Compact
 
@@ -153,7 +167,7 @@ private fun RuleDetailsScreenContent(
          }
       )
 
-      Conditions(state, changeTargetApp)
+      Conditions(state, changeTargetApp, changeRegex, addRegex)
 
       HorizontalDivider(color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(vertical = 16.dp))
 
@@ -172,7 +186,9 @@ internal fun RuleDetailsScreenContentPreview() {
          {},
          {},
          {},
-         SetPreference { _, _ -> }
+         SetPreference { _, _ -> },
+         { _, _ -> },
+         {},
       )
    }
 }
