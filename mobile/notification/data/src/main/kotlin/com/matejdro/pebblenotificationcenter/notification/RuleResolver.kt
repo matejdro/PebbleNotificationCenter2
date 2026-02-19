@@ -42,6 +42,16 @@ class RuleResolver(private val rulesRepository: RulesRepository) {
          return false
       }
 
+      val whitelistRegexes = this[RuleOption.conditionWhitelistRegexes].map { Regex(it) }
+      if (whitelistRegexes.isNotEmpty() && !whitelistRegexes.all(notification::containsRegex)) {
+         return false
+      }
+
+      val blacklistRegexes = this[RuleOption.conditionBlacklistRegexes].map { Regex(it) }
+      if (blacklistRegexes.any(notification::containsRegex)) {
+         return false
+      }
+
       return true
    }
 }
@@ -50,6 +60,10 @@ data class ResolvedRules(
    val involvedRules: List<String>,
    val preferences: Preferences,
 )
+
+private fun ParsedNotification.containsRegex(regex: Regex): Boolean {
+   return regex.containsMatchIn(title) || regex.containsMatchIn(subtitle) || regex.containsMatchIn(body)
+}
 
 private suspend fun <T> Flow<Outcome<T>>.firstSuccessOrThrow(): T {
    val result = first {
