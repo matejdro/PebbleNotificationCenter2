@@ -8,7 +8,8 @@ import si.inova.kotlinova.core.outcome.Outcome
 interface RulesRepository {
    fun getAll(): Flow<Outcome<List<RuleMetadata>>>
    fun getSingle(id: Int): Flow<Outcome<RuleMetadata?>>
-   suspend fun insert(name: String)
+   suspend fun insert(name: String): Int
+   suspend fun copyRule(fromId: Int, nameOfCopy: String): Int
    suspend fun edit(ruleMetadata: RuleMetadata)
 
    suspend fun delete(id: Int)

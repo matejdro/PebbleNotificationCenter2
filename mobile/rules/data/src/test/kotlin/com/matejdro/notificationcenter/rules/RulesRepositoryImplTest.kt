@@ -52,6 +52,16 @@ class RulesRepositoryImplTest {
    }
 
    @Test
+   fun `Insert should return the ID of the just added rule`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A") shouldBe 2
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
+
+   @Test
    fun `Allow editing rules`() = scope.runTest {
       repo.getAll().test {
          runCurrent()
@@ -319,6 +329,38 @@ class RulesRepositoryImplTest {
          runCurrent()
 
          repo.getRulePreferences(1).first().contains(RuleOption.conditionAppPackage.key) shouldBe true
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
+
+   @Test
+   fun `Copy rule and its preferences`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         runCurrent()
+
+         repo.updateRulePreferences(
+            1,
+            RuleOption.conditionAppPackage setTo "package.default",
+         )
+         repo.updateRulePreferences(
+            2,
+            RuleOption.conditionAppPackage setTo "package.A",
+         )
+         runCurrent()
+
+         repo.copyRule(2, "Copy of A") shouldBe 3
+         runCurrent()
+
+         expectMostRecentItem() shouldBeSuccessWithData listOf(
+            RuleMetadata(1, "Default Settings"),
+            RuleMetadata(2, "Rule A"),
+            RuleMetadata(3, "Copy of A"),
+         )
+
+         repo.getRulePreferences(3).first()[RuleOption.conditionAppPackage] shouldBe "package.A"
          cancelAndIgnoreRemainingEvents()
       }
    }

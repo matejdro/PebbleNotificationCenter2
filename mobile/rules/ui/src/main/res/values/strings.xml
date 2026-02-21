@@ -34,4 +34,6 @@
     <string name="blacklist_regex_condition_prefix">"• Notification does not contain "</string>
     <string name="enter_regular_expression">Enter regular expression</string>
     <string name="edit_regular_expression">Edit regular expression</string>
+    <string name="name_of_the_copied_rule">Name of the copied rule</string>
+    <string name="copy_rule">Copy rule</string>
 </resources>

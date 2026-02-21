@@ -59,8 +59,11 @@ class RulesRepositoryImpl(
       }.flowOnDefault()
    }
 
-   override suspend fun insert(name: String) = withDefault<Unit> {
-      queries.insert(name)
+   override suspend fun insert(name: String) = withDefault<Int> {
+      queries.transactionWithResult {
+         queries.insert(name)
+         queries.lastInsertRowId().executeAsOne().toInt()
+      }
    }
 
    override suspend fun edit(ruleMetadata: RuleMetadata) = withDefault<Unit> {
@@ -119,6 +122,14 @@ class RulesRepositoryImpl(
             DataStoreWrapper(dataStoreScope, dataStore)
          }.dataStore
       }
+   }
+
+   override suspend fun copyRule(fromId: Int, nameOfCopy: String): Int {
+      val newRuleId = insert(nameOfCopy)
+
+      getDataStore(newRuleId).updateData { getRulePreferences(fromId).first() }
+
+      return newRuleId
    }
 
    // The only way to close the data store is to close its coroutine scope, so we need to remember it

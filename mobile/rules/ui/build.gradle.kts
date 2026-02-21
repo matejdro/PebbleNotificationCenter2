@@ -34,4 +34,5 @@ dependencies {
    testImplementation(testFixtures(projects.rules.api))
    testImplementation(libs.kotlin.coroutines)
    testImplementation(libs.kotlinova.core.test)
+   testImplementation(libs.kotlinova.navigation.test)
 }

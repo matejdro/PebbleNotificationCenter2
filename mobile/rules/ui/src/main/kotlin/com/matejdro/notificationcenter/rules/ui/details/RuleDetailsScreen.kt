@@ -61,6 +61,7 @@ class RuleDetailsScreen(
       val stateOutcome by viewModel.uiState.collectAsState()
 
       val renameDialog = renameDialog(navigator, { viewModel.renameRule(it) })
+      val copyDialog = copyDialog(navigator, { viewModel.copyRule(it) })
       val addRegexDialog = addRegexDialog(navigator, viewModel::addRegex)
       val editRegexDialog = editRegexDialog(navigator, viewModel::editRegex)
 
@@ -91,6 +92,9 @@ class RuleDetailsScreen(
             windowSizeClass.widthSizeClass,
             rename = {
                renameDialog.trigger(stateOutcome.data?.ruleMetadata?.name.orEmpty())
+            },
+            copy = {
+               copyDialog.trigger(stateOutcome.data?.ruleMetadata?.name.orEmpty())
             },
             delete = {
                showDeleteConfirmation = true
@@ -127,6 +131,7 @@ private fun RuleDetailsScreenContent(
    windowSizeClass: WindowWidthSizeClass,
    delete: () -> Unit,
    rename: () -> Unit,
+   copy: () -> Unit,
    changeTargetApp: () -> Unit,
    setPreference: SetPreference,
    changeRegex: (index: Int, whitelist: Boolean) -> Unit,
@@ -161,6 +166,10 @@ private fun RuleDetailsScreenContent(
                Icon(painterResource(R.drawable.ic_rename), contentDescription = stringResource(R.string.rename_rule))
             }
 
+            IconButton(onClick = copy) {
+               Icon(painterResource(R.drawable.ic_copy), contentDescription = stringResource(R.string.copy_rule))
+            }
+
             IconButton(onClick = delete) {
                Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.delete_rule))
             }
@@ -183,6 +192,7 @@ internal fun RuleDetailsScreenContentPreview() {
       RuleDetailsScreenContent(
          state = RuleDetailsScreenState(RuleMetadata(2, "Test Rule"), emptyPreferences()),
          windowSizeClass = WindowWidthSizeClass.Compact,
+         {},
          {},
          {},
          {},

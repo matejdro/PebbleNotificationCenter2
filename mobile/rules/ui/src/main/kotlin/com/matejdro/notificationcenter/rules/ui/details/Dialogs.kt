@@ -114,6 +114,26 @@ internal fun renameDialog(navigator: Navigator, acceptName: (String) -> Unit): P
 }
 
 @Composable
+internal fun copyDialog(navigator: Navigator, acceptName: (String) -> Unit): PopupTrigger<String> = key("copy") {
+   navigator.rememberNavigationPopup(
+      navigationKey = { oldName: String, resultKey ->
+         NameEntryScreenKey(
+            getString(R.string.name_of_the_copied_rule),
+            resultKey,
+            initialText = oldName
+         )
+      },
+      onResult = {
+         if (it !is NameEntryScreenKey.Result.Text) {
+            return@rememberNavigationPopup
+         }
+
+         acceptName(it.text)
+      }
+   )
+}
+
+@Composable
 internal fun addRegexDialog(
    navigator: Navigator,
    accept: (whitelist: Boolean, name: String) -> Unit,

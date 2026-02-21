@@ -28,6 +28,8 @@ import kotlinx.coroutines.flow.map
 import si.inova.kotlinova.core.outcome.CoroutineResourceManager
 import si.inova.kotlinova.core.outcome.Outcome
 import si.inova.kotlinova.core.outcome.mapDataSuspend
+import si.inova.kotlinova.navigation.instructions.replaceTopWith
+import si.inova.kotlinova.navigation.navigator.Navigator
 import si.inova.kotlinova.navigation.services.ContributesScopedService
 import si.inova.kotlinova.navigation.services.SingleScreenViewModel
 
@@ -40,6 +42,7 @@ class RuleDetailsViewModel(
    private val rulesRepository: RulesRepository,
    private val appNameProvider: AppNameProvider,
    private val notificationServiceController: NotificationServiceController,
+   private val navigator: Navigator,
 ) : SingleScreenViewModel<RuleDetailsScreenKey>(resources.scope) {
    private val _uiState = MutableStateFlow<Outcome<RuleDetailsScreenState>>(Outcome.Progress())
    val uiState: StateFlow<Outcome<RuleDetailsScreenState>> = _uiState
@@ -146,6 +149,13 @@ class RuleDetailsViewModel(
             list.filterIndexed { listIndex, _ -> listIndex != index }
          }
       }
+   }
+
+   fun copyRule(newName: String) = resources.launchResourceControlTask(_uiState) {
+      actionLogger.logAction { "RuleDetailsViewModel.copyRule(newName = $newName)" }
+
+      val newId = rulesRepository.copyRule(key.id, newName)
+      navigator.replaceTopWith(RuleDetailsScreenKey(newId))
    }
 
    private suspend fun updateRegexes(whitelist: Boolean, update: (List<String>) -> List<String>) {

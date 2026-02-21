@@ -16,6 +16,9 @@ insert:
         (SELECT COALESCE(MAX(sortOrder) + 1, 0) FROM dbRule)
     );
 
+lastInsertRowId:
+    SELECT last_insert_rowid();
+
 delete {
     UPDATE dbRule
     SET sortOrder = sortOrder - 1

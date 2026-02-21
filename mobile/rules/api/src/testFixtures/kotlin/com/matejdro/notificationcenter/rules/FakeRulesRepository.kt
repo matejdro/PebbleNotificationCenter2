@@ -7,6 +7,7 @@ import com.matejdro.notificationcenter.rules.keys.PreferencePair
 import com.matejdro.notificationcenter.rules.keys.set
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import si.inova.kotlinova.core.outcome.Outcome
@@ -19,8 +20,10 @@ class FakeRulesRepository : RulesRepository {
       return rules.map { Outcome.Success(it) }
    }
 
-   override suspend fun insert(name: String) {
+   override suspend fun insert(name: String): Int {
       rules.update { it + RuleMetadata(it.size + 1, name) }
+
+      return rules.value.size
    }
 
    override suspend fun edit(ruleMetadata: RuleMetadata) {
@@ -76,5 +79,14 @@ class FakeRulesRepository : RulesRepository {
                }
             }.toPreferences()
          }
+   }
+
+   override suspend fun copyRule(fromId: Int, nameOfCopy: String): Int {
+      val newRuleId = insert(nameOfCopy)
+
+      preferences.getOrPut(newRuleId) { MutableStateFlow(emptyPreferences()) }
+         .value = getRulePreferences(fromId).first()
+
+      return newRuleId
    }
 }

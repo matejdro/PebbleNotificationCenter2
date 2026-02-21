@@ -26,6 +26,7 @@ import si.inova.kotlinova.core.test.TestScopeWithDispatcherProvider
 import si.inova.kotlinova.core.test.outcomes.shouldBeErrorWith
 import si.inova.kotlinova.core.test.outcomes.shouldBeSuccessWithData
 import si.inova.kotlinova.core.test.outcomes.testCoroutineResourceManager
+import si.inova.kotlinova.navigation.test.FakeNavigator
 
 class RuleDetailsViewModelTest {
    private val scope = TestScopeWithDispatcherProvider()
@@ -35,17 +36,21 @@ class RuleDetailsViewModelTest {
    }
    private val notificationServiceController = FakeNotificationServiceController()
 
+   private val defaultScreenKey = RuleDetailsScreenKey(2)
+   private val navigator = FakeNavigator(defaultScreenKey)
+
    private val viewModel = RuleDetailsViewModel(
       scope.testCoroutineResourceManager(),
       {},
       rulesRepository,
       appNameProvider,
       notificationServiceController,
+      navigator,
    )
 
    @BeforeEach
    fun setUp() {
-      viewModel.key = RuleDetailsScreenKey(2)
+      viewModel.key = defaultScreenKey
    }
 
    @Test
@@ -358,6 +363,32 @@ class RuleDetailsViewModelTest {
 
       viewModel.uiState.value.shouldBeInstanceOf<Outcome.Success<RuleDetailsScreenState>>().data.blacklistRegexes
          .shouldContainExactly("R2", "R3")
+   }
+
+   @Test
+   fun `Create a copy of the current rule`() = scope.runTest {
+      insertDefaultRules()
+
+      viewModel.onServiceRegistered()
+      runCurrent()
+
+      viewModel.copyRule("Copy of B")
+      runCurrent()
+
+      rulesRepository.getSingle(3).first() shouldBeSuccessWithData RuleMetadata(3, "Copy of B")
+   }
+
+   @Test
+   fun `Navigate to the details of created copy`() = scope.runTest {
+      insertDefaultRules()
+
+      viewModel.onServiceRegistered()
+      runCurrent()
+
+      viewModel.copyRule("Copy of B")
+      runCurrent()
+
+      navigator.backstack.shouldContainExactly(RuleDetailsScreenKey(3))
    }
 
    private suspend fun insertDefaultRules() {
