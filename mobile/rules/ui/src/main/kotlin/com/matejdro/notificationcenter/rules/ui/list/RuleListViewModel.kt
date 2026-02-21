@@ -4,6 +4,8 @@ import androidx.compose.runtime.Stable
 import com.matejdro.notificationcenter.rules.RuleMetadata
 import com.matejdro.notificationcenter.rules.RulesRepository
 import com.matejdro.pebblenotificationcenter.common.logging.ActionLogger
+import com.matejdro.pebblenotificationcenter.navigation.instructions.OpenScreenOrReplaceExistingType
+import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleListScreenKey
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +14,7 @@ import kotlinx.coroutines.flow.map
 import si.inova.kotlinova.core.outcome.CoroutineResourceManager
 import si.inova.kotlinova.core.outcome.Outcome
 import si.inova.kotlinova.core.outcome.mapData
+import si.inova.kotlinova.navigation.navigator.Navigator
 import si.inova.kotlinova.navigation.services.ContributesScopedService
 import si.inova.kotlinova.navigation.services.SingleScreenViewModel
 
@@ -22,6 +25,7 @@ class RuleListViewModel(
    private val resources: CoroutineResourceManager,
    private val actionLogger: ActionLogger,
    private val rulesRepository: RulesRepository,
+   private val navigator: Navigator,
 ) : SingleScreenViewModel<RuleListScreenKey>(resources.scope) {
    private val _uiState = MutableStateFlow<Outcome<RuleListState>>(Outcome.Progress())
    val uiState: StateFlow<Outcome<RuleListState>> = _uiState
@@ -40,7 +44,9 @@ class RuleListViewModel(
 
    fun addRule(ruleName: String) = resources.launchWithExceptionReporting {
       actionLogger.logAction { "RuleListViewModel.addRule($ruleName)" }
-      rulesRepository.insert(ruleName)
+      val newRuleId = rulesRepository.insert(ruleName)
+
+      navigator.navigate(OpenScreenOrReplaceExistingType(RuleDetailsScreenKey(newRuleId)))
    }
 
    fun reorder(id: Int, toIndex: Int) = resources.launchWithExceptionReporting {
