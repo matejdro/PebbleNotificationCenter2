@@ -50,4 +50,8 @@
     <string name="setting_mute_dnd_notifications_description">Mute notifications that would be filtered by the phone\'s currently
         set Do not disturb mode.
     </string>
+    <string name="setting_mute_identical_notifications">Mute identical notifications</string>
+    <string name="setting_mute_identical_notifications_description">Mute notification updates that have the same text as the
+        previous notification.
+    </string>
 </resources>

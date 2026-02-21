@@ -104,7 +104,7 @@ class NotificationProcessor(
          previousNotification.systemData.subtitle == notification.subtitle &&
          previousNotification.systemData.body == notification.body
 
-      if (identicalText) {
+      if (identicalText && preferences[RuleOption.muteIdenticalNotifications]) {
          logcat { "Not vibrating: identical text notification" }
          return null
       }

@@ -70,6 +70,12 @@ internal fun ColumnScope.Settings(
          title = { Text(stringResource(R.string.setting_mute_dnd_notifications)) },
          summary = { Text(stringResource(R.string.setting_mute_dnd_notifications_description)) }
       )
+      SwitchPreference(
+         value = preferences[RuleOption.muteIdenticalNotifications],
+         onValueChange = { updatePreference(RuleOption.muteIdenticalNotifications, it) },
+         title = { Text(stringResource(R.string.setting_mute_identical_notifications)) },
+         summary = { Text(stringResource(R.string.setting_mute_identical_notifications_description)) }
+      )
    }
 }
 
