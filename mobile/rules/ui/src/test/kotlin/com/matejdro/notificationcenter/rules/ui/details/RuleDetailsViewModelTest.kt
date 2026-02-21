@@ -26,6 +26,7 @@ import si.inova.kotlinova.core.test.TestScopeWithDispatcherProvider
 import si.inova.kotlinova.core.test.outcomes.shouldBeErrorWith
 import si.inova.kotlinova.core.test.outcomes.shouldBeSuccessWithData
 import si.inova.kotlinova.core.test.outcomes.testCoroutineResourceManager
+import si.inova.kotlinova.navigation.instructions.navigateTo
 import si.inova.kotlinova.navigation.test.FakeNavigator
 
 class RuleDetailsViewModelTest {
@@ -389,6 +390,18 @@ class RuleDetailsViewModelTest {
       runCurrent()
 
       navigator.backstack.shouldContainExactly(RuleDetailsScreenKey(3))
+   }
+
+   @Test
+   fun `Navigate back after deleting`() = scope.runTest {
+      navigator.navigateTo(RuleDetailsScreenKey(3))
+      insertDefaultRules()
+
+      viewModel.onServiceRegistered()
+      viewModel.deleteRule()
+      runCurrent()
+
+      navigator.backstack.shouldContainExactly(defaultScreenKey)
    }
 
    private suspend fun insertDefaultRules() {

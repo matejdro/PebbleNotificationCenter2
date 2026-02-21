@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.map
 import si.inova.kotlinova.core.outcome.CoroutineResourceManager
 import si.inova.kotlinova.core.outcome.Outcome
 import si.inova.kotlinova.core.outcome.mapDataSuspend
+import si.inova.kotlinova.navigation.instructions.goBack
 import si.inova.kotlinova.navigation.instructions.replaceTopWith
 import si.inova.kotlinova.navigation.navigator.Navigator
 import si.inova.kotlinova.navigation.services.ContributesScopedService
@@ -103,6 +104,7 @@ class RuleDetailsViewModel(
       actionLogger.logAction { "RuleDetailsViewModel.deleteRule()" }
 
       rulesRepository.delete(key.id)
+      navigator.goBack()
    }
 
    fun renameRule(newName: String) = resources.launchWithExceptionReporting {

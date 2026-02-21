@@ -42,7 +42,6 @@ import com.matejdro.pebblenotificationcenter.ui.components.ProgressErrorSuccessS
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
 import si.inova.kotlinova.core.activity.requireActivity
-import si.inova.kotlinova.navigation.instructions.goBack
 import si.inova.kotlinova.navigation.navigator.Navigator
 import si.inova.kotlinova.navigation.screens.InjectNavigationScreen
 import si.inova.kotlinova.navigation.screens.Screen
@@ -76,7 +75,6 @@ class RuleDetailsScreen(
             { showDeleteConfirmation = false },
             {
                viewModel.deleteRule()
-               navigator.goBack()
             }
          )
       }
