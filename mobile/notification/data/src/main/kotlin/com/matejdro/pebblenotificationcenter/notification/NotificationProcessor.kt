@@ -96,7 +96,7 @@ class NotificationProcessor(
          return true
       }
 
-      if (notification.media) {
+      if (notification.media && preferences[RuleOption.hideMediaNotifications]) {
          logcat { "Hiding: media" }
          return true
       }

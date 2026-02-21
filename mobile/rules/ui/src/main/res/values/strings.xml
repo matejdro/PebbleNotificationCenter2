@@ -68,4 +68,8 @@
     <string name="setting_hide_local_only_notifications_description">Hide notifications that are marked as local only
         (not meant to be bridged to other devices).
     </string>
+    <string name="setting_hide_media_notifications">Hide media notifications</string>
+    <string name="setting_hide_media_notifications_description">Hide notifications from media players meant for controlling media
+        playback.
+    </string>
 </resources>

@@ -687,4 +687,27 @@ class NotificationProcessorTest {
 
       watchSyncer.syncedNotifications.shouldBeEmpty()
    }
+
+   @Test
+   fun `It should forward received media notifications when that filter is disabled`() = runTest {
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.hideMediaNotifications setTo false
+      )
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         media = true
+      )
+
+      processor.onNotificationPosted(notification)
+
+      watchSyncer.syncedNotifications.shouldNotBeEmpty()
+   }
 }

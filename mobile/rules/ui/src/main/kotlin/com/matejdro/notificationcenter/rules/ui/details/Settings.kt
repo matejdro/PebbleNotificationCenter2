@@ -94,6 +94,12 @@ internal fun ColumnScope.Settings(
          title = { Text(stringResource(R.string.setting_hide_local_only_notifications)) },
          summary = { Text(stringResource(R.string.setting_hide_local_only_notifications_description)) }
       )
+      SwitchPreference(
+         value = preferences[RuleOption.hideMediaNotifications],
+         onValueChange = { updatePreference(RuleOption.hideMediaNotifications, it) },
+         title = { Text(stringResource(R.string.setting_hide_media_notifications)) },
+         summary = { Text(stringResource(R.string.setting_hide_media_notifications_description)) }
+      )
    }
 }
 
