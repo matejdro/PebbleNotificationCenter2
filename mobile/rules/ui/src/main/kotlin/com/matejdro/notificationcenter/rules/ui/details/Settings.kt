@@ -64,6 +64,12 @@ internal fun ColumnScope.Settings(
          title = { Text(stringResource(R.string.setting_mute_silent_notifications)) },
          summary = { Text(stringResource(R.string.setting_mute_silent_notifications_description)) }
       )
+      SwitchPreference(
+         value = preferences[RuleOption.muteDndNotifications],
+         onValueChange = { updatePreference(RuleOption.muteDndNotifications, it) },
+         title = { Text(stringResource(R.string.setting_mute_dnd_notifications)) },
+         summary = { Text(stringResource(R.string.setting_mute_dnd_notifications_description)) }
+      )
    }
 }
 

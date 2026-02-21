@@ -14,6 +14,7 @@ object RuleOption {
    val masterSwitch = EnumPreferenceKeyWithDefault("master_switch", MasterSwitch.SHOW)
 
    val muteSilentNotifications = BooleanPreferenceKeyWithDefault("mute_silent_notifications", true)
+   val muteDndNotifications = BooleanPreferenceKeyWithDefault("mute_dnd_notifications", true)
 
    enum class MasterSwitch {
       SHOW,

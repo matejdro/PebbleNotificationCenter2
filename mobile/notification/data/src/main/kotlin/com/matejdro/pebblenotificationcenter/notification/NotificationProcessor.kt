@@ -94,7 +94,7 @@ class NotificationProcessor(
          return null
       }
 
-      if (notification.isFilteredByDoNotDisturb) {
+      if (notification.isFilteredByDoNotDisturb && preferences[RuleOption.muteDndNotifications]) {
          logcat { "Not vibrating: DND filter" }
          return null
       }

@@ -46,4 +46,8 @@
     <string name="setting_mute_silent_notifications_description">Mute notifications that would
         ordinarily not vibrate/make noise on the phone.
     </string>
+    <string name="setting_mute_dnd_notifications">Mute notifications filtered by Do not disturb</string>
+    <string name="setting_mute_dnd_notifications_description">Mute notifications that would be filtered by the phone\'s currently
+        set Do not disturb mode.
+    </string>
 </resources>
