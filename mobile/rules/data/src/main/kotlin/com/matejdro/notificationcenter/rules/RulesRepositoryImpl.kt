@@ -9,8 +9,6 @@ import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import com.matejdro.notificationcenter.rules.keys.PreferenceKeyWithDefault
 import com.matejdro.notificationcenter.rules.keys.PreferencePair
-import com.matejdro.notificationcenter.rules.keys.get
-import com.matejdro.notificationcenter.rules.keys.remove
 import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.notificationcenter.rules.sqldelight.generated.DbRuleQueries
 import com.matejdro.notificationcenter.rules.util.DatastoreFactory
@@ -98,16 +96,10 @@ class RulesRepositoryImpl(
       id: Int,
       vararg preferencesToSet: PreferencePair<*>,
    ) {
-      val defaultRules = if (id != RULE_ID_DEFAULT_SETTINGS) getDataStore(RULE_ID_DEFAULT_SETTINGS).data.first() else null
-
       getDataStore(id).edit { mutablePrefs ->
          for ((key, value) in preferencesToSet) {
-            if (defaultRules != null && value == defaultRules[key]) {
-               mutablePrefs.remove(key)
-            } else {
-               @Suppress("UNCHECKED_CAST")
-               mutablePrefs[key as PreferenceKeyWithDefault<Any?>] = value
-            }
+            @Suppress("UNCHECKED_CAST")
+            mutablePrefs[key as PreferenceKeyWithDefault<Any?>] = value
          }
       }
    }

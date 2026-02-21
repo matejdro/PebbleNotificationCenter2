@@ -281,7 +281,7 @@ class RulesRepositoryImplTest {
    }
 
    @Test
-   fun `Clear preference if it is identical to the default settings`() = scope.runTest {
+   fun `Do not clear preference if it is identical to the default settings`() = scope.runTest {
       repo.getAll().test {
          runCurrent()
 
@@ -305,7 +305,7 @@ class RulesRepositoryImplTest {
          )
          runCurrent()
 
-         repo.getRulePreferences(2).first().contains(RuleOption.conditionAppPackage.key) shouldBe false
+         repo.getRulePreferences(2).first().contains(RuleOption.conditionAppPackage.key) shouldBe true
          cancelAndIgnoreRemainingEvents()
       }
    }
