@@ -81,7 +81,7 @@ class NotificationProcessor(
          return true
       }
 
-      if (notification.isOngoing) {
+      if (notification.isOngoing && preferences[RuleOption.hideOngoingNotifications]) {
          logcat { "Hiding: ongoing" }
          return true
       }

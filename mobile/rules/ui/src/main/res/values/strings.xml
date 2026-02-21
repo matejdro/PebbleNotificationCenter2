@@ -54,4 +54,8 @@
     <string name="setting_mute_identical_notifications_description">Mute notification updates that have the same text as the
         previous notification.
     </string>
+    <string name="setting_hide_ongoing_notifications">Hide ongoing notifications</string>
+    <string name="setting_hide_ongoing_notifications_description">Hide notifications that represent an ongoing event
+        (such as a file download or a service running in the background).
+    </string>
 </resources>

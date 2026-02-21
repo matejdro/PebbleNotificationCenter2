@@ -14,6 +14,7 @@ import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotific
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -562,6 +563,29 @@ class NotificationProcessorTest {
       processor.onNotificationPosted(notification)
 
       watchSyncer.syncedNotifications.shouldBeEmpty()
+   }
+
+   @Test
+   fun `It should forward received notifications that are ongoing if this filter is disabled`() = runTest {
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.hideOngoingNotifications setTo false
+      )
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isOngoing = true
+      )
+
+      processor.onNotificationPosted(notification)
+
+      watchSyncer.syncedNotifications.shouldNotBeEmpty()
    }
 
    @Test

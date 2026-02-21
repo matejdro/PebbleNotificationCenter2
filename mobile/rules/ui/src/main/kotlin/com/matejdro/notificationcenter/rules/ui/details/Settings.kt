@@ -76,6 +76,12 @@ internal fun ColumnScope.Settings(
          title = { Text(stringResource(R.string.setting_mute_identical_notifications)) },
          summary = { Text(stringResource(R.string.setting_mute_identical_notifications_description)) }
       )
+      SwitchPreference(
+         value = preferences[RuleOption.hideOngoingNotifications],
+         onValueChange = { updatePreference(RuleOption.hideOngoingNotifications, it) },
+         title = { Text(stringResource(R.string.setting_hide_ongoing_notifications)) },
+         summary = { Text(stringResource(R.string.setting_hide_ongoing_notifications_description)) }
+      )
    }
 }
 
