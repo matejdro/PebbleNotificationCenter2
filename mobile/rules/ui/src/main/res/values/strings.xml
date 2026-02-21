@@ -58,4 +58,10 @@
     <string name="setting_hide_ongoing_notifications_description">Hide notifications that represent an ongoing event
         (such as a file download or a service running in the background).
     </string>
+    <string name="setting_hide_group_summary_notifications">Hide group summaries</string>
+    <string name="setting_hide_group_summary_notifications_description">Hide notifications that show a summary of other
+        notifications
+        (such as summary of all e-mails). These notifications are usually a duplicate as usually separate notifications
+        for the individual items in the summary are present at the same time.
+    </string>
 </resources>

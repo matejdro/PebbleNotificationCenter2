@@ -86,7 +86,7 @@ class NotificationProcessor(
          return true
       }
 
-      if (notification.groupSummary) {
+      if (notification.groupSummary && preferences[RuleOption.hideGroupSummaryNotifications]) {
          logcat { "Hiding: group summary" }
          return true
       }

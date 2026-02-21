@@ -38,7 +38,7 @@ internal fun ColumnScope.Settings(
    Text(
       stringResource(R.string.settings),
       style = MaterialTheme.typography.headlineMedium,
-      modifier = Modifier.Companion
+      modifier = Modifier
          .padding(horizontal = 16.dp)
          .semantics { heading() }
    )
@@ -82,6 +82,12 @@ internal fun ColumnScope.Settings(
          title = { Text(stringResource(R.string.setting_hide_ongoing_notifications)) },
          summary = { Text(stringResource(R.string.setting_hide_ongoing_notifications_description)) }
       )
+      SwitchPreference(
+         value = preferences[RuleOption.hideGroupSummaryNotifications],
+         onValueChange = { updatePreference(RuleOption.hideGroupSummaryNotifications, it) },
+         title = { Text(stringResource(R.string.setting_hide_group_summary_notifications)) },
+         summary = { Text(stringResource(R.string.setting_hide_group_summary_notifications_description)) }
+      )
    }
 }
 
@@ -115,7 +121,7 @@ private inline fun <reified T : Enum<T>> EnumListPreference(
    )
 }
 
-@Preview
+@Preview(heightDp = 2000, showBackground = true)
 @Composable
 @ShowkaseComposable(group = "test")
 internal fun AllPreferencesPreview() {
