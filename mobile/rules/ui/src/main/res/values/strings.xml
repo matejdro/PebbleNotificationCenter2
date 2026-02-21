@@ -36,4 +36,9 @@
     <string name="edit_regular_expression">Edit regular expression</string>
     <string name="name_of_the_copied_rule">Name of the copied rule</string>
     <string name="copy_rule">Copy rule</string>
+    <string name="create_a_blank_rule">Create a blank rule</string>
+    <string name="hide_an_app">Hide an app</string>
+    <string name="mute_an_app">Mute an app</string>
+    <string name="mute">Mute %1$s</string>
+    <string name="hide">Hide %1$s</string>
 </resources>

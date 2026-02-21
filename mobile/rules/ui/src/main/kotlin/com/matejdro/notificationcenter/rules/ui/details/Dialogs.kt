@@ -58,7 +58,7 @@ internal fun DeleteDialog(
 internal fun appPickingDialog(
    navigator: Navigator,
    changeTargetApp: (String, List<String>) -> Unit,
-): PopupTrigger<Unit> {
+): PopupTrigger<Boolean> {
    var lastSelectedPkg by remember { mutableStateOf<String?>(null) }
 
    val channelPickerDialog = key("channels") {
@@ -74,8 +74,8 @@ internal fun appPickingDialog(
 
    val appPickerDialog = key("apps") {
       navigator.rememberNavigationPopup(
-         navigationKey = { _: Unit, resultKey ->
-            AppSelectionScreenKey(resultKey)
+         navigationKey = { showAnyApp: Boolean, resultKey ->
+            AppSelectionScreenKey(resultKey, showAnyApp)
          },
          onResult = {
             if (it.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

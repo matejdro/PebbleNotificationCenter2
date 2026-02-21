@@ -37,7 +37,6 @@ import com.matejdro.notificationcenter.rules.keys.SetPreference
 import com.matejdro.notificationcenter.rules.ui.R
 import com.matejdro.notificationcenter.rules.ui.errors.ruleUserFriendlyMessage
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey
-import com.matejdro.pebblenotificationcenter.navigation.util.trigger
 import com.matejdro.pebblenotificationcenter.ui.animations.LocalSharedTransitionScope
 import com.matejdro.pebblenotificationcenter.ui.components.ProgressErrorSuccessScaffold
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
@@ -100,7 +99,7 @@ class RuleDetailsScreen(
                showDeleteConfirmation = true
             },
             changeTargetApp = {
-               appPickerDialog.trigger()
+               appPickerDialog.trigger(true)
             },
             setPreference = SetPreference { key, value ->
                @Suppress("UNCHECKED_CAST")

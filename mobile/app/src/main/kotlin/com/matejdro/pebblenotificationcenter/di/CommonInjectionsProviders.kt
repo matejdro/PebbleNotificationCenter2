@@ -2,6 +2,7 @@ package com.matejdro.pebblenotificationcenter.di
 
 import android.app.Application
 import android.content.Context
+import android.content.res.Resources
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
@@ -29,6 +30,9 @@ interface CommonInjectionsProviders {
 
    @Provides
    fun bindToTimeProvider(androidTimeProvider: AndroidTimeProvider): TimeProvider = androidTimeProvider
+
+   @Provides
+   fun provideResources(context: Context): Resources = context.resources
 
    @Provides
    fun provideAndroidDateTimeFormatter(

@@ -765,6 +765,7 @@ potential-bugs:
     active: false
   NullableToStringCall:
     active: true
+    excludes: *testFolders
   PropertyUsedBeforeDeclaration:
     active: false
   UnconditionalJumpStatementInLoop:

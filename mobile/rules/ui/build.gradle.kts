@@ -5,6 +5,7 @@ plugins {
    navigation
    parcelize
    showkase
+   unmock
 }
 
 android {
@@ -22,6 +23,7 @@ dependencies {
 
    implementation(projects.commonAndroid)
    implementation(projects.commonCompose)
+   implementation(projects.sharedResources)
    implementation(libs.accompanist.drawablepainter)
    implementation(libs.androidx.compose.material3.sizeClasses)
    implementation(libs.androidx.datastore.preferences)

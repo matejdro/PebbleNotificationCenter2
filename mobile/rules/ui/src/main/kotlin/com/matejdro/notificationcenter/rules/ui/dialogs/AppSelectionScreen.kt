@@ -61,6 +61,7 @@ class AppSelectionScreen(private val navigator: Navigator) : Screen<AppSelection
       val resultPassingStore = LocalResultPassingStore.current
 
       AppSelectionScreenContent(
+         showAnyApp = key.showAnyApp,
          dismiss = { navigator.goBack() },
          accept = {
             navigator.goBack()
@@ -72,6 +73,7 @@ class AppSelectionScreen(private val navigator: Navigator) : Screen<AppSelection
 
 @Composable
 private fun AppSelectionScreenContent(
+   showAnyApp: Boolean,
    dismiss: () -> Unit,
    accept: (String) -> Unit,
 ) {
@@ -81,9 +83,13 @@ private fun AppSelectionScreenContent(
    LaunchedEffect(context) {
       withContext(Dispatchers.Default) {
          val packageManager = context.packageManager
-         val anyAppEntry = App("", context.getString(R.string.any_app))
+         val anyAppEntry = if (showAnyApp) {
+            App("", context.getString(R.string.any_app))
+         } else {
+            null
+         }
 
-         appList = listOf(anyAppEntry) + packageManager.getInstalledPackages(0)
+         appList = listOfNotNull(anyAppEntry) + packageManager.getInstalledPackages(0)
             .mapNotNull {
                val info = it.applicationInfo ?: return@mapNotNull null
                App(it.packageName, packageManager.getApplicationLabel(info).toString())
@@ -218,7 +224,7 @@ private data class App(val pkg: String, val name: String)
 @FullScreenPreviews
 internal fun AppSelectionScreenPreview() {
    PreviewTheme {
-      Box() {
+      Box {
          AppSelectionScreenContent(
             List(20) {
                App(it.toString(), "App $it")
@@ -233,6 +239,7 @@ internal fun AppSelectionScreenPreview() {
 @Parcelize
 data class AppSelectionScreenKey(
    val result: ResultKey<String>,
+   val showAnyApp: Boolean,
 ) : ScreenKey(), DialogKey {
    @IgnoredOnParcel
    override val dialogProperties: DialogProperties = DialogProperties()

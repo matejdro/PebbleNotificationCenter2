@@ -46,6 +46,7 @@ import si.inova.kotlinova.navigation.navigator.Navigator
 import si.inova.kotlinova.navigation.screenkeys.ScreenKey
 import si.inova.kotlinova.navigation.screens.InjectNavigationScreen
 import si.inova.kotlinova.navigation.screens.Screen
+import com.matejdro.pebblenotificationcenter.sharedresources.R as sharedR
 
 @InjectNavigationScreen
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -97,7 +98,7 @@ private fun NavigationBarContent(
          NavigationBarItem(
             selected = selectedScreenKey is RuleListScreenKey,
             onClick = { navigate(ReplaceTabContentWith(RuleListScreenKey)) },
-            icon = { Icon(painter = painterResource(id = R.drawable.rule), contentDescription = null) },
+            icon = { Icon(painter = painterResource(id = sharedR.drawable.rule), contentDescription = null) },
             label = { Text(stringResource(R.string.rules)) }
          )
 
@@ -129,7 +130,7 @@ private fun NavigationRailContent(
          NavigationRailItem(
             selected = selectedScreenKey is RuleListScreenKey,
             onClick = { navigate(ReplaceTabContentWith(RuleListScreenKey)) },
-            icon = { Icon(painter = painterResource(id = R.drawable.rule), contentDescription = null) },
+            icon = { Icon(painter = painterResource(id = sharedR.drawable.rule), contentDescription = null) },
             label = { Text(stringResource(R.string.rules)) }
          )
 
