@@ -60,6 +60,42 @@ If an indicator is filled with black color, it indicates the currently selected 
 
 * Double buzz - Phone got disconnected from the watch while the app was open (check the status icon).
 
+## On the phone
+
+### Mute / Hide an app
+
+If you just want to simply mute or hide a specific application, you do not need to deal with the entire rule system. Just select the + button and then the mute or hide option.
+
+### Default Settings
+
+On the top of the rules list is the `Default Settings` rule. These settings are applied to any notifications before any other custom rules are applied.
+
+### Custom rules
+
+Rules are a primary way to configure notifications in the Notification Center. Rather than a static configuration, they consists of a conditions that determine when a specific rule applies and settings that get applied.
+
+Example rules:
+
+* When a notification comes from the `Work Email` app, mute that notification.
+* When a notification comes from the `My Social Media` app and contains the word `Promotion`, hide that notification.
+* When a notification comes from the `SMS` app and contains `My Last Name`, but does not contain `My Annoying Cousin's name`, change the vibration pattern to something specific.
+
+#### Conditions
+
+You can currently set up three different conditions for every rule:
+
+* Originating app / channel - Passes when a notification originates from a specific app or a specific notification channel of that app
+* Whitelist regex - Passes when a notification title, subtitle or body text contains the specified regular expression
+* Blacklist regex - Passes when a notification title, subtitle or body text does not contains the specified regular expression
+
+All conditions are applied using the AND logic - every condition on the rule needs to pass in order for the rule to apply. There is currently no way of performing OR logic, but you can simulate it by creating a copy of the rule.
+
+#### Settings
+
+Every rule has a bunch of settings that you can apply when rule's conditions pass. 
+
+Settings are applied sequentially to all passing rules from top to bottom. You can reorder the rules by drag-dropping them in the rules list to change the order of applying.
+
 # Contributing
 
 To contribute to this project:
