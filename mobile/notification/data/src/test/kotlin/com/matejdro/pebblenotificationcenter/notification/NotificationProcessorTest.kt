@@ -648,6 +648,29 @@ class NotificationProcessorTest {
    }
 
    @Test
+   fun `It should forward received notifications that are local only when that filter is disabled`() = runTest {
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.hideLocalOnlyNotifications setTo false
+      )
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         localOnly = true
+      )
+
+      processor.onNotificationPosted(notification)
+
+      watchSyncer.syncedNotifications.shouldNotBeEmpty()
+   }
+
+   @Test
    fun `It should not forward received media notifications by default`() = runTest {
       val notification = ParsedNotification(
          "key",

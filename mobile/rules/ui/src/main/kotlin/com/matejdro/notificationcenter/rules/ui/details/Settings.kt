@@ -88,6 +88,12 @@ internal fun ColumnScope.Settings(
          title = { Text(stringResource(R.string.setting_hide_group_summary_notifications)) },
          summary = { Text(stringResource(R.string.setting_hide_group_summary_notifications_description)) }
       )
+      SwitchPreference(
+         value = preferences[RuleOption.hideLocalOnlyNotifications],
+         onValueChange = { updatePreference(RuleOption.hideLocalOnlyNotifications, it) },
+         title = { Text(stringResource(R.string.setting_hide_local_only_notifications)) },
+         summary = { Text(stringResource(R.string.setting_hide_local_only_notifications_description)) }
+      )
    }
 }
 

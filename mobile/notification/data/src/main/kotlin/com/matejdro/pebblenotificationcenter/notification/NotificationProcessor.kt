@@ -91,7 +91,7 @@ class NotificationProcessor(
          return true
       }
 
-      if (notification.localOnly) {
+      if (notification.localOnly && preferences[RuleOption.hideLocalOnlyNotifications]) {
          logcat { "Hiding: local only" }
          return true
       }

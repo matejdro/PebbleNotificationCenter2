@@ -18,6 +18,7 @@ object RuleOption {
    val muteIdenticalNotifications = BooleanPreferenceKeyWithDefault("mute_identical_notifications", true)
    val hideOngoingNotifications = BooleanPreferenceKeyWithDefault("hide_ongoing_notifications", true)
    val hideGroupSummaryNotifications = BooleanPreferenceKeyWithDefault("hide_group_summary_notifications", true)
+   val hideLocalOnlyNotifications = BooleanPreferenceKeyWithDefault("hide_local_only_notifications", true)
 
    enum class MasterSwitch {
       SHOW,

@@ -64,4 +64,8 @@
         (such as summary of all e-mails). These notifications are usually a duplicate as usually separate notifications
         for the individual items in the summary are present at the same time.
     </string>
+    <string name="setting_hide_local_only_notifications">Hide local only notifications</string>
+    <string name="setting_hide_local_only_notifications_description">Hide notifications that are marked as local only
+        (not meant to be bridged to other devices).
+    </string>
 </resources>
