@@ -39,7 +39,7 @@ class RulesRepositoryImpl(
    private val queries: DbRuleQueries,
    private val dataStoreFactory: DatastoreFactory,
 ) : RulesRepository {
-   private val stores = HashMap<Int, DataStoreWrapper>()
+   private val stores = HashMap<Int, DataStore<Preferences>>()
 
    override fun getAll(): Flow<Outcome<List<RuleMetadata>>> {
       return queries.selectAll().asFlow().map { query ->
@@ -113,14 +113,14 @@ class RulesRepositoryImpl(
    }
 
    private fun getDataStore(id: Int): DataStore<Preferences> {
-      stores[id]?.let { return it.dataStore }
+      stores[id]?.let { return it }
 
       return synchronized(stores) {
          stores.getOrPut(id) {
             val dataStoreScope = CoroutineScope(ioScope.coroutineContext + SupervisorJob(ioScope.coroutineContext.job))
             val dataStore = dataStoreFactory.createDatastore(dataStoreScope, id.toString())
-            DataStoreWrapper(dataStoreScope, dataStore)
-         }.dataStore
+            dataStore
+         }
       }
    }
 
@@ -131,7 +131,4 @@ class RulesRepositoryImpl(
 
       return newRuleId
    }
-
-   // The only way to close the data store is to close its coroutine scope, so we need to remember it
-   private data class DataStoreWrapper(val coroutineScope: CoroutineScope, val dataStore: DataStore<Preferences>)
 }
