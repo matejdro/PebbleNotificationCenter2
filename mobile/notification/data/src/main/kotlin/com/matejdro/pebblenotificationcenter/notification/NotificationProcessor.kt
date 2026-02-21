@@ -1,6 +1,7 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import android.content.Context
+import androidx.datastore.preferences.core.Preferences
 import com.matejdro.notificationcenter.rules.RuleOption
 import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.bluetooth.WatchSyncer
@@ -60,26 +61,57 @@ class NotificationProcessor(
             "dnd=${parsedNotification.isFilteredByDoNotDisturb}"
       }
 
-      val identicalText = previousNotification != null &&
-         previousNotification.systemData.title == parsedNotification.title &&
-         previousNotification.systemData.subtitle == parsedNotification.subtitle &&
-         previousNotification.systemData.body == parsedNotification.body
-
-      val noisy = !suppressVibration && !parsedNotification.isSilent
-      @Suppress("ComplexCondition") // Lots of unrelated checks
-      if (
-         masterSwitch != RuleOption.MasterSwitch.MUTE &&
-         noisy &&
-         !parsedNotification.isFilteredByDoNotDisturb &&
-         !identicalText
-      ) {
-         nextVibration.set(
-            // Until settings are there, just hardcode jackhammer
-            @Suppress("MagicNumber")
-            intArrayOf(50, 50, 50, 50, 50, 50, 50, 50, 50, 50)
-         )
+      val vibrationPattern = getVibrationPattern(
+         previousNotification,
+         parsedNotification,
+         suppressVibration,
+         settings
+      )
+      if (vibrationPattern != null) {
+         nextVibration.set(vibrationPattern)
          openController.openWatchapp()
       }
+   }
+
+   private fun getVibrationPattern(
+      previousNotification: ProcessedNotification?,
+      notification: ParsedNotification,
+      suppressVibration: Boolean,
+      preferences: Preferences,
+   ): IntArray? {
+      if (suppressVibration) {
+         logcat { "Not vibrating: suppressVibration flag" }
+         return null
+      }
+
+      if (preferences[RuleOption.masterSwitch] == RuleOption.MasterSwitch.MUTE) {
+         logcat { "Not vibrating: master switch" }
+         return null
+      }
+
+      if (notification.isSilent) {
+         logcat { "Not vibrating: silent notification" }
+         return null
+      }
+
+      if (notification.isFilteredByDoNotDisturb) {
+         logcat { "Not vibrating: DND filter" }
+         return null
+      }
+
+      val identicalText = previousNotification != null &&
+         previousNotification.systemData.title == notification.title &&
+         previousNotification.systemData.subtitle == notification.subtitle &&
+         previousNotification.systemData.body == notification.body
+
+      if (identicalText) {
+         logcat { "Not vibrating: identical text notification" }
+         return null
+      }
+
+      // Until settings are there, just hardcode jackhammer
+      @Suppress("MagicNumber")
+      return intArrayOf(50, 50, 50, 50, 50, 50, 50, 50, 50, 50)
    }
 
    private fun processActions(parsedNotification: ParsedNotification): List<Action> {
