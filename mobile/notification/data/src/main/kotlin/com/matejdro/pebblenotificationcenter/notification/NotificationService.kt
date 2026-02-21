@@ -4,7 +4,6 @@ import android.os.Build
 import android.os.Process
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import androidx.core.app.NotificationCompat
 import com.matejdro.pebblenotificationcenter.common.di.NavigationInjectingApplication
 import com.matejdro.pebblenotificationcenter.notification.di.NotificationInject
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
@@ -61,11 +60,6 @@ class NotificationService : NotificationListenerService() {
          mutex.withLock {
             notificationProcessor.onNotificationsCleared()
             for (sbn in activeNotifications) {
-               if (!sbn.shouldShow()) {
-                  logcat { "Skipping notification ${sbn.key}" }
-                  continue
-               }
-
                val parsed = parseNotification(sbn)
                if (parsed != null) {
                   notificationProcessor.onNotificationPosted(parsed, suppressVibration = true)
@@ -81,19 +75,12 @@ class NotificationService : NotificationListenerService() {
       logcat { "Notification ${sbn.key} posted" }
       coroutineScope.launch {
          mutex.withLock {
-            if (sbn.shouldShow()) {
-               val parsed = parseNotification(sbn)
-               if (parsed == null) {
-                  logcat { "Notification ${sbn.key} has no text. Skipping..." }
-                  return@launch
-               }
-               notificationProcessor.onNotificationPosted(parsed)
-            } else {
-               logcat { "Skipping notification ${sbn.key} ${sbn.key}" }
-               // When notification is being skipped, we should remove it from the store, to ensure any previous notification
-               // with that id is removed
-               onNotificationRemoved(sbn)
+            val parsed = parseNotification(sbn)
+            if (parsed == null) {
+               logcat { "Notification ${sbn.key} has no text. Skipping..." }
+               return@launch
             }
+            notificationProcessor.onNotificationPosted(parsed)
          }
       }
    }
@@ -126,13 +113,4 @@ class NotificationService : NotificationListenerService() {
    companion object {
       internal var instance: NotificationService? = null
    }
-}
-
-private fun StatusBarNotification.shouldShow(): Boolean {
-   // Temporary filter until Rules are ready
-
-   return !isOngoing &&
-      !NotificationCompat.isGroupSummary(notification) &&
-      !NotificationCompat.getLocalOnly(notification) &&
-      !notification.extras.containsKey(NotificationCompat.EXTRA_MEDIA_SESSION)
 }

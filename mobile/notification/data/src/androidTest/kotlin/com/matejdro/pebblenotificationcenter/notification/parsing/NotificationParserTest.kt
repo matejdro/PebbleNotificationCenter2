@@ -524,6 +524,97 @@ class NotificationParserTest {
          .shouldContainExactly("Action 1", "Action 2")
    }
 
+   @Test
+   fun parseOngoingNotification() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .setOngoing(true)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
+         isOngoing = true
+      )
+   }
+
+   @Test
+   fun parseGroupSummaryNotification() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .setGroupSummary(true)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
+         groupSummary = true
+      )
+   }
+
+   @Test
+   fun parseLocalOnlyNotification() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .setLocalOnly(true)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
+         localOnly = true
+      )
+   }
+
+   @Test
+   fun parseMediaNotification() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .apply {
+            // Creating a proper media session is annoying, so just provide an extra
+            extras.putString(NotificationCompat.EXTRA_MEDIA_SESSION, "")
+         }
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
+         media = true
+      )
+   }
+
    private fun createDefaultSilentChannel(): Any? {
       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
          return null

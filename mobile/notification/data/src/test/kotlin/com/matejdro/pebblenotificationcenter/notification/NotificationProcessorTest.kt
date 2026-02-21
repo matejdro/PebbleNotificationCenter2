@@ -545,4 +545,76 @@ class NotificationProcessorTest {
 
       watchSyncer.clearedNotifications.shouldContainExactly("key")
    }
+
+   @Test
+   fun `It should not forward received notifications that are ongoing by default`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isOngoing = true
+      )
+
+      processor.onNotificationPosted(notification)
+
+      watchSyncer.syncedNotifications.shouldBeEmpty()
+   }
+
+   @Test
+   fun `It should not forward received notifications that are a group summary by default`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         groupSummary = true
+      )
+
+      processor.onNotificationPosted(notification)
+
+      watchSyncer.syncedNotifications.shouldBeEmpty()
+   }
+
+   @Test
+   fun `It should not forward received notifications that are local only by default`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         localOnly = true
+      )
+
+      processor.onNotificationPosted(notification)
+
+      watchSyncer.syncedNotifications.shouldBeEmpty()
+   }
+
+   @Test
+   fun `It should not forward received media notifications by default`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         media = true
+      )
+
+      processor.onNotificationPosted(notification)
+
+      watchSyncer.syncedNotifications.shouldBeEmpty()
+   }
 }

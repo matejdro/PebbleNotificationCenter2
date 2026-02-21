@@ -37,8 +37,7 @@ class NotificationProcessor(
          logcat { "   ${setting.key} = ${setting.value}" }
       }
 
-      val masterSwitch = settings[RuleOption.masterSwitch]
-      if (masterSwitch == RuleOption.MasterSwitch.HIDE) {
+      if (shouldHide(parsedNotification, settings)) {
          onNotificationDismissed(parsedNotification.key)
          return
       }
@@ -71,6 +70,38 @@ class NotificationProcessor(
          nextVibration.set(vibrationPattern)
          openController.openWatchapp()
       }
+   }
+
+   private fun shouldHide(
+      notification: ParsedNotification,
+      preferences: Preferences,
+   ): Boolean {
+      if (preferences[RuleOption.masterSwitch] == RuleOption.MasterSwitch.HIDE) {
+         logcat { "Hiding: master switch is hidden" }
+         return true
+      }
+
+      if (notification.isOngoing) {
+         logcat { "Hiding: ongoing" }
+         return true
+      }
+
+      if (notification.groupSummary) {
+         logcat { "Hiding: group summary" }
+         return true
+      }
+
+      if (notification.localOnly) {
+         logcat { "Hiding: local only" }
+         return true
+      }
+
+      if (notification.media) {
+         logcat { "Hiding: media" }
+         return true
+      }
+
+      return false
    }
 
    private fun getVibrationPattern(

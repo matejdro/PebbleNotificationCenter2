@@ -20,6 +20,10 @@ data class ParsedNotification(
    val isFilteredByDoNotDisturb: Boolean = false,
    val nativeActions: List<NativeAction> = emptyList(),
    val channel: String? = null,
+   val isOngoing: Boolean = false,
+   val groupSummary: Boolean = false,
+   val localOnly: Boolean = false,
+   val media: Boolean = false,
 )
 
 data class NativeAction(

@@ -38,6 +38,7 @@ class NotificationParser(
       } else {
          sbn.postTime
       }
+
       return ParsedNotification(
          sbn.key,
          sbn.packageName,
@@ -48,7 +49,11 @@ class NotificationParser(
          isSilent = isSilent,
          isFilteredByDoNotDisturb = ranking?.matchesInterruptionFilter() == false,
          nativeActions = notification.parseActions(),
-         channel = channelId
+         channel = channelId,
+         isOngoing = sbn.isOngoing,
+         groupSummary = NotificationCompat.isGroupSummary(notification),
+         localOnly = NotificationCompat.getLocalOnly(notification),
+         media = notification.extras.containsKey(NotificationCompat.EXTRA_MEDIA_SESSION),
       )
    }
 
