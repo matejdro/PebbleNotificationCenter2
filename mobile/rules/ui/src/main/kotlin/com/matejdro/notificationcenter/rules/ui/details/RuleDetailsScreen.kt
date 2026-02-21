@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
+import com.matejdro.notificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
 import com.matejdro.notificationcenter.rules.RuleMetadata
 import com.matejdro.notificationcenter.rules.keys.PreferenceKeyWithDefault
 import com.matejdro.notificationcenter.rules.keys.SetPreference
@@ -159,16 +160,18 @@ private fun RuleDetailsScreenContent(
             )
          },
          actions = {
-            IconButton(onClick = rename) {
-               Icon(painterResource(R.drawable.ic_rename), contentDescription = stringResource(R.string.rename_rule))
-            }
+            if (state.ruleMetadata.id != RULE_ID_DEFAULT_SETTINGS) {
+               IconButton(onClick = rename) {
+                  Icon(painterResource(R.drawable.ic_rename), contentDescription = stringResource(R.string.rename_rule))
+               }
 
-            IconButton(onClick = copy) {
-               Icon(painterResource(R.drawable.ic_copy), contentDescription = stringResource(R.string.copy_rule))
-            }
+               IconButton(onClick = copy) {
+                  Icon(painterResource(R.drawable.ic_copy), contentDescription = stringResource(R.string.copy_rule))
+               }
 
-            IconButton(onClick = delete) {
-               Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.delete_rule))
+               IconButton(onClick = delete) {
+                  Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.delete_rule))
+               }
             }
          }
       )
