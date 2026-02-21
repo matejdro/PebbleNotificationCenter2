@@ -41,4 +41,9 @@
     <string name="mute_an_app">Mute an app</string>
     <string name="mute">Mute %1$s</string>
     <string name="hide">Hide %1$s</string>
+    <string name="default_filter_overrides">Default filter overrides</string>
+    <string name="setting_mute_silent_notifications">Mute silent notifications</string>
+    <string name="setting_mute_silent_notifications_description">Mute notifications that would
+        ordinarily not vibrate/make noise on the phone.
+    </string>
 </resources>

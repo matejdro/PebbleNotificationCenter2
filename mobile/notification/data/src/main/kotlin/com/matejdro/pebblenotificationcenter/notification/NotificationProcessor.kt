@@ -89,7 +89,7 @@ class NotificationProcessor(
          return null
       }
 
-      if (notification.isSilent) {
+      if (notification.isSilent && preferences[RuleOption.muteSilentNotifications]) {
          logcat { "Not vibrating: silent notification" }
          return null
       }

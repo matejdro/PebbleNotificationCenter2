@@ -3,8 +3,14 @@ package com.matejdro.notificationcenter.rules.keys
 import androidx.compose.runtime.Stable
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
+
+class BooleanPreferenceKeyWithDefault(name: String, default: Boolean) : DirectKeyWithDefault<Boolean>(name, default) {
+   override val key: Preferences.Key<Boolean>
+      get() = booleanPreferencesKey(name)
+}
 
 class StringPreferenceKeyWithDefault(name: String, default: String) : DirectKeyWithDefault<String>(name, default) {
    override val key: Preferences.Key<String>

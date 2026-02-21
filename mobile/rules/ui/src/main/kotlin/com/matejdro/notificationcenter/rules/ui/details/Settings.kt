@@ -25,6 +25,8 @@ import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
 import me.zhanghai.compose.preference.ListPreference
 import me.zhanghai.compose.preference.ListPreferenceType
 import me.zhanghai.compose.preference.LocalPreferenceTheme
+import me.zhanghai.compose.preference.PreferenceCategory
+import me.zhanghai.compose.preference.SwitchPreference
 import me.zhanghai.compose.preference.preferenceTheme
 import kotlin.enums.enumEntries
 
@@ -52,6 +54,15 @@ internal fun ColumnScope.Settings(
             stringResource(R.string.setting_master_switch_hide),
          ),
          stringResource(R.string.setting_master_switch_description_suffix)
+      )
+
+      PreferenceCategory({ Text(stringResource(R.string.default_filter_overrides)) })
+
+      SwitchPreference(
+         value = preferences[RuleOption.muteSilentNotifications],
+         onValueChange = { updatePreference(RuleOption.muteSilentNotifications, it) },
+         title = { Text(stringResource(R.string.setting_mute_silent_notifications)) },
+         summary = { Text(stringResource(R.string.setting_mute_silent_notifications_description)) }
       )
    }
 }
