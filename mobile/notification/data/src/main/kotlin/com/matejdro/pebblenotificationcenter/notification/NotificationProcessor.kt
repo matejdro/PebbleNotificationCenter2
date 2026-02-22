@@ -67,6 +67,7 @@ class NotificationProcessor(
          settings
       )
       if (vibrationPattern != null) {
+         logcat { "Vibrating with ${vibrationPattern.contentToString()}" }
          nextVibration.set(vibrationPattern)
          openController.openWatchapp()
       }

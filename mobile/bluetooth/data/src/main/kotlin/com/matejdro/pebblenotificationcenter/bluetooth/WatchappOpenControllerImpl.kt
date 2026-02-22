@@ -47,6 +47,7 @@ class WatchappOpenControllerImpl(
             lastOpenedApps[watchId] = openedApp
          }
 
+         logcat { "Opening app on the $watchId, from $openedApp" }
          pebbleSender.startAppOnTheWatch(WATCHAPP_UUID, listOf(watchId))
       }
    }
