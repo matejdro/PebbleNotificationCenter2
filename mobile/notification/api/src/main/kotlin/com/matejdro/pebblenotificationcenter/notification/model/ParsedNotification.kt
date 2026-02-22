@@ -28,6 +28,7 @@ data class ParsedNotification(
     * When true, notification will always show up and vibrate, regardless of any settings
     */
    val forceVibrate: Boolean = false,
+   val overrideVibrationPattern: List<Short>? = null,
 )
 
 data class NativeAction(

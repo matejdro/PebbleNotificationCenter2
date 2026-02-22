@@ -732,4 +732,24 @@ class NotificationProcessorTest {
       openController.watchappOpened shouldBe true
       processor.pollNextVibration().shouldNotBeNull()
    }
+
+   @Test
+   fun `It should vibrate with the override pattern for the non-silent notifications by default`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isSilent = false,
+         overrideVibrationPattern = listOf(10, 20, 30, 40)
+      )
+
+      processor.onNotificationPosted(notification)
+
+      openController.watchappOpened shouldBe true
+      processor.pollNextVibration().shouldNotBeNull().toList().shouldContainExactly(10, 20, 30, 40)
+   }
 }

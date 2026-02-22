@@ -670,6 +670,83 @@ class NotificationParserTest {
       )
    }
 
+   @Test
+   fun parseOverrideVibrationPattern() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .apply {
+            // Creating a proper media session is annoying, so just provide an extra
+            extras.putShortArray(NotificationConstants.KEY_VIBRATION_PATTERN, shortArrayOf(10, 20, 30, 40))
+         }
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
+         overrideVibrationPattern = listOf(10, 20, 30, 40)
+      )
+   }
+
+   @Test
+   fun parseOverrideVibrationPatternFromString() {
+      // This allows Tasker actions to set this
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .apply {
+            // Creating a proper media session is annoying, so just provide an extra
+            extras.putString(NotificationConstants.KEY_VIBRATION_PATTERN, "10, 20, 30, 40")
+         }
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
+         overrideVibrationPattern = listOf(10, 20, 30, 40)
+      )
+   }
+
+   @Test
+   fun returnNullWhenVibrationPatternHasInvalidSyntax() {
+      // This allows Tasker actions to set this
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .apply {
+            // Creating a proper media session is annoying, so just provide an extra
+            extras.putString(NotificationConstants.KEY_VIBRATION_PATTERN, "a, 20, c | 40")
+         }
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
+         overrideVibrationPattern = null
+      )
+   }
+
    private fun createDefaultSilentChannel(): Any? {
       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
          return null

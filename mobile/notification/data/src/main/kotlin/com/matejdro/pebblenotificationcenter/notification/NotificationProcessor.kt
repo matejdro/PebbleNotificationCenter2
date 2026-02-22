@@ -118,7 +118,8 @@ class NotificationProcessor(
    ): IntArray? {
       // Until settings are there, just hardcode jackhammer
       @Suppress("MagicNumber")
-      val pattern = intArrayOf(50, 50, 50, 50, 50, 50, 50, 50, 50, 50)
+      val pattern = notification.overrideVibrationPattern?.map { it.toInt() }?.toIntArray()
+         ?: intArrayOf(50, 50, 50, 50, 50, 50, 50, 50, 50, 50)
 
       if (notification.forceVibrate) {
          logcat { "Force notification: always vibrate" }

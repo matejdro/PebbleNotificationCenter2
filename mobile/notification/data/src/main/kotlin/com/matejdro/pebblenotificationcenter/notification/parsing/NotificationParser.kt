@@ -59,6 +59,7 @@ class NotificationParser(
          media = notification.extras.containsKey(NotificationCompat.EXTRA_MEDIA_SESSION),
          forceVibrate = sbn.packageName == context.packageName &&
             notification.extras.getBoolean(NotificationConstants.KEY_FORCE_VIBRATE, false),
+         overrideVibrationPattern = parseVibrationPattern(notification)
       )
    }
 
@@ -154,6 +155,16 @@ class NotificationParser(
 
    private fun CharSequence.removeUselessCharacaters(): String {
       return CONTROL_CHARACTERS.replace(this, "")
+   }
+}
+
+private fun parseVibrationPattern(notification: Notification): List<Short>? {
+   notification.extras.getShortArray(NotificationConstants.KEY_VIBRATION_PATTERN)?.toList()?.let { return it }
+
+   val stringPattern = notification.extras.getString(NotificationConstants.KEY_VIBRATION_PATTERN) ?: return null
+
+   return stringPattern.split(",").map {
+      it.trim().toShortOrNull() ?: return null
    }
 }
 
