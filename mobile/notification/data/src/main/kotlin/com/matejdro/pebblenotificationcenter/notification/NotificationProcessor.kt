@@ -77,6 +77,11 @@ class NotificationProcessor(
       notification: ParsedNotification,
       preferences: Preferences,
    ): Boolean {
+      if (notification.forceVibrate) {
+         logcat { "Force notification: always show" }
+         return false
+      }
+
       if (preferences[RuleOption.masterSwitch] == RuleOption.MasterSwitch.HIDE) {
          logcat { "Hiding: master switch is hidden" }
          return true
@@ -111,6 +116,15 @@ class NotificationProcessor(
       suppressVibration: Boolean,
       preferences: Preferences,
    ): IntArray? {
+      // Until settings are there, just hardcode jackhammer
+      @Suppress("MagicNumber")
+      val pattern = intArrayOf(50, 50, 50, 50, 50, 50, 50, 50, 50, 50)
+
+      if (notification.forceVibrate) {
+         logcat { "Force notification: always vibrate" }
+         return pattern
+      }
+
       if (suppressVibration) {
          logcat { "Not vibrating: suppressVibration flag" }
          return null
@@ -141,9 +155,7 @@ class NotificationProcessor(
          return null
       }
 
-      // Until settings are there, just hardcode jackhammer
-      @Suppress("MagicNumber")
-      return intArrayOf(50, 50, 50, 50, 50, 50, 50, 50, 50, 50)
+      return pattern
    }
 
    private fun processActions(parsedNotification: ParsedNotification): List<Action> {

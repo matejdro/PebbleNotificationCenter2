@@ -24,6 +24,10 @@ data class ParsedNotification(
    val groupSummary: Boolean = false,
    val localOnly: Boolean = false,
    val media: Boolean = false,
+   /**
+    * When true, notification will always show up and vibrate, regardless of any settings
+    */
+   val forceVibrate: Boolean = false,
 )
 
 data class NativeAction(

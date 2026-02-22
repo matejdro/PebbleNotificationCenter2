@@ -710,4 +710,26 @@ class NotificationProcessorTest {
 
       watchSyncer.syncedNotifications.shouldNotBeEmpty()
    }
+
+   @Test
+   fun `Force show & vibrate forced notifications regardless of the settings`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isOngoing = true,
+         isSilent = true,
+         forceVibrate = true
+      )
+
+      processor.onNotificationPosted(notification)
+
+      watchSyncer.syncedNotifications.shouldNotBeEmpty()
+      openController.watchappOpened shouldBe true
+      processor.pollNextVibration().shouldNotBeNull()
+   }
 }

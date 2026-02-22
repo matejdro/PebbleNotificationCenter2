@@ -15,6 +15,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.PendingIntentCompat
 import androidx.core.app.Person
 import androidx.test.core.app.ApplicationProvider
+import com.matejdro.pebblenotificationcenter.notification.NotificationConstants
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -26,7 +27,7 @@ import java.time.Instant
 class NotificationParserTest {
 
    private val context = ApplicationProvider.getApplicationContext<Context>()
-   private val notificationParser = NotificationParser({ "SMS App" })
+   private val notificationParser = NotificationParser(context, { "SMS App" })
 
    @Test
    fun parseNotificationWithASimpleText() {
@@ -615,6 +616,60 @@ class NotificationParserTest {
       )
    }
 
+   @Test
+   fun forceVibrateWhenNotificationHasForceKey() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .apply {
+            extras.putBoolean(NotificationConstants.KEY_FORCE_VIBRATE, true)
+         }
+         .build()
+
+      notificationParser.parse(
+         notification.toSbn(pkg = context.packageName),
+         createDefaultSilentChannel()
+      ) shouldBe ParsedNotification(
+         "0|${context.packageName}|0|null|0",
+         context.packageName,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
+         forceVibrate = true
+      )
+   }
+
+   @Test
+   fun onlyForceVibrateForOwnNotifications() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .apply {
+            extras.putBoolean(NotificationConstants.KEY_FORCE_VIBRATE, true)
+         }
+         .build()
+
+      notificationParser.parse(
+         notification.toSbn(pkg = "other.app"),
+         createDefaultSilentChannel()
+      ) shouldBe ParsedNotification(
+         "0|other.app|0|null|0",
+         "other.app",
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
+         forceVibrate = false
+      )
+   }
+
    private fun createDefaultSilentChannel(): Any? {
       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
          return null
@@ -632,11 +687,16 @@ class NotificationParserTest {
    }
 }
 
-private fun Notification.toSbn(id: Int = 0, tag: String? = null, timestamp: Long = 0): StatusBarNotification {
+private fun Notification.toSbn(
+   id: Int = 0,
+   tag: String? = null,
+   timestamp: Long = 0,
+   pkg: String = TEST_PACKAGE,
+): StatusBarNotification {
    @Suppress("DEPRECATION") // We have to call this for testing reasons
    return StatusBarNotification(
-      TEST_PACKAGE,
-      TEST_PACKAGE,
+      pkg,
+      pkg,
       id,
       tag,
       0,

@@ -3,10 +3,12 @@ package com.matejdro.pebblenotificationcenter.notification.parsing
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Context
 import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
+import com.matejdro.pebblenotificationcenter.notification.NotificationConstants
 import com.matejdro.pebblenotificationcenter.notification.api.AppNameProvider
 import com.matejdro.pebblenotificationcenter.notification.model.NativeAction
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
@@ -15,6 +17,7 @@ import java.time.Instant
 
 @Inject
 class NotificationParser(
+   private val context: Context,
    private val appNameProvider: AppNameProvider,
 ) {
    fun parse(
@@ -54,6 +57,8 @@ class NotificationParser(
          groupSummary = NotificationCompat.isGroupSummary(notification),
          localOnly = NotificationCompat.getLocalOnly(notification),
          media = notification.extras.containsKey(NotificationCompat.EXTRA_MEDIA_SESSION),
+         forceVibrate = sbn.packageName == context.packageName &&
+            notification.extras.getBoolean(NotificationConstants.KEY_FORCE_VIBRATE, false),
       )
    }
 
