@@ -25,6 +25,7 @@ dependencies {
    implementation(projects.commonCompose)
    implementation(projects.sharedResources)
    implementation(libs.accompanist.drawablepainter)
+   implementation(libs.androidx.core)
    implementation(libs.androidx.compose.material3.sizeClasses)
    implementation(libs.androidx.datastore.preferences)
    implementation(libs.androidx.navigation3)

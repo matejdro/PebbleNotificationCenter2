@@ -21,17 +21,23 @@ import com.matejdro.notificationcenter.rules.RuleOption
 import com.matejdro.notificationcenter.rules.keys.SetPreference
 import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.notificationcenter.rules.ui.R
+import com.matejdro.notificationcenter.rules.ui.dialogs.VibrationPatternScreenKey
+import com.matejdro.pebblenotificationcenter.navigation.util.rememberNavigationPopup
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
 import me.zhanghai.compose.preference.ListPreference
 import me.zhanghai.compose.preference.ListPreferenceType
 import me.zhanghai.compose.preference.LocalPreferenceTheme
+import me.zhanghai.compose.preference.Preference
 import me.zhanghai.compose.preference.PreferenceCategory
 import me.zhanghai.compose.preference.SwitchPreference
 import me.zhanghai.compose.preference.preferenceTheme
+import si.inova.kotlinova.compose.result.ResultKey
+import si.inova.kotlinova.navigation.navigator.Navigator
 import kotlin.enums.enumEntries
 
 @Composable
 internal fun ColumnScope.Settings(
+   navigator: Navigator,
    preferences: Preferences,
    updatePreference: SetPreference,
 ) {
@@ -55,6 +61,7 @@ internal fun ColumnScope.Settings(
          ),
          stringResource(R.string.setting_master_switch_description_suffix)
       )
+      VibrationPatternPreference(navigator, updatePreference, preferences)
 
       PreferenceCategory({ Text(stringResource(R.string.default_filter_overrides)) })
 
@@ -133,13 +140,44 @@ private inline fun <reified T : Enum<T>> EnumListPreference(
    )
 }
 
+@Composable
+private fun VibrationPatternPreference(
+   navigator: Navigator,
+   updatePreference: SetPreference,
+   preferences: Preferences,
+) {
+   val dialog = navigator.rememberNavigationPopup(
+      navigationKey = { pattern: String, resultKey: ResultKey<String> ->
+         VibrationPatternScreenKey(pattern, resultKey)
+      },
+      onResult = {
+         updatePreference(RuleOption.vibrationPattern, it)
+      }
+   )
+
+   Preference(
+      title = { Text(stringResource(R.string.setting_vibration_pattern)) },
+      summary = {
+         Text(
+            stringResource(
+               R.string.setting_vibration_pattern_description,
+               preferences[RuleOption.vibrationPattern]
+            )
+         )
+      },
+      onClick = {
+         dialog.trigger(preferences[RuleOption.vibrationPattern])
+      }
+   )
+}
+
 @Preview(heightDp = 2000, showBackground = true)
 @Composable
 @ShowkaseComposable(group = "test")
 internal fun AllPreferencesPreview() {
    PreviewTheme {
       Column {
-         Settings(emptyPreferences(), SetPreference { _, _ -> })
+         Settings({}, emptyPreferences(), SetPreference { _, _ -> })
       }
    }
 }

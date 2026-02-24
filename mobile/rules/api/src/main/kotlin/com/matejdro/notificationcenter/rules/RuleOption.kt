@@ -3,6 +3,7 @@ package com.matejdro.notificationcenter.rules
 import com.matejdro.notificationcenter.rules.keys.BooleanPreferenceKeyWithDefault
 import com.matejdro.notificationcenter.rules.keys.EnumPreferenceKeyWithDefault
 import com.matejdro.notificationcenter.rules.keys.NullableStringPreferenceKeyWithDefault
+import com.matejdro.notificationcenter.rules.keys.StringPreferenceKeyWithDefault
 import com.matejdro.notificationcenter.rules.keys.StringSetPreferenceKeyWithDefault
 
 object RuleOption {
@@ -12,6 +13,10 @@ object RuleOption {
    val conditionBlacklistRegexes = StringSetPreferenceKeyWithDefault("condition_blacklist_regexes", emptySet())
 
    val masterSwitch = EnumPreferenceKeyWithDefault("master_switch", MasterSwitch.SHOW)
+   val vibrationPattern = StringPreferenceKeyWithDefault(
+      "vibration_pattern",
+      "50, 50, 50, 50, 50, 50, 50, 50, 50, 50"
+   )
 
    val muteSilentNotifications = BooleanPreferenceKeyWithDefault("mute_silent_notifications", true)
    val muteDndNotifications = BooleanPreferenceKeyWithDefault("mute_dnd_notifications", true)

@@ -9,6 +9,7 @@ import com.matejdro.pebblenotificationcenter.bluetooth.WatchappOpenController
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
+import com.matejdro.pebblenotificationcenter.notification.utils.parseVibrationPattern
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -110,16 +111,19 @@ class NotificationProcessor(
       return false
    }
 
+   @Suppress("CyclomaticComplexMethod", "CognitiveComplexMethod") // Lots of successive checks
    private fun getVibrationPattern(
       previousNotification: ProcessedNotification?,
       notification: ParsedNotification,
       suppressVibration: Boolean,
       preferences: Preferences,
    ): IntArray? {
-      // Until settings are there, just hardcode jackhammer
-      @Suppress("MagicNumber")
-      val pattern = notification.overrideVibrationPattern?.map { it.toInt() }?.toIntArray()
-         ?: intArrayOf(50, 50, 50, 50, 50, 50, 50, 50, 50, 50)
+      val pattern = (
+         notification.overrideVibrationPattern
+            ?: parseVibrationPattern(preferences[RuleOption.vibrationPattern])
+            ?: error("Invalid vibration pattern '${preferences[RuleOption.vibrationPattern]}'")
+         )
+         .map { it.toInt() }.toIntArray()
 
       if (notification.forceVibrate) {
          logcat { "Force notification: always vibrate" }

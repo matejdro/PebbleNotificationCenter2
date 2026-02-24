@@ -5,7 +5,7 @@
     <!-- Required for crash reporting -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- List reordering vibration -->
+    <!-- List reordering vibration & vibration pattern generation -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <uses-permission android:name="io.rebble.pebblekit2.permission.SEND_DATA_TO_WATCH" />

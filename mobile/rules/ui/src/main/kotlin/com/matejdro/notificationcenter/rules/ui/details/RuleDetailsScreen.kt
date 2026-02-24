@@ -114,6 +114,7 @@ class RuleDetailsScreen(
                editRegexDialog.trigger(EditRegexData(whitelist, regexText, index))
             },
             addRegex = addRegexDialog::trigger,
+            navigator = navigator,
          )
       }
    }
@@ -127,6 +128,7 @@ class RuleDetailsScreen(
 private fun RuleDetailsScreenContent(
    state: RuleDetailsScreenState,
    windowSizeClass: WindowWidthSizeClass,
+   navigator: Navigator,
    delete: () -> Unit,
    rename: () -> Unit,
    copy: () -> Unit,
@@ -180,7 +182,7 @@ private fun RuleDetailsScreenContent(
 
       HorizontalDivider(color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(vertical = 16.dp))
 
-      Settings(state.preferences, setPreference)
+      Settings(navigator, state.preferences, setPreference)
    }
 }
 
@@ -192,6 +194,7 @@ internal fun RuleDetailsScreenContentPreview() {
       RuleDetailsScreenContent(
          state = RuleDetailsScreenState(RuleMetadata(2, "Test Rule"), emptyPreferences()),
          windowSizeClass = WindowWidthSizeClass.Compact,
+         {},
          {},
          {},
          {},

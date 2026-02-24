@@ -12,6 +12,7 @@ import com.matejdro.pebblenotificationcenter.notification.NotificationConstants
 import com.matejdro.pebblenotificationcenter.notification.api.AppNameProvider
 import com.matejdro.pebblenotificationcenter.notification.model.NativeAction
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.notification.utils.parseVibrationPattern
 import dev.zacsweers.metro.Inject
 import java.time.Instant
 
@@ -163,9 +164,7 @@ private fun parseVibrationPattern(notification: Notification): List<Short>? {
 
    val stringPattern = notification.extras.getString(NotificationConstants.KEY_VIBRATION_PATTERN) ?: return null
 
-   return stringPattern.split(",").map {
-      it.trim().toShortOrNull() ?: return null
-   }
+   return parseVibrationPattern(stringPattern)
 }
 
 private const val MAX_TITLE_LENGTH = 20

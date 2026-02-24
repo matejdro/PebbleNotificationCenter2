@@ -72,4 +72,15 @@
     <string name="setting_hide_media_notifications_description">Hide notifications from media players meant for controlling media
         playback.
     </string>
+    <string name="test_notification">Test notification</string>
+    <string name="tap_above_button_to_start">Tap above button to start</string>
+    <string name="tap">Tap</string>
+    <string name="start_tapping_pattern">Start tapping pattern</string>
+    <string name="restart_tapping">Restart tapping</string>
+    <string name="feel_the_new_pattern">Feel the new pattern</string>
+    <string name="vibration_pattern_test">Vibration pattern test</string>
+    <string name="setting_vibration_pattern">Vibration pattern</string>
+    <string name="setting_vibration_pattern_description">%1$s\n\nPattern that the watch will vibrate with for new notifications. A
+        comma separated list corresponding to milliseconds vibrating, milliseconds pausing, milliseconds vibrating etc.
+    </string>
 </resources>

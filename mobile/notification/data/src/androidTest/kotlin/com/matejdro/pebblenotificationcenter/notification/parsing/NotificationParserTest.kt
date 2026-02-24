@@ -123,7 +123,7 @@ class NotificationParserTest {
          "Bob: Message 3\n" +
             "Alice: Message 2\n" +
             "Bob: Message 1",
-         Instant.ofEpochMilli(0L),
+         Instant.ofEpochMilli(3L),
          channel = testChannelOrNull(),
       )
    }

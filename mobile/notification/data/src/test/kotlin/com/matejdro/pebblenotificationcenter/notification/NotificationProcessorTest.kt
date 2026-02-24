@@ -270,7 +270,7 @@ class NotificationProcessorTest {
    }
 
    @Test
-   fun `It should vibrate for the non-silent notifications by default`() = runTest {
+   fun `It should vibrate for the non-silent notifications by default with jackhammer`() = runTest {
       val notification = ParsedNotification(
          "key",
          "com.app",
@@ -285,7 +285,9 @@ class NotificationProcessorTest {
       processor.onNotificationPosted(notification)
 
       openController.watchappOpened shouldBe true
-      processor.pollNextVibration().shouldNotBeNull()
+      processor.pollNextVibration().shouldNotBeNull().toList().shouldContainExactly(
+         50, 50, 50, 50, 50, 50, 50, 50, 50, 50
+      )
    }
 
    @Test
@@ -751,5 +753,31 @@ class NotificationProcessorTest {
 
       openController.watchappOpened shouldBe true
       processor.pollNextVibration().shouldNotBeNull().toList().shouldContainExactly(10, 20, 30, 40)
+   }
+
+   @Test
+   fun `It should obey vibration pattern setting`() = runTest {
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.vibrationPattern setTo "1, 2, 3, 4"
+      )
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isSilent = false
+      )
+
+      processor.onNotificationPosted(notification)
+
+      openController.watchappOpened shouldBe true
+      processor.pollNextVibration().shouldNotBeNull().toList().shouldContainExactly(
+         1, 2, 3, 4
+      )
    }
 }
