@@ -49,7 +49,7 @@ class NotificationParser(
          title,
          subtitle,
          text.orEmpty(),
-         Instant.ofEpochMilli(timestampMillis),
+         Instant.ofEpochMilli(notification.parseMessagingStyleTimestamp() ?: timestampMillis),
          isSilent = isSilent,
          isFilteredByDoNotDisturb = ranking?.matchesInterruptionFilter() == false,
          nativeActions = notification.parseActions(),
@@ -140,6 +140,14 @@ class NotificationParser(
             lastName = person?.name
          }
       }
+   }
+
+   private fun Notification.parseMessagingStyleTimestamp(): Long? {
+      val messagingStyle = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(this) ?: return null
+
+      val messages = (messagingStyle.messages + messagingStyle.historicMessages)
+
+      return messages.maxOf { it.timestamp }
    }
 
    private fun Notification.parseInboxStyle(): String? {
