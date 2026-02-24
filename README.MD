@@ -4,7 +4,7 @@ A WIP improved notifications app for the PebbleOS watches
 
 # Install
 
-**Note: Core/Pebble app is only supported from its version 1.0.7.7 onwards**
+**Note: the old Pebble app is not supported. You have to use either the microPebble or the new Pebble/Core app.**
 
 ## Android app
 
