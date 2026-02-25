@@ -10,6 +10,7 @@ import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import dispatch.core.DefaultCoroutineScope
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -312,7 +313,7 @@ class NotificationDetailsPusherImplTest {
    }
 
    @Test
-   fun `Send send vibration after successful details push`() = scope.runTest {
+   fun `Send vibration after successful details push`() = scope.runTest {
       setup()
 
       notificationRepository.nextVibration = intArrayOf(10, 10, 10, 10)
@@ -346,6 +347,115 @@ class NotificationDetailsPusherImplTest {
          )
       )
    }
+
+   @Test
+   fun `Send vibration even if details are superseded by another notification`() = scope.runTest {
+      setup()
+
+      sender.pauseSending = true
+
+      notificationRepository.nextVibration = intArrayOf(10, 10, 10, 10)
+      notificationRepository.putNotification(
+         12,
+         ProcessedNotification(
+            ParsedNotification(
+               "",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+            )
+         )
+      )
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+      runCurrent()
+
+      notificationRepository.nextVibration = null
+      notificationRepository.putNotification(
+         13,
+         ProcessedNotification(
+            ParsedNotification(
+               "",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+            )
+         )
+      )
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 13, maxPacketSize = 100)
+      runCurrent()
+
+      sender.pauseSending = false
+      runCurrent()
+
+      sender.sentData.map { it.getValue(0u) }.shouldContain(PebbleDictionaryItem.UInt8(7))
+   }
+
+   @Test
+   fun `Do not send vibration of the previous notification when superseded by another notification with vibration`() =
+      scope.runTest {
+         setup()
+
+         sender.pauseSending = true
+
+         notificationRepository.nextVibration = intArrayOf(10, 10, 10, 10)
+         notificationRepository.putNotification(
+            12,
+            ProcessedNotification(
+               ParsedNotification(
+                  "",
+                  "",
+                  "",
+                  "",
+                  "Hello",
+                  Instant.MIN,
+               )
+            )
+         )
+         notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+         runCurrent()
+
+         notificationRepository.nextVibration = intArrayOf(20, 20, 20, 20)
+         notificationRepository.putNotification(
+            13,
+            ProcessedNotification(
+               ParsedNotification(
+                  "",
+                  "",
+                  "",
+                  "",
+                  "Hello",
+                  Instant.MIN,
+               )
+            )
+         )
+         notificationDetailsPusher.pushNotificationDetails(bucketId = 13, maxPacketSize = 100)
+         runCurrent()
+
+         sender.pauseSending = false
+         runCurrent()
+
+         sender.sentData.map { it.getValue(0u) }.shouldContainExactly(
+            PebbleDictionaryItem.UInt8(5),
+            PebbleDictionaryItem.UInt8(5),
+            PebbleDictionaryItem.UInt8(7)
+         )
+
+         sender.sentData.last() shouldBe mapOf(
+            0u to PebbleDictionaryItem.UInt8(7),
+            1u to PebbleDictionaryItem.Bytes(
+               byteArrayOf(
+                  0, 20,
+                  0, 20,
+                  0, 20,
+                  0, 20,
+               )
+            )
+         )
+      }
 
    @Test
    fun `Mark notification as read on sending`() = scope.runTest {

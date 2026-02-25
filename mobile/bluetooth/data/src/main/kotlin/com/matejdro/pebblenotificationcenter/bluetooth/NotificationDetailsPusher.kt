@@ -26,6 +26,7 @@ class NotificationDetailsPusherImpl(
 ) : NotificationDetailsPusher {
    private val stringEncoder = LimitingStringEncoder()
    private var previousDetailsSendingJob: Job? = null
+   private var previousVibrationSendingJob: Job? = null
 
    override fun pushNotificationDetails(bucketId: Int, maxPacketSize: Int) {
       previousDetailsSendingJob?.cancel()
@@ -63,28 +64,35 @@ class NotificationDetailsPusherImpl(
          )
 
          logcat { "Sending notification details for $bucketId: ${packet.sizeInBytes()} (${actionsToSend.size} actions)" }
-         queue.sendPacket(packet, priority = PRIORITY_WATCH_TEXT)
+
+         launch {
+            queue.sendPacket(packet, priority = PRIORITY_WATCH_TEXT)
+         }
+
          pushVibration()
       }
    }
 
-   private suspend fun pushVibration() {
+   private fun pushVibration() {
       val vibrationPattern = notificationRepository.pollNextVibration()
       logcat { "Next vibration: ${vibrationPattern?.contentToString() ?: "null"}" }
       if (vibrationPattern == null) {
          return
       }
 
-      val buffer = Buffer()
-      for (entry in vibrationPattern) {
-         buffer.writeUShort(entry.toUShort())
-      }
+      previousVibrationSendingJob?.cancel()
+      previousVibrationSendingJob = scope.launch {
+         val buffer = Buffer()
+         for (entry in vibrationPattern) {
+            buffer.writeUShort(entry.toUShort())
+         }
 
-      val packet = mapOf(
-         0u to PebbleDictionaryItem.UInt8(7u),
-         1u to PebbleDictionaryItem.Bytes(buffer.readByteArray())
-      )
-      queue.sendPacket(packet, priority = PRIORITY_VIBRATION)
+         val packet = mapOf(
+            0u to PebbleDictionaryItem.UInt8(7u),
+            1u to PebbleDictionaryItem.Bytes(buffer.readByteArray())
+         )
+         queue.sendPacket(packet, priority = PRIORITY_VIBRATION)
+      }
    }
 }
 
