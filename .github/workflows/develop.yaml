@@ -234,7 +234,7 @@ jobs:
       # Build watchapp
 
       - name: Build watchapp
-        run: pebble build && mv build/watch.pbw build/notification-center-$VERSION.pbw
+        run: pebble build && mv build/watch.pbw build/notification-center-watchapp-$VERSION.pbw
         working-directory: watch
         if: "${{ env.BUILD_WATCH == 'true' }}"
         env:
@@ -281,5 +281,5 @@ jobs:
           name: ${{ env.VERSION }}
           tag: ${{ env.VERSION }}
           body: ${{ steps.changelog.outputs.changelog }}${{env.CHANGELOG_EXTRA}}
-          artifacts: "mobile/app/build/outputs/apk/release/notification-center-mobile-${{ env.VERSION }}.apk,watch/build/notification-center-${{ env.VERSION }}.pbw"
+          artifacts: "mobile/app/build/outputs/apk/release/notification-center-mobile-${{ env.VERSION }}.apk,watch/build/notification-center-watchapp-${{ env.VERSION }}.pbw"
           generateReleaseNotes: false
