@@ -25,6 +25,8 @@ import coil3.request.SuccessResult
 import coil3.size.pxOrElse
 import com.matejdro.pebblenotificationcenter.ui.animations.LocalSharedTransitionScope
 import com.matejdro.pebblenotificationcenter.ui.theme.NotificationCenterTheme
+import si.inova.kotlinova.compose.result.LocalResultPassingStore
+import si.inova.kotlinova.compose.result.ResultPassingStore
 import si.inova.kotlinova.compose.time.ComposeAndroidDateTimeFormatter
 import si.inova.kotlinova.compose.time.LocalDateFormatter
 import si.inova.kotlinova.core.time.AndroidDateTimeFormatter
@@ -47,6 +49,7 @@ fun PreviewTheme(
             LocalAsyncImagePreviewHandler provides ColorCyclingAsyncImagePreviewHandler(),
             LocalSharedTransitionScope provides this,
             LocalNavAnimatedContentScope provides this@AnimatedContent,
+            LocalResultPassingStore provides ResultPassingStore(),
          ) {
             // Disable Material You on previews (and screenshot tests) to improve reproducibility
             NotificationCenterTheme(dynamicColor = false) {
