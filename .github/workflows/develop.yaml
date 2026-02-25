@@ -174,7 +174,7 @@ jobs:
         if: "${{ env.BUILD_MOBILE == 'true' }}"
         # AGP has no good configuration-cache way of setting the APK name
         # Until this is resolved, we can just rename the APK post-build
-        run: mv mobile/app/build/outputs/apk/release/notification-center-mobile.apk mobile/app/build/outputs/apk/release/notification-center-mobile-$VERSION.apk
+        run: mv mobile/app/build/outputs/apk/release/notificationcenter-mobile.apk mobile/app/build/outputs/apk/release/notification-center-mobile-$VERSION.apk
         env:
           VERSION: ${{ env.VERSION }}
 
