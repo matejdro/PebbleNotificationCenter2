@@ -14,6 +14,7 @@ import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 import androidx.core.app.PendingIntentCompat
 import androidx.core.app.Person
+import androidx.core.app.RemoteInput
 import androidx.test.core.app.ApplicationProvider
 import com.matejdro.pebblenotificationcenter.notification.NotificationConstants
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
@@ -518,11 +519,17 @@ class NotificationParserTest {
          .setShowWhen(false)
          .build()
 
-      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
+      val nativeActions = notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
          .shouldNotBeNull()
          .nativeActions
+
+      nativeActions
          .map { it.text }
          .shouldContainExactly("Action 1", "Action 2")
+
+      nativeActions
+         .map { it.remoteInputResultKey }
+         .shouldContainExactly(null, null)
    }
 
    @Test
@@ -745,6 +752,70 @@ class NotificationParserTest {
          channel = testChannelOrNull(),
          overrideVibrationPattern = null
       )
+   }
+
+   @Test
+   fun parseRemoteInputAction() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .addAction(
+            NotificationCompat.Action.Builder(
+               null,
+               "Reply",
+               PendingIntentCompat.getActivity(context, 0, Intent(), 0, false)
+            )
+               .addRemoteInput(
+                  RemoteInput.Builder("RemoteInputResult")
+                     .setChoices(arrayOf("A", "B", "C"))
+                     .build()
+               )
+               .build()
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
+         .shouldNotBeNull()
+         .nativeActions
+         .first().apply {
+            this.text shouldBe "Reply"
+            this.allowFreeFormInput shouldBe true
+            this.remoteInputResultKey shouldBe "RemoteInputResult"
+            this.cannedTexts shouldBe listOf("A", "B", "C")
+         }
+   }
+
+   @Test
+   fun parseNonFreeFormRemoteInputAction() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .addAction(
+            NotificationCompat.Action.Builder(
+               null,
+               "Reply",
+               PendingIntentCompat.getActivity(context, 0, Intent(), 0, false)
+            )
+               .addRemoteInput(
+                  RemoteInput.Builder("RemoteInputResult")
+                     .setChoices(arrayOf("A", "B", "C"))
+                     .setAllowFreeFormInput(false)
+                     .build()
+               )
+               .build()
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
+         .shouldNotBeNull()
+         .nativeActions
+         .first().apply {
+            this.allowFreeFormInput shouldBe false
+         }
    }
 
    private fun createDefaultSilentChannel(): Any? {

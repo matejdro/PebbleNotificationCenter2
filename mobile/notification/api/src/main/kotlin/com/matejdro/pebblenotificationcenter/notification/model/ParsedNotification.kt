@@ -36,4 +36,7 @@ data class NativeAction(
    // This is pure kotlin module, so we cannot reference PendingIntent directly.
    // I don't want to change it, so for now we can just use Any and upcast it
    val pendingIntent: Any,
+   val remoteInputResultKey: String? = null,
+   val cannedTexts: List<String> = emptyList(),
+   val allowFreeFormInput: Boolean = true,
 )
