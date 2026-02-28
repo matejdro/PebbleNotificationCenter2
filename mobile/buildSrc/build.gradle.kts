@@ -36,7 +36,6 @@ dependencies {
    implementation(libs.kotlinova.gradle)
    implementation(libs.metro.plugin)
    implementation(libs.moduleGraphAssert)
-   implementation(libs.moshi.ir)
    implementation(libs.orgJson)
    implementation(libs.ksp)
    implementation(libs.sqldelight.gradle)
