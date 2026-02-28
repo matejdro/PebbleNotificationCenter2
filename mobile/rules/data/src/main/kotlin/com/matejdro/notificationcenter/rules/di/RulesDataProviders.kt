@@ -12,7 +12,7 @@ import dev.zacsweers.metro.SingleIn
 interface RulesDataProviders {
    @Provides
    @SingleIn(AppScope::class)
-   fun provideDatabase(driver: SqlDriver): Database {
+   fun provideMainDatabase(driver: SqlDriver): Database {
       return Database(driver)
    }
 
