@@ -36,7 +36,7 @@ detekt-compilerWarnings = "0.0.4"
 detekt-compose = "0.4.27"
 dispatch = "1.0.0-beta10"
 # @keep used in kts scripts directly
-jacoco = "0.8.13"
+jacoco = "0.8.14"
 junit4 = "4.13.2"
 junit4-parameterinjector = "1.19"
 junit = "6.0.0"
