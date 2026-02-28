@@ -39,7 +39,6 @@ dependencies {
    implementation(libs.orgJson)
    implementation(libs.ksp)
    implementation(libs.sqldelight.gradle)
-   implementation(libs.tomlj)
    implementation(libs.unmock.plugin)
 
    // Workaround to have libs accessible (from https://github.com/gradle/gradle/issues/15383)
