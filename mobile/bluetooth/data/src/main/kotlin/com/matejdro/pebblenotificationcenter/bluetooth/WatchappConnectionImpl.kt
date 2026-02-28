@@ -9,6 +9,7 @@ import com.matejdro.pebble.bluetooth.common.util.requireUint
 import com.matejdro.pebble.bluetooth.common.util.writeUShort
 import com.matejdro.pebblenotificationcenter.notification.ActionHandler
 import com.matejdro.pebblenotificationcenter.notification.NotificationRepository
+import com.matejdro.pebblenotificationcenter.notification.SubmenuActionHandler
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -33,6 +34,7 @@ class WatchappConnectionImpl(
    private val bucketSyncWatchLoop: BucketSyncWatchLoop,
    private val notificationDetailsPusher: NotificationDetailsPusher,
    private val actionHandler: ActionHandler,
+   private val submenuActionHandler: SubmenuActionHandler,
    private val notificationRepository: NotificationRepository,
    private val watch: WatchIdentifier,
 ) : WatchAppConnection {
@@ -62,14 +64,7 @@ class WatchappConnectionImpl(
          }
 
          6u -> {
-            val success = actionHandler.handleAction(
-               data.requireUint(1u).toInt(),
-               data.requireUint(2u).toInt()
-            )
-
-            logcat { "Action handling success: $success" }
-
-            if (success) ReceiveResult.Ack else ReceiveResult.Nack
+            processActionPacket(data)
          }
 
          8u -> {
@@ -115,6 +110,30 @@ class WatchappConnectionImpl(
       return ReceiveResult.Ack
    }
 
+   private suspend fun processActionPacket(data: PebbleDictionary): ReceiveResult {
+      val menuId = (data[3u] as? PebbleDictionaryItem.UInt32)?.value ?: 0u
+      val success = if (menuId == 0u) {
+         actionHandler.handleAction(
+            data.requireUint(1u).toInt(),
+            data.requireUint(2u).toInt()
+         )
+      } else {
+         val submenuType = SubmenuType.entries.elementAtOrNull(menuId.toInt() - 1)
+         if (submenuType == null) {
+            logcat { "Submenu type ${menuId.toInt() - 1} not found" }
+            return ReceiveResult.Nack
+         }
+         submenuActionHandler.handleSubmenuAction(
+            data.requireUint(1u).toUByte(),
+            submenuType,
+            data.requireUint(2u).toInt()
+         )
+      }
+      logcat { "Action handling success: $success" }
+
+      return if (success) ReceiveResult.Ack else ReceiveResult.Nack
+   }
+
    private suspend fun pushVibration() {
       val vibrationPattern = notificationRepository.pollNextVibration()
       logcat { "Next vibration after packets change: ${vibrationPattern?.contentToString() ?: "null"}" }
@@ -145,6 +164,7 @@ class WatchappConnectionImpl(
    }
 }
 
+internal const val PRIORITY_USER_INTERACTION = 2
 internal const val PRIORITY_WATCH_TEXT = 1
 
 // This should be sent last, so user has everything visible before watch vibrates

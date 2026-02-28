@@ -30,9 +30,21 @@ static uint16_t menu_get_num_sections_callback(MenuLayer* me, void* data)
     return 1;
 }
 
+static uint16_t get_num_actions(void)
+{
+    if (window_notification_data.currently_displayed_menu_id == 0)
+    {
+        return window_notification_data.num_actions;
+    }
+    else
+    {
+        return window_notification_data.num_submenu_actions;
+    }
+}
+
 static uint16_t menu_get_num_rows_callback(MenuLayer* me, uint16_t section_index, void* data)
 {
-    return window_notification_data.num_actions;
+    return get_num_actions();
 }
 
 
@@ -50,9 +62,20 @@ static void menu_draw_row_callback(GContext* ctx, const Layer* cell_layer, MenuI
     bounds.size.w -= item_padding * 2;
     bounds.size.h -= item_padding * 2;
 
+    const Action* actions;
+    if (window_notification_data.currently_displayed_menu_id == 0)
+    {
+        actions = window_notification_data.actions;
+    }
+    else
+    {
+        actions = window_notification_data.submenu_actions;
+    }
+
+
     graphics_draw_text(
         ctx,
-        window_notification_data.actions[cell_index->row].text,
+        actions[cell_index->row].text,
         fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
         bounds,
         GTextOverflowModeTrailingEllipsis,
@@ -152,7 +175,7 @@ void window_notification_action_list_move_up()
     {
         menu_layer_set_selected_index(
             menu_layer,
-            MenuIndex(0, window_notification_data.num_actions - 1),
+            MenuIndex(0, get_num_actions() - 1),
             MenuRowAlignCenter,
             true
         );
@@ -170,7 +193,7 @@ void window_notification_action_list_move_down()
     }
 
     const MenuIndex index = menu_layer_get_selected_index(menu_layer);
-    if (index.row == window_notification_data.num_actions - 1)
+    if (index.row == get_num_actions() - 1)
     {
         menu_layer_set_selected_index(
             menu_layer,
@@ -188,7 +211,17 @@ static void on_sending_finished(const bool success)
 {
     if (success)
     {
-        window_notification_action_list_hide();
+        if (window_notification_data.open_menu_on_success != 0)
+        {
+            window_notification_data.currently_displayed_menu_id = window_notification_data.open_menu_on_success;
+            window_notification_action_list_show();
+
+            window_notification_data.open_menu_on_success = 0;
+        }
+        else
+        {
+            window_notification_action_list_hide();
+        }
     }
     else
     {
@@ -205,7 +238,7 @@ void window_notification_action_select()
     }
     const uint8_t notification_id = window_notification_data.currently_selected_bucket;
     const uint8_t action_index = menu_layer_get_selected_index(menu_layer).row;
-    if (!send_action_trigger(notification_id, action_index))
+    if (!send_action_trigger(notification_id, action_index, window_notification_data.currently_displayed_menu_id))
     {
         vibes_double_pulse();
         return;

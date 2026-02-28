@@ -1,17 +1,26 @@
 package com.matejdro.pebblenotificationcenter.notification
 
+import android.app.PendingIntent
+import com.matejdro.notificationcenter.rules.RuleOption
+import com.matejdro.notificationcenter.rules.keys.get
+import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionScope
+import com.matejdro.pebblenotificationcenter.bluetooth.SubmenuController
+import com.matejdro.pebblenotificationcenter.bluetooth.SubmenuItem
+import com.matejdro.pebblenotificationcenter.bluetooth.SubmenuType
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
-import dev.zacsweers.metro.AppScope
+import com.matejdro.pebblenotificationcenter.submenus.ReplySubmenuPayload
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import logcat.logcat
 
-@ContributesBinding(AppScope::class)
+@ContributesBinding(WatchappConnectionScope::class)
 @Inject
 class ActionHandlerImpl(
    private val notificationRepository: NotificationRepository,
    private val serviceController: NotificationServiceController,
+   private val submenuController: SubmenuController,
+   private val ruleResolver: RuleResolver,
 ) : ActionHandler {
    override suspend fun handleAction(notificationId: Int, actionIndex: Int): Boolean {
       val notification = notificationRepository.getNotification(notificationId)
@@ -29,7 +38,7 @@ class ActionHandlerImpl(
       return handleAction(notification, action)
    }
 
-   private fun handleAction(notification: ProcessedNotification, action: Action): Boolean {
+   private suspend fun handleAction(notification: ProcessedNotification, action: Action): Boolean {
       logcat { "Handle action: $action" }
       return when (action) {
          is Action.Dismiss -> {
@@ -38,6 +47,31 @@ class ActionHandlerImpl(
 
          is Action.Native -> {
             serviceController.triggerAction(action.intent)
+         }
+
+         is Action.Reply -> {
+            val userTexts = if (action.allowFreeFormInput) {
+               val preferences = ruleResolver.resolveRules(notification.systemData).preferences
+               preferences[RuleOption.replyCannedTexts]
+            } else {
+               emptySet()
+            }
+
+            val cannedTexts = (userTexts + action.cannedTexts)
+            val listItems = cannedTexts.map { cannedText ->
+               SubmenuItem(
+                  cannedText,
+                  ReplySubmenuPayload(cannedText, action.intent as PendingIntent, action.remoteInputResultKey)
+               )
+            }
+
+            submenuController.showSubmenuOnTheWatch(
+               notification.bucketId.toUByte(),
+               SubmenuType.REPLY_ANSWERS,
+               listItems
+            )
+
+            true
          }
       }
    }

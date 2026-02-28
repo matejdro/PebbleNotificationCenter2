@@ -52,6 +52,7 @@ static void button_select_single(ClickRecognizerRef recognizer, void* context)
     }
     else
     {
+        window_notification_data.currently_displayed_menu_id = 0;
         window_notification_action_list_show();
     }
 }

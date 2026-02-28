@@ -780,4 +780,41 @@ class NotificationProcessorTest {
          1, 2, 3, 4
       )
    }
+
+   @Test
+   fun `It should return parsed reply action`() = runTest {
+      val intent = createPendingIntent()
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         nativeActions = listOf(
+            NativeAction(
+               "Action 1",
+               intent,
+               remoteInputResultKey = "inputKey",
+               cannedTexts = listOf("A", "B"),
+               allowFreeFormInput = false
+            ),
+         )
+      )
+
+      processor.onNotificationPosted(notification)
+
+      processor.getNotification(1)?.actions.orEmpty() shouldBe listOf(
+         Action.Dismiss("Dismiss"),
+         Action.Reply(
+            title = "Action 1",
+            intent = intent,
+            remoteInputResultKey = "inputKey",
+            cannedTexts = listOf("A", "B"),
+            allowFreeFormInput = false
+         ),
+      )
+   }
 }

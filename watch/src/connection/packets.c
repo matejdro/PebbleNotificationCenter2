@@ -6,11 +6,13 @@
 #include "notification_details_fetcher.h"
 #include "../ui/window_status.h"
 #include "commons/bytes.h"
+#include "ui/window_notification/data_loading.h"
 
 static void receive_phone_welcome(const DictionaryIterator* iterator);
 static void receive_sync_restart(const DictionaryIterator* iterator);
 static void receive_sync_next_packet(const DictionaryIterator* iterator);
 static void receive_notification_details_text_packet(const DictionaryIterator* iterator);
+static void receive_submenu_packet(const DictionaryIterator* iterator);
 static void receive_watch_packet(const DictionaryIterator* received);
 static void receive_vibrate_packet(const DictionaryIterator* iterator);
 
@@ -49,7 +51,7 @@ bool send_notification_opened(const uint8_t id)
     return true;
 }
 
-bool send_action_trigger(const uint8_t notification_id, const uint8_t action_index)
+bool send_action_trigger(const uint8_t notification_id, const uint8_t action_index, const uint8_t menu_id)
 {
     DictionaryIterator* iterator;
     const AppMessageResult res = app_message_outbox_begin(&iterator);
@@ -62,6 +64,7 @@ bool send_action_trigger(const uint8_t notification_id, const uint8_t action_ind
     dict_write_uint8(iterator, 0, 6);
     dict_write_uint8(iterator, 1, notification_id);
     dict_write_uint8(iterator, 2, action_index);
+    dict_write_uint8(iterator, 3, menu_id);
     bluetooth_app_message_outbox_send();
     return true;
 }
@@ -93,7 +96,6 @@ void send_close_me()
 
     dict_write_uint8(iterator, 0, 8);
     bluetooth_app_message_outbox_send();
-
 }
 
 static void receive_watch_packet(const DictionaryIterator* received)
@@ -116,6 +118,9 @@ static void receive_watch_packet(const DictionaryIterator* received)
         break;
     case 7:
         receive_vibrate_packet(received);
+        break;
+    case 9:
+        receive_submenu_packet(received);
         break;
     default:
         break;
@@ -194,4 +199,10 @@ static void receive_vibrate_packet(const DictionaryIterator* iterator)
     };
     vibes_cancel();
     vibes_enqueue_custom_pattern(vibe_pattern);
+}
+
+static void receive_submenu_packet(const DictionaryIterator* iterator)
+{
+    const Tuple* data_dict_entry = dict_find(iterator, 1);
+    window_notification_data_receive_show_submenu(data_dict_entry->value->data, data_dict_entry->length);
 }

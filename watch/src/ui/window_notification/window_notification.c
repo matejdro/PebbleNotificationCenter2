@@ -85,6 +85,7 @@ static void window_load(Window* window)
     window_notification_data.currently_selected_bucket = 0;
     window_notification_data.currently_selected_bucket_index = 0;
     window_notification_data.bucket_count = 0;
+    window_notification_data.open_menu_on_success = 0;
 
     Layer* window_layer = window_get_root_layer(window);
     const GRect screen_bounds = layer_get_bounds(window_layer);

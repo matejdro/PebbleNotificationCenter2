@@ -39,4 +39,26 @@ data class NativeAction(
    val remoteInputResultKey: String? = null,
    val cannedTexts: List<String> = emptyList(),
    val allowFreeFormInput: Boolean = true,
-)
+) {
+   override fun equals(other: Any?): Boolean {
+      if (this === other) return true
+      if (other !is NativeAction) return false
+
+      if (allowFreeFormInput != other.allowFreeFormInput) return false
+      if (text != other.text) return false
+      if (pendingIntent !== other.pendingIntent) return false
+      if (remoteInputResultKey != other.remoteInputResultKey) return false
+      if (cannedTexts != other.cannedTexts) return false
+
+      return true
+   }
+
+   override fun hashCode(): Int {
+      var result = allowFreeFormInput.hashCode()
+      result = 31 * result + text.hashCode()
+      result = 31 * result + pendingIntent.hashCode()
+      result = 31 * result + (remoteInputResultKey?.hashCode() ?: 0)
+      result = 31 * result + cannedTexts.hashCode()
+      return result
+   }
+}

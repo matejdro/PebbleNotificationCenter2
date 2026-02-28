@@ -272,6 +272,36 @@ void window_notification_data_receive_more_text(const uint8_t bucket_id, const u
     window_notification_ui_redraw_scroller_content();
 }
 
+void window_notification_data_receive_show_submenu(const uint8_t* data, const size_t data_size)
+{
+    const uint8_t target_bucket = data[0];
+    if (window_notification_data.currently_selected_bucket != target_bucket)
+    {
+        return;
+    }
+
+    const uint8_t menu_id = data[1];
+    const uint8_t num_actions = data[2];
+    size_t position = 2;
+    window_notification_data.num_submenu_actions = num_actions;
+    for (int i = 0; i < num_actions; i++)
+    {
+        const char* action_title = strcpy(window_notification_data.submenu_actions[i].text, (char*)&data[position]);
+        position += strlen(action_title) + 1;
+    }
+
+    if (window_notification_data.menu_displayed)
+    {
+        window_notification_data.open_menu_on_success = menu_id;
+    }
+    else
+    {
+        window_notification_data.currently_displayed_menu_id = menu_id;
+
+        window_notification_action_list_show();
+    }
+}
+
 static void on_bucket_deleted(const uint8_t bucket_id)
 {
     persist_delete(bucket_id + STORAGE_BUCKET_FLAGS_ID_MIN);

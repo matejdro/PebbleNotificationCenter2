@@ -1,8 +1,13 @@
 package com.matejdro.pebblenotificationcenter
 
 import android.app.PendingIntent
+import android.app.RemoteInput
+import android.content.ClipData
+import android.content.ClipDescription
+import android.content.Intent
 import android.os.Build
 import android.os.Process
+import androidx.core.os.bundleOf
 import com.matejdro.pebblenotificationcenter.notification.NotificationService
 import com.matejdro.pebblenotificationcenter.notification.NotificationServiceController
 import com.matejdro.pebblenotificationcenter.notification.model.LightNotificationChannel
@@ -30,6 +35,35 @@ class NotificationServiceControllerImpl : NotificationServiceController {
       pendingIntent as PendingIntent
 
       pendingIntent.send()
+
+      return true
+   }
+
+   override fun triggerReplyAction(
+      pendingIntent: Any,
+      remoteInputKey: String,
+      text: String,
+   ): Boolean {
+      val service = NotificationService.instance ?: return false
+
+      pendingIntent as PendingIntent
+
+      val resultsData = bundleOf(remoteInputKey to text)
+      val remoteInputIntent = Intent().apply {
+         putExtra(RemoteInput.EXTRA_RESULTS_DATA, resultsData)
+      }
+
+      val clipData = ClipData(
+         RemoteInput.RESULTS_CLIP_LABEL,
+         arrayOf(ClipDescription.MIMETYPE_TEXT_INTENT),
+         ClipData.Item(remoteInputIntent)
+      )
+
+      pendingIntent.send(
+         service,
+         0,
+         Intent().apply { this.clipData = clipData }
+      )
 
       return true
    }

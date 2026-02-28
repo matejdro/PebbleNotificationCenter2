@@ -75,6 +75,18 @@ Sent from the phone after new notificaton, when all data is synced. On reception
       * Number of milliseconds to stay quiet (uint16)
       * ...
 
+
+### Show a submenu (packet 9)
+
+Sent from the phone after the packet 4
+
+* `1` - Data (byte array)
+  * Notification (Bucket) ID to apply the menu to (uint8)
+  * Menu ID (uint8)
+  * Number of actions (uint8)
+  * For every action:
+    * Action text (cstring, up to 20 bytes + null terminator)
+
 ## Watch -> Phone
 
 ### Watch Welcome (packet 0)
@@ -97,7 +109,8 @@ Sent from the watch when selects an action from the action menu
 
 * `1` - id of the notification bucket (uint8)
 * `2` - index of the action
-* 
+* `3` - ID of the menu that the action is in (0 = regular actions menu, other menus are sent via packet 9)
+
 ### Close me (packet 8)
 
 Sent from the watch when it wants to close. Phone app will open the last app, closing the NC in the process.

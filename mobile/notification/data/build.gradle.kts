@@ -15,6 +15,7 @@ custom {
 
 dependencies {
    api(projects.bluetooth.api)
+   api(projects.bluetoothCommon)
    api(projects.notification.api)
    api(projects.rules.api)
    api(libs.androidx.datastore.preferences)

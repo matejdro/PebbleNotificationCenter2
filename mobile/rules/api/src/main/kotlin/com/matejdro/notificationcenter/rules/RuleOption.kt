@@ -18,6 +18,11 @@ object RuleOption {
       "50, 50, 50, 50, 50, 50, 50, 50, 50, 50"
    )
 
+   val replyCannedTexts = StringSetPreferenceKeyWithDefault(
+      "reply_canned_texts",
+      setOf("Yes", "No", "Okay")
+   )
+
    val muteSilentNotifications = BooleanPreferenceKeyWithDefault("mute_silent_notifications", true)
    val muteDndNotifications = BooleanPreferenceKeyWithDefault("mute_dnd_notifications", true)
    val muteIdenticalNotifications = BooleanPreferenceKeyWithDefault("mute_identical_notifications", true)

@@ -9,6 +9,8 @@ import com.matejdro.pebble.bluetooth.common.test.sentData
 import com.matejdro.pebblenotificationcenter.bluetooth.api.WATCHAPP_UUID
 import com.matejdro.pebblenotificationcenter.notification.FakeActionHandler
 import com.matejdro.pebblenotificationcenter.notification.FakeNotificationRepository
+import com.matejdro.pebblenotificationcenter.notification.FakeSubmenuActionHandler
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.maps.shouldContainKey
@@ -39,6 +41,7 @@ class WatchappConnectionImplTest {
    private val notificationsRepository = FakeNotificationRepository()
 
    private val actionHandler = FakeActionHandler()
+   private val submenuActionHandler = FakeSubmenuActionHandler()
 
    private val watch = WatchIdentifier("watch")
 
@@ -58,6 +61,7 @@ class WatchappConnectionImplTest {
       ),
       notificationDetailsPusher,
       actionHandler,
+      submenuActionHandler,
       notificationsRepository,
       watch
    )
@@ -200,7 +204,7 @@ class WatchappConnectionImplTest {
    }
 
    @Test
-   fun `Trigger action handler on activate action packet`() = scope.runTest {
+   fun `Trigger regular action handler on activate action packet without menu id`() = scope.runTest {
       receiveStandardHelloPacket(bufferSize = 123u)
 
       val result = connection.onPacketReceived(
@@ -215,6 +219,27 @@ class WatchappConnectionImplTest {
       result shouldBe ReceiveResult.Ack
 
       actionHandler.lastHandledAction shouldBe FakeActionHandler.HandledAction(10, 5)
+      submenuActionHandler.handledActions.shouldBeEmpty()
+   }
+
+   @Test
+   fun `Trigger regular action handler on activate action packet with menu id 0`() = scope.runTest {
+      receiveStandardHelloPacket(bufferSize = 123u)
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(6u),
+            1u to PebbleDictionaryItem.UInt32(10u),
+            2u to PebbleDictionaryItem.UInt32(5u),
+            3u to PebbleDictionaryItem.UInt32(0u),
+         )
+      )
+      runCurrent()
+
+      result shouldBe ReceiveResult.Ack
+
+      actionHandler.lastHandledAction shouldBe FakeActionHandler.HandledAction(10, 5)
+      submenuActionHandler.handledActions.shouldBeEmpty()
    }
 
    @Test
@@ -277,6 +302,46 @@ class WatchappConnectionImplTest {
 
       result shouldBe ReceiveResult.Ack
       watchappOpenController.watchappClosedToTheLastApp.shouldBe(WatchIdentifier("watch"))
+   }
+
+   @Test
+   fun `Trigger submenu action handler on activate action packet with menu id not 0`() = scope.runTest {
+      receiveStandardHelloPacket(bufferSize = 123u)
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(6u),
+            1u to PebbleDictionaryItem.UInt32(10u),
+            2u to PebbleDictionaryItem.UInt32(5u),
+            3u to PebbleDictionaryItem.UInt32(1u),
+         )
+      )
+      runCurrent()
+
+      result shouldBe ReceiveResult.Ack
+
+      submenuActionHandler.handledActions.shouldContainExactly(
+         FakeSubmenuActionHandler.HandledAction(10u, SubmenuType.REPLY_ANSWERS, 5),
+      )
+      actionHandler.lastHandledAction shouldBe null
+   }
+
+   @Test
+   fun `Return nack on activate action packet when submenu action handling fails`() = scope.runTest {
+      submenuActionHandler.returnValue = false
+      receiveStandardHelloPacket(bufferSize = 123u)
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(6u),
+            1u to PebbleDictionaryItem.UInt32(10u),
+            2u to PebbleDictionaryItem.UInt32(5u),
+            3u to PebbleDictionaryItem.UInt32(1u),
+         )
+      )
+      runCurrent()
+
+      result shouldBe ReceiveResult.Nack
    }
 
    private suspend fun receiveStandardHelloPacket(version: UInt = 0u, bufferSize: UInt = 1000u): ReceiveResult =

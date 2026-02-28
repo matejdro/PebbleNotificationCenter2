@@ -168,7 +168,20 @@ class NotificationProcessor(
          Action.Dismiss(context.getString(R.string.dismiss)),
       )
 
-      val nativeActions = parsedNotification.nativeActions.map { Action.Native(it.text, it.pendingIntent) }
+      val nativeActions = parsedNotification.nativeActions.map { action ->
+         val remoteInputResultKey = action.remoteInputResultKey
+         if (remoteInputResultKey == null) {
+            Action.Native(action.text, action.pendingIntent)
+         } else {
+            Action.Reply(
+               action.text,
+               action.pendingIntent,
+               remoteInputResultKey,
+               action.cannedTexts,
+               action.allowFreeFormInput
+            )
+         }
+      }
 
       return defaultActions + nativeActions
    }
