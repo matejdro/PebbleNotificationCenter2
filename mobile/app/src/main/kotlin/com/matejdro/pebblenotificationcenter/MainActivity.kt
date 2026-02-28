@@ -26,7 +26,6 @@ import com.matejdro.pebblenotificationcenter.navigation.scenes.TabListDetailScen
 import com.matejdro.pebblenotificationcenter.navigation.scenes.rememberTabListDetailSceneStrategy
 import com.matejdro.pebblenotificationcenter.ui.animations.LocalSharedTransitionScope
 import com.matejdro.pebblenotificationcenter.ui.theme.NotificationCenterTheme
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -84,7 +83,7 @@ class MainActivity : ComponentActivity() {
          }
 
          val overridenInitialHistoryFromDeepLink = if (deepLinkTarget != null) {
-            deepLinkTarget.performNavigation(initialHistory, navigationContext).newBackstack.toPersistentList()
+            deepLinkTarget.performNavigation(initialHistory, navigationContext).newBackstack
          } else {
             initialHistory
          }
