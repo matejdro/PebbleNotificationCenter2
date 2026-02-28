@@ -92,14 +92,6 @@ commonAndroid {
 
 project.setupJacocoMergingAndroid()
 
-kotlin {
-   compilerOptions {
-      freeCompilerArgs.add("-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi")
-      freeCompilerArgs.add("-opt-in=kotlinx.coroutines.FlowPreview")
-      freeCompilerArgs.add("-opt-in=com.google.accompanist.permissions.ExperimentalPermissionsApi")
-   }
-}
-
 dependencies {
    add("coreLibraryDesugaring", libs.desugarJdkLibs)
    add("detektPlugins", project(":detekt"))

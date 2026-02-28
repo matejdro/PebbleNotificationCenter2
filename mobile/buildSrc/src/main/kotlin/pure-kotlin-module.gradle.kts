@@ -1,6 +1,5 @@
 import jacoco.setupJacocoMergingPureKotlin
 import org.gradle.accessors.dm.LibrariesForLibs
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 val libs = the<LibrariesForLibs>()
 
@@ -10,11 +9,6 @@ plugins {
    id("all-modules-commons")
 
    jacoco
-}
-
-tasks.withType(KotlinCompilationTask::class.java).configureEach {
-   compilerOptions.freeCompilerArgs.add("-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi")
-   compilerOptions.freeCompilerArgs.add("-opt-in=kotlinx.coroutines.FlowPreview")
 }
 
 tasks.test {
