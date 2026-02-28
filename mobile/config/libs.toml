@@ -60,7 +60,6 @@ orgJson = "20250517"
 pebblekit = "0.1.0"
 paparazzi = "2.0.0-alpha02"
 rebugger = "1.0.1"
-retrofit = "3.0.0"
 showkase = "1.0.5"
 simpleStack = "2.9.0"
 sqldelight = "2.1.0"
@@ -156,8 +155,6 @@ kotlinova-navigation-compiler = { module = "si.inova.kotlinova:navigation-compil
 kotlinova-navigation-detekt = { module = "si.inova.kotlinova:navigation-detekt", version.ref = "kotlinova" }
 kotlinova-navigation-navigation3 = { module = "si.inova.kotlinova:navigation-navigation3", version.ref = "kotlinova" }
 kotlinova-navigation-test = { module = "si.inova.kotlinova:navigation-test", version.ref = "kotlinova" }
-kotlinova-retrofit = { module = "si.inova.kotlinova:retrofit", version.ref = "kotlinova" }
-kotlinova-retrofit-test = { module = "si.inova.kotlinova:retrofit-test", version.ref = "kotlinova" }
 ksp = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 logcat = { module = "com.squareup.logcat:logcat", version.ref = "logcat" }
 metro-plugin = { module = "dev.zacsweers.metro:gradle-plugin", version.ref = "metro" }
@@ -176,8 +173,6 @@ pebblekit-common = { module = "io.rebble.pebblekit2:common", version.ref = "pebb
 pebblekit-common-api = { module = "io.rebble.pebblekit2:common-api", version.ref = "pebblekit" }
 paparazzi = { module = "app.cash.paparazzi:paparazzi", version.ref = "paparazzi" }
 rebugger = { module = "io.github.theapache64:rebugger", version.ref = "rebugger" }
-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
-retrofit-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "retrofit" }
 showkase = { module = "com.airbnb.android:showkase", version.ref = "showkase" }
 showkase-processor = { module = "com.airbnb.android:showkase-processor", version.ref = "showkase" }
 simpleStack = { module = "com.github.Zhuinden:simple-stack", version.ref = "simpleStack" }
