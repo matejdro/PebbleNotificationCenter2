@@ -136,7 +136,6 @@ dependencies {
    implementation(libs.coil)
    implementation(libs.dispatch)
    implementation(libs.kermit)
-   implementation(libs.kotlin.immutableCollections)
    implementation(libs.kotlin.coroutines)
    implementation(libs.kotlinova.core)
    implementation(libs.kotlinova.navigation)
