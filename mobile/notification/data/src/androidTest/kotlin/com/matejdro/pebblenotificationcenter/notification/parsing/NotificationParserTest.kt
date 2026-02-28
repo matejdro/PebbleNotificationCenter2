@@ -157,6 +157,35 @@ class NotificationParserTest {
    }
 
    @Test
+   fun parseNullUserAsMe() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setStyle(
+            NotificationCompat.MessagingStyle(Person.Builder().setName("Alice").build())
+               .setConversationTitle("Group Chat A")
+               .addMessage("Message 2", 2L, null as Person?)
+               .addMessage("Message 3", 3L, Person.Builder().setName("Bob").build())
+               .addHistoricMessage(
+                  NotificationCompat.MessagingStyle.Message("Message 1", 1L, Person.Builder().setName("Bob").build())
+               )
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Group Chat A",
+         "Bob: Message 3\n" +
+            "Alice: Message 2\n" +
+            "Bob: Message 1",
+         Instant.ofEpochMilli(3L),
+         channel = testChannelOrNull(),
+      )
+   }
+
+   @Test
    fun parseInboxStyle() {
       val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setStyle(

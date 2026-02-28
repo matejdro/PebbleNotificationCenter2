@@ -130,14 +130,14 @@ class NotificationParser(
 
       var lastName: CharSequence? = null
       return messages.joinToString("\n") {
-         val person = it.person
+         val person = it.person ?: messagingStyle.user
          val text = it.text?.toString().orEmpty()
-         if (person != null && lastName != person.name) {
+         if (lastName != person.name) {
             "${person.name}: $text"
          } else {
             text
          }.also {
-            lastName = person?.name
+            lastName = person.name
          }
       }
    }
