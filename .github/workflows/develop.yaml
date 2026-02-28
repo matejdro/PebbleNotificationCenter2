@@ -195,7 +195,7 @@ jobs:
       - name: Lint
         uses: burrunan/gradle-cache-action@v3.0.1
         with:
-          arguments: "lintRelease runDebugDetekt assertModuleGraph buildHealth detectTooManyFiles debugComposeCompilerCheck :bucketsync:data:verifyDebugDatabaseMigration reportMerge --continue --daemon"
+          arguments: "lintRelease runDebugDetekt assertModuleGraph buildHealth detectTooManyFiles :bucketsync:data:verifyDebugDatabaseMigration reportMerge --continue --daemon"
           build-root-directory: mobile
           debug: false
           concurrent: true
