@@ -39,4 +39,7 @@ Ignore unknown issue id to allow us to configure issues in this file  that
         <ignore path="**/libpebble3/**" />
         <ignore path="**/kotlin-speex/**" />
     </issue>
+
+    <!-- We do not even have the internet permission, so this does not apply to us -->
+    <issue id="DefaultCleartextTraffic" severity="ignore" />
 </lint>
