@@ -19,8 +19,10 @@ import androidx.datastore.preferences.core.emptyPreferences
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.notificationcenter.rules.RuleOption
 import com.matejdro.notificationcenter.rules.keys.SetPreference
+import com.matejdro.notificationcenter.rules.keys.StringSetPreferenceKeyWithDefault
 import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.notificationcenter.rules.ui.R
+import com.matejdro.notificationcenter.rules.ui.dialogs.StringListScreenKey
 import com.matejdro.notificationcenter.rules.ui.dialogs.VibrationPatternScreenKey
 import com.matejdro.pebblenotificationcenter.navigation.util.rememberNavigationPopup
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
@@ -62,6 +64,15 @@ internal fun ColumnScope.Settings(
          stringResource(R.string.setting_master_switch_description_suffix)
       )
       VibrationPatternPreference(navigator, updatePreference, preferences)
+
+      StringSetPreference(
+         navigator,
+         stringResource(R.string.setting_mute_silent),
+         updatePreference,
+         RuleOption.replyCannedTexts,
+         stringResource(R.string.setting_mute_silent_description),
+         preferences
+      )
 
       PreferenceCategory({ Text(stringResource(R.string.default_filter_overrides)) })
 
@@ -108,6 +119,35 @@ internal fun ColumnScope.Settings(
          summary = { Text(stringResource(R.string.setting_hide_media_notifications_description)) }
       )
    }
+}
+
+@Composable
+private fun StringSetPreference(
+   navigator: Navigator,
+   title: String,
+   updatePreference: SetPreference,
+   preference: StringSetPreferenceKeyWithDefault,
+   description: String,
+   preferences: Preferences,
+) {
+   val dialog = navigator.rememberNavigationPopup(
+      navigationKey = { initialList: List<String>, resultKey: ResultKey<List<String>> ->
+         StringListScreenKey(title, initialList, resultKey)
+      },
+      onResult = {
+         updatePreference(preference, it.toSet())
+      }
+   )
+
+   Preference(
+      title = { Text(title) },
+      summary = {
+         Text(description)
+      },
+      onClick = {
+         dialog.trigger(preferences[preference].toList())
+      }
+   )
 }
 
 @Composable

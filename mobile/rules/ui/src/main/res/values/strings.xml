@@ -83,4 +83,9 @@
     <string name="setting_vibration_pattern_description">%1$s\n\nPattern that the watch will vibrate with for new notifications. A
         comma separated list corresponding to milliseconds vibrating, milliseconds pausing, milliseconds vibrating etc.
     </string>
+    <string name="add">Add</string>
+    <string name="setting_mute_silent">Reply options</string>
+    <string name="setting_mute_silent_description">A list of options that show up on Reply action, in addition to the options
+        already provided by the application.
+    </string>
 </resources>
