@@ -2,7 +2,7 @@
 accompanist = "0.37.3"
 # See https://developer.android.com/jetpack/androidx/releases/compose-kotlin
 androidGradleCacheFix = "3.0.2"
-androidGradlePlugin = "8.13.0"
+androidGradlePlugin = "8.13.2"
 android-securityLints = "1.0.4"
 androidx-activity-compose = "1.11.0"
 androidx-compose-material3 = "1.3.2"
@@ -20,10 +20,9 @@ coil = "3.3.0"
 composeDnd = "0.4.0"
 composeGuard = "2.4.0"
 composePreference = "2.1.0"
-dependencyAnalysis = "3.0.4"
+dependencyAnalysis = "3.5.1"
 desugarJdkLibs = "2.1.5"
-detekt = "1.23.8"
-detekt-compilerWarnings = "0.0.4"
+detekt = "2.0.0-alpha.2"
 detekt-compose = "0.4.27"
 dispatch = "1.0.0-beta10"
 # @keep used in kts scripts directly
@@ -34,13 +33,12 @@ junit = "6.0.0"
 junit-launcher = "6.0.0"
 kermit = "2.0.4"
 kotest = "6.0.3"
-kotlin = "2.2.20"
+kotlin = "2.3.0"
 kotlin-coroutines = "1.10.2"
-kotlinova = "4.0.0-alpha10"
-# @pin until https://github.com/google/ksp/issues/2595 is solved
-ksp = "2.2.20-2.0.2"
+kotlinova = "4.0.0-alpha13"
+ksp = "2.3.6"
 logcat = "0.4"
-metro = "0.7.3"
+metro = "0.10.1"
 moduleGraphAssert = "2.9.0"
 okio = "3.16.0"
 orgJson = "20250517"
@@ -95,11 +93,10 @@ composeGuard = { module = "com.joetr.compose.guard:com.joetr.compose.guard.gradl
 composePreference = { module = "me.zhanghai.compose.preference:preference", version.ref = "composePreference" }
 dependencyAnalysis = { module = "com.autonomousapps:dependency-analysis-gradle-plugin", version.ref = "dependencyAnalysis" }
 desugarJdkLibs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugarJdkLibs" }
-detekt-api = { module = "io.gitlab.arturbosch.detekt:detekt-api", version.ref = "detekt" }
-detekt-compilerWarnings = { module = "com.braisgabin.detekt:kotlin-compiler-wrapper", version.ref = "detekt-compilerWarnings" }
+detekt-api = { module = "dev.detekt:detekt-api", version.ref = "detekt" }
 detekt-compose = { module = "io.nlopez.compose.rules:detekt", version.ref = "detekt-compose" }
-detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
-detekt-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
+detekt-ktlint = { module = "dev.detekt:detekt-rules-ktlint-wrapper", version.ref = "detekt" }
+detekt-plugin = { module = "dev.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 dispatch = { module = "com.rickbusarow.dispatch:dispatch-core", version.ref = "dispatch" }
 dispatch-test = { module = "com.rickbusarow.dispatch:dispatch-test", version.ref = "dispatch" }
 junit4 = { module = "junit:junit", version.ref = "junit4" }
@@ -150,7 +147,7 @@ unmock-plugin = { module = "com.github.bjoernq:unmockplugin", version.ref = "unm
 
 
 [plugins]
-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 paparazzi = { id = "app.cash.paparazzi", version.ref = "paparazzi" }
 versionCatalogUpdate = { id = "nl.littlerobots.version-catalog-update", version.ref = "versionCatalogUpdate" }
