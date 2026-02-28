@@ -86,6 +86,8 @@ Sent from the phone after the packet 4
   * Number of actions (uint8)
   * For every action:
     * Action text (cstring, up to 20 bytes + null terminator)
+    * Should send result with voice - 1 or 0 (uint8)
+      * When `1`, upon selecting the item, watchapp will prompt the user for voice text entry and reply with it included in key `4` on packet 6.
 
 ## Watch -> Phone
 
@@ -108,8 +110,9 @@ Sent from the watch when user opens/views a notification
 Sent from the watch when selects an action from the action menu
 
 * `1` - id of the notification bucket (uint8)
-* `2` - index of the action
-* `3` - ID of the menu that the action is in (0 = regular actions menu, other menus are sent via packet 9)
+* `2` - index of the action (uint8)
+* `3` - ID of the menu that the action is in (0 = regular actions menu, other menus are sent via packet 9) (uint8)
+* `4` - Custom text from voice (optional) (cstring)
 
 ### Close me (packet 8)
 

@@ -15,6 +15,9 @@ static Layer* menu_background;
 static MenuLayer* menu_layer;
 static bool frozen = false;
 
+static void send_notification_voice();
+static void confirm_action(uint8_t notification_id, uint8_t action_index, uint8_t menu_id, const char* text);
+
 static void menu_paint_background(Layer* layer, GContext* ctx)
 {
     const GRect background_bounds = layer_get_bounds(menu_background);
@@ -123,18 +126,13 @@ void window_notification_action_list_init(const Window* window)
     menu_layer_set_callbacks(menu_layer,
                              NULL,
                              (MenuLayerCallbacks)
-    {
-        .
-        get_num_sections = menu_get_num_sections_callback,
-        .
-        get_num_rows = menu_get_num_rows_callback,
-        .
-        get_cell_height = menu_get_row_height_callback,
-        .
-        draw_row = menu_draw_row_callback,
-    }
-    )
-    ;
+                             {
+                                 .get_num_sections = menu_get_num_sections_callback,
+                                 .get_num_rows = menu_get_num_rows_callback,
+                                 .get_cell_height = menu_get_row_height_callback,
+                                 .draw_row = menu_draw_row_callback,
+                             }
+    );
 
     layer_add_child(window_layer, menu_background);
     layer_add_child(menu_background, menu_layer_get_layer(menu_layer));
@@ -236,9 +234,33 @@ void window_notification_action_select()
     {
         return;
     }
-    const uint8_t notification_id = window_notification_data.currently_selected_bucket;
     const uint8_t action_index = menu_layer_get_selected_index(menu_layer).row;
-    if (!send_action_trigger(notification_id, action_index, window_notification_data.currently_displayed_menu_id))
+    const uint8_t menu_id = window_notification_data.currently_displayed_menu_id;
+
+    Action* action;
+
+    if (menu_id == 0)
+    {
+        action = &window_notification_data.actions[action_index];
+    }
+    else
+    {
+        action = &window_notification_data.submenu_actions[action_index];
+    }
+
+    if (action->voice)
+    {
+        send_notification_voice();
+        return;
+    }
+
+    const uint8_t notification_id = window_notification_data.currently_selected_bucket;
+    confirm_action(notification_id, action_index, menu_id, NULL);
+}
+
+static void confirm_action(const uint8_t notification_id, const uint8_t action_index, const uint8_t menu_id, const char* text)
+{
+    if (!send_action_trigger(notification_id, action_index, menu_id, text))
     {
         vibes_double_pulse();
         return;
@@ -246,4 +268,35 @@ void window_notification_action_select()
     bluetooth_register_sending_finish(on_sending_finished);
 
     menu_freeze();
+}
+
+static void voice_callback(DictationSession* session, DictationSessionStatus status, char* transcription, void* context)
+{
+    if (status == DictationSessionStatusSuccess)
+    {
+        const uint8_t action_index = menu_layer_get_selected_index(menu_layer).row;
+        const uint8_t menu_id = window_notification_data.currently_displayed_menu_id;
+        const uint8_t notification_id = window_notification_data.currently_selected_bucket;
+        confirm_action(notification_id, action_index, menu_id, transcription);
+    }
+
+    dictation_session_destroy(session);
+}
+
+static void send_notification_voice()
+{
+    DictationSession* session = dictation_session_create(300, voice_callback, NULL);
+
+    if (session == NULL)
+    {
+        vibes_double_pulse();
+        return;
+    }
+
+    const bool start_success = dictation_session_start(session);
+
+    if (!start_success)
+    {
+        vibes_double_pulse();
+    }
 }

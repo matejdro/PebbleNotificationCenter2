@@ -61,4 +61,9 @@ data class NativeAction(
       result = 31 * result + cannedTexts.hashCode()
       return result
    }
+
+   override fun toString(): String {
+      return "NativeAction(text='$text', remoteInputResultKey=${remoteInputResultKey ?: "null"}," +
+         " cannedTexts=$cannedTexts, allowFreeFormInput=$allowFreeFormInput)"
+   }
 }

@@ -344,6 +344,34 @@ class WatchappConnectionImplTest {
       result shouldBe ReceiveResult.Nack
    }
 
+   @Test
+   fun `Trigger submenu action handler on activate action packet with voice data`() = scope.runTest {
+      receiveStandardHelloPacket(bufferSize = 123u)
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(6u),
+            1u to PebbleDictionaryItem.UInt32(10u),
+            2u to PebbleDictionaryItem.UInt32(5u),
+            3u to PebbleDictionaryItem.UInt32(1u),
+            4u to PebbleDictionaryItem.Text("Hello from the watch"),
+         )
+      )
+      runCurrent()
+
+      result shouldBe ReceiveResult.Ack
+
+      submenuActionHandler.handledActions.shouldContainExactly(
+         FakeSubmenuActionHandler.HandledAction(
+            10u,
+            SubmenuType.REPLY_ANSWERS,
+            5,
+            "Hello from the watch"
+         ),
+      )
+      actionHandler.lastHandledAction shouldBe null
+   }
+
    private suspend fun receiveStandardHelloPacket(version: UInt = 0u, bufferSize: UInt = 1000u): ReceiveResult =
       connection.onPacketReceived(
          mapOf(

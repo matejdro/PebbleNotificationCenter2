@@ -1,6 +1,7 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import android.app.PendingIntent
+import android.content.res.Resources
 import com.matejdro.notificationcenter.rules.RuleOption
 import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionScope
@@ -21,6 +22,7 @@ class ActionHandlerImpl(
    private val serviceController: NotificationServiceController,
    private val submenuController: SubmenuController,
    private val ruleResolver: RuleResolver,
+   private val resources: Resources,
 ) : ActionHandler {
    override suspend fun handleAction(notificationId: Int, actionIndex: Int): Boolean {
       val notification = notificationRepository.getNotification(notificationId)
@@ -50,15 +52,27 @@ class ActionHandlerImpl(
          }
 
          is Action.Reply -> {
+            val voiceItem = if (action.allowFreeFormInput) {
+               listOf(
+                  SubmenuItem(
+                     resources.getString(R.string.voice),
+                     ReplySubmenuPayload("", action.intent as PendingIntent, action.remoteInputResultKey),
+                     voiceInput = true
+                  )
+               )
+            } else {
+               emptyList()
+            }
+
             val userTexts = if (action.allowFreeFormInput) {
                val preferences = ruleResolver.resolveRules(notification.systemData).preferences
                preferences[RuleOption.replyCannedTexts]
             } else {
-               emptySet()
+               emptyList()
             }
 
-            val cannedTexts = (userTexts + action.cannedTexts)
-            val listItems = cannedTexts.map { cannedText ->
+            val cannedTexts = userTexts + action.cannedTexts
+            val listItems = voiceItem + cannedTexts.map { cannedText ->
                SubmenuItem(
                   cannedText,
                   ReplySubmenuPayload(cannedText, action.intent as PendingIntent, action.remoteInputResultKey)

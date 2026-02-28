@@ -42,4 +42,35 @@ class SubmenuActionHandlerImplTest {
       serviceController.lastTriggeredReplyAction shouldBe
          NativeAction("Longer text 2", intent2, "inputKey")
    }
+
+   @Test
+   fun `Send voice reply response to the service controller`() = runTest {
+      val intent1 = createPendingIntent()
+      val intent2 = createPendingIntent()
+
+      submenuController.showSubmenuOnTheWatch(
+         2u,
+         SubmenuType.REPLY_ANSWERS,
+         listOf(
+            SubmenuItem(
+               "Short text 1",
+               ReplySubmenuPayload("Longer text 1", intent1, "inputKey")
+            ),
+            SubmenuItem(
+               "Short text 2",
+               ReplySubmenuPayload("Longer text 2", intent2, "inputKey")
+            ),
+         )
+      )
+
+      actionHandler.handleSubmenuAction(
+         2u,
+         SubmenuType.REPLY_ANSWERS,
+         0,
+         "Hello from the watch"
+      )
+
+      serviceController.lastTriggeredReplyAction shouldBe
+         NativeAction("Hello from the watch", intent1, "inputKey")
+   }
 }

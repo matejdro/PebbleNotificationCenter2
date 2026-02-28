@@ -13,22 +13,22 @@ class SubmenuActionHandlerImpl(
    private val submenuController: SubmenuController,
    private val serviceController: NotificationServiceController,
 ) : SubmenuActionHandler {
-   override fun handleSubmenuAction(notificationId: UByte, menu: SubmenuType, index: Int): Boolean {
+   override fun handleSubmenuAction(notificationId: UByte, menu: SubmenuType, index: Int, voiceInputText: String?): Boolean {
       val payload = submenuController.getPayloadForMenuItem<Any>(notificationId, menu, index) ?: return false
 
       return when (menu) {
-         SubmenuType.REPLY_ANSWERS -> handleReplyMenuAction(payload)
+         SubmenuType.REPLY_ANSWERS -> handleReplyMenuAction(payload, voiceInputText)
          SubmenuType.OTHER -> throw UnsupportedOperationException("Other is only meant for tests")
       }
    }
 
-   private fun handleReplyMenuAction(payload: Any): Boolean {
+   private fun handleReplyMenuAction(payload: Any, voiceInputText: String?): Boolean {
       payload as ReplySubmenuPayload
 
       return serviceController.triggerReplyAction(
          payload.intent,
          payload.remoteInputResultKey,
-         payload.text
+         voiceInputText ?: payload.text
       )
    }
 }

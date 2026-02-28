@@ -126,7 +126,8 @@ class WatchappConnectionImpl(
          submenuActionHandler.handleSubmenuAction(
             data.requireUint(1u).toUByte(),
             submenuType,
-            data.requireUint(2u).toInt()
+            data.requireUint(2u).toInt(),
+            (data[4u] as PebbleDictionaryItem.Text?)?.value,
          )
       }
       logcat { "Action handling success: $success" }

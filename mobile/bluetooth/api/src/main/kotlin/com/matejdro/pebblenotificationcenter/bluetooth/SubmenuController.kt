@@ -14,4 +14,4 @@ enum class SubmenuType {
    OTHER,
 }
 
-data class SubmenuItem<T>(val text: String, val payload: T)
+data class SubmenuItem<T>(val text: String, val payload: T, val voiceInput: Boolean = false)

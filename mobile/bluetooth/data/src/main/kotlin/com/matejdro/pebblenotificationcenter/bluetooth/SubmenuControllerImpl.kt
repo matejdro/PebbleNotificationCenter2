@@ -40,6 +40,7 @@ class SubmenuControllerImpl(
          val limitedString = stringEncoder.encodeSizeLimited(item.text, MAX_ACTION_TEXT_BYTES).encodedString
          buffer.write(limitedString)
          buffer.writeByte(0)
+         buffer.writeByte(if (item.voiceInput) 1 else 0)
       }
 
       menuItems[MenuItemKey(notificationId, type)] = limitedItems

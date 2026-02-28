@@ -17,7 +17,9 @@ import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import si.inova.kotlinova.core.test.fakes.FakeResources
 import java.time.Instant
 
 class ActionHandlerImplTest {
@@ -25,14 +27,22 @@ class ActionHandlerImplTest {
    private val servicecontroller = FakeNotificationServiceController()
    private val submenuController = FakeSubmenuController()
 
+   private val resources = FakeResources()
+
    private val rulesRepository = FakeRulesRepository()
 
    private val handler = ActionHandlerImpl(
       repo,
       servicecontroller,
       submenuController,
-      RuleResolver(rulesRepository)
+      RuleResolver(rulesRepository),
+      resources,
    )
+
+   @BeforeEach
+   fun setUp() {
+      resources.putString(R.string.voice, "- Voice -")
+   }
 
    @Test
    fun `Return false when notification does not exist in the repo`() = runTest {
@@ -148,8 +158,13 @@ class ActionHandlerImplTest {
    }
 
    @Test
-   fun `Open submenu on the watch with reply options`() = runTest {
+   fun `Open submenu on the watch with reply and voice options`() = runTest {
       insertDefaultRules()
+
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.replyCannedTexts setTo emptySet()
+      )
 
       val intent = createPendingIntent()
 
@@ -179,9 +194,14 @@ class ActionHandlerImplTest {
 
       handler.handleAction(2, 0) shouldBe true
 
-      submenuController.sentMenus.toMap().shouldContainExactly(
+      submenuController.sentMenus.toMap().shouldBe(
          mapOf(
             FakeSubmenuController.MenuItemKey(2u, SubmenuType.REPLY_ANSWERS) to listOf(
+               SubmenuItem(
+                  "- Voice -",
+                  ReplySubmenuPayload("", intent, "ResultKey"),
+                  voiceInput = true
+               ),
                SubmenuItem(
                   "Message A",
                   ReplySubmenuPayload("Message A", intent, "ResultKey")
@@ -202,6 +222,7 @@ class ActionHandlerImplTest {
    }
 
    @Test
+   @Suppress("LongMethod") // Lots of test examples
    fun `Add user provided canned texts`() = runTest {
       insertDefaultRules()
 
@@ -242,6 +263,11 @@ class ActionHandlerImplTest {
          mapOf(
             FakeSubmenuController.MenuItemKey(2u, SubmenuType.REPLY_ANSWERS) to listOf(
                SubmenuItem(
+                  "- Voice -",
+                  ReplySubmenuPayload("", intent, "ResultKey"),
+                  voiceInput = true
+               ),
+               SubmenuItem(
                   "Custom A",
                   ReplySubmenuPayload("Custom A", intent, "ResultKey")
                ),
@@ -269,7 +295,7 @@ class ActionHandlerImplTest {
    }
 
    @Test
-   fun `Disable user provided when app does not allow freeform`() = runTest {
+   fun `Disable user provided and voice entries when app does not allow freeform`() = runTest {
       insertDefaultRules()
 
       rulesRepository.updateRulePreferences(

@@ -51,7 +51,7 @@ bool send_notification_opened(const uint8_t id)
     return true;
 }
 
-bool send_action_trigger(const uint8_t notification_id, const uint8_t action_index, const uint8_t menu_id)
+bool send_action_trigger(const uint8_t notification_id, const uint8_t action_index, const uint8_t menu_id, const char* text)
 {
     DictionaryIterator* iterator;
     const AppMessageResult res = app_message_outbox_begin(&iterator);
@@ -65,6 +65,10 @@ bool send_action_trigger(const uint8_t notification_id, const uint8_t action_ind
     dict_write_uint8(iterator, 1, notification_id);
     dict_write_uint8(iterator, 2, action_index);
     dict_write_uint8(iterator, 3, menu_id);
+    if (text != NULL)
+    {
+        dict_write_cstring(iterator, 4, text);
+    }
     bluetooth_app_message_outbox_send();
     return true;
 }

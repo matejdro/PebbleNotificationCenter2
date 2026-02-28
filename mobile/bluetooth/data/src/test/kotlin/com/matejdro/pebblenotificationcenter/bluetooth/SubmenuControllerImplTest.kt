@@ -38,7 +38,7 @@ class SubmenuControllerImplTest {
          SubmenuType.REPLY_ANSWERS,
          listOf(
             SubmenuItem("A1", 1),
-            SubmenuItem("A2", 2),
+            SubmenuItem("A2", 2, voiceInput = true),
          )
       )
       runCurrent()
@@ -53,8 +53,9 @@ class SubmenuControllerImplTest {
 
                   2, // 2 actions
                   65, 49, 0, // A1 & null
+                  0, // No voice
                   65, 50, 0, // A2 & null
-
+                  1, // Voice
                )
             )
          )
@@ -89,8 +90,10 @@ class SubmenuControllerImplTest {
                      // ...
                      46, 46, 46,
                      0, // Null terminator
+                     0, // No voice
 
                      65, 50, 0, // A2 & null
+                     0, // No voice
                   )
             )
          )

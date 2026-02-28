@@ -16,6 +16,7 @@ typedef struct
 typedef struct
 {
     char text[21];
+    bool voice;
 } Action;
 
 typedef struct
