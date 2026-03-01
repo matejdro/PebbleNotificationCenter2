@@ -7,22 +7,26 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 
+@Stable
 class BooleanPreferenceKeyWithDefault(name: String, default: Boolean) : DirectKeyWithDefault<Boolean>(name, default) {
    override val key: Preferences.Key<Boolean>
       get() = booleanPreferencesKey(name)
 }
 
+@Stable
 class StringPreferenceKeyWithDefault(name: String, default: String) : DirectKeyWithDefault<String>(name, default) {
    override val key: Preferences.Key<String>
       get() = stringPreferencesKey(name)
 }
 
+@Stable
 class NullableStringPreferenceKeyWithDefault(name: String, default: String?) : DirectKeyWithDefault<String?>(name, default) {
    @Suppress("UNCHECKED_CAST")
    override val key: Preferences.Key<String?>
       get() = stringPreferencesKey(name) as Preferences.Key<String?>
 }
 
+@Stable
 class StringSetPreferenceKeyWithDefault(name: String, default: Set<String>) : DirectKeyWithDefault<Set<String>>(name, default) {
    override val key: Preferences.Key<Set<String>>
       get() = stringSetPreferencesKey(name)
@@ -32,6 +36,7 @@ class StringSetPreferenceKeyWithDefault(name: String, default: Set<String>) : Di
 inline fun <reified E : Enum<E>> EnumPreferenceKeyWithDefault(name: String, default: E) =
    EnumPreferenceKeyWithDefault(name, default, E::class.java)
 
+@Stable
 class EnumPreferenceKeyWithDefault<T : Enum<T>>(name: String, default: T, private val cls: Class<T>) :
    ProxyPreferenceKeyWithDefault<T, String>(name, default) {
    override val key: Preferences.Key<String>
@@ -46,6 +51,7 @@ class EnumPreferenceKeyWithDefault<T : Enum<T>>(name: String, default: T, privat
    }
 }
 
+@Stable
 abstract class ProxyPreferenceKeyWithDefault<T, P>(protected val name: String, protected val default: T) :
    PreferenceKeyWithDefault<T> {
    abstract override val key: Preferences.Key<P>
@@ -62,6 +68,7 @@ abstract class ProxyPreferenceKeyWithDefault<T, P>(protected val name: String, p
    }
 }
 
+@Stable
 abstract class DirectKeyWithDefault<T>(protected val name: String, protected val default: T) : PreferenceKeyWithDefault<T> {
    abstract override val key: Preferences.Key<T>
 
