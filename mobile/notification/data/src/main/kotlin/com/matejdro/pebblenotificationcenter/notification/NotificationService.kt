@@ -4,16 +4,27 @@ import android.os.Build
 import android.os.Process
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.common.di.NavigationInjectingApplication
 import com.matejdro.pebblenotificationcenter.notification.di.NotificationInject
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.parsing.NotificationParser
 import dev.zacsweers.metro.Inject
 import dispatch.core.DefaultCoroutineScope
+import io.rebble.pebblekit2.client.PebbleInfoRetriever
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import logcat.logcat
+import si.inova.kotlinova.core.reporting.ErrorReporter
 
 class NotificationService : NotificationListenerService() {
    @Inject
@@ -25,6 +36,15 @@ class NotificationService : NotificationListenerService() {
    @Inject
    private lateinit var coroutineScope: DefaultCoroutineScope
 
+   @Inject
+   private lateinit var pebbleInfoRetriever: PebbleInfoRetriever
+
+   @Inject
+   private lateinit var errorReporter: ErrorReporter
+
+   @Inject
+   private lateinit var preferenceStore: DataStore<Preferences>
+
    private val mutex = Mutex()
 
    private var bound = false
@@ -35,7 +55,10 @@ class NotificationService : NotificationListenerService() {
          .applicationGraph
          .let { it as NotificationInject }
          .inject(this)
+
       instance = this
+
+      controlListenerHints()
 
       super.onCreate()
    }
@@ -108,6 +131,37 @@ class NotificationService : NotificationListenerService() {
       }
    } else {
       null
+   }
+
+   private fun controlListenerHints() = coroutineScope.launch {
+      val anyWatchConnected = pebbleInfoRetriever.getConnectedWatches().map { it.isNotEmpty() }.distinctUntilChanged()
+         .onEach { logcat { "Watch connected: $it" } }
+
+      val mutePhoneFlow = preferenceStore.data.map { preferences ->
+         preferences[GlobalPreferenceKeys.mutePhone]
+      }.distinctUntilChanged()
+
+      mutePhoneFlow.flatMapLatest { mutePhone ->
+         if (mutePhone) {
+            anyWatchConnected.map { connected ->
+               var listenerHints = 0
+               if (connected) {
+                  listenerHints = listenerHints or HINT_HOST_DISABLE_NOTIFICATION_EFFECTS
+               }
+
+               listenerHints
+            }.distinctUntilChanged()
+         } else {
+            flowOf(0)
+         }
+      }
+         .collect {
+            try {
+               requestListenerHints(it)
+            } catch (e: SecurityException) {
+               errorReporter.report(e)
+            }
+         }
    }
 
    companion object {

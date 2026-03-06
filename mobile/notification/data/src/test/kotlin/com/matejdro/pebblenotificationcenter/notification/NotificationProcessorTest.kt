@@ -1,9 +1,14 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import android.app.createPendingIntent
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import com.matejdro.notificationcenter.rules.FakeRulesRepository
+import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
 import com.matejdro.notificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
 import com.matejdro.notificationcenter.rules.RuleOption
+import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.notificationcenter.rules.keys.setTo
 import com.matejdro.pebblenotificationcenter.bluetooth.FakeWatchSyncer
 import com.matejdro.pebblenotificationcenter.bluetooth.FakeWatchappOpenController
@@ -18,6 +23,8 @@ import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -35,7 +42,15 @@ class NotificationProcessorTest {
 
    private val rulesRepository = FakeRulesRepository()
 
-   private val processor = NotificationProcessor(context, watchSyncer, openController, RuleResolver(rulesRepository))
+   private val globalPreferences = InMemoryDataStore(emptyPreferences())
+
+   private val processor = NotificationProcessor(
+      context,
+      watchSyncer,
+      openController,
+      RuleResolver(rulesRepository),
+      globalPreferences
+   )
 
    @BeforeEach
    fun setUp() {
@@ -816,5 +831,39 @@ class NotificationProcessorTest {
             allowFreeFormInput = false
          ),
       )
+   }
+
+   @Test
+   fun `It should not vibrate for any notifications when global watch mute is active`() = runTest {
+      globalPreferences.edit {
+         it[GlobalPreferenceKeys.muteWatch] = true
+      }
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isSilent = false
+      )
+
+      processor.onNotificationPosted(notification)
+
+      openController.watchappOpened shouldBe false
+      processor.pollNextVibration().shouldBeNull()
+   }
+}
+
+private class InMemoryDataStore<T>(defaultValue: T) : DataStore<T> {
+   override val data = MutableStateFlow(defaultValue)
+
+   override suspend fun updateData(transform: suspend (t: T) -> T): T {
+      data.update {
+         transform(it)
+      }
+
+      return data.value
    }
 }

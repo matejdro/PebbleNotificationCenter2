@@ -4,6 +4,11 @@ import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.Stable
 import androidx.core.content.FileProvider
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import com.matejdro.notificationcenter.rules.keys.PreferenceKeyWithDefault
+import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.pebblenotificationcenter.common.logging.ActionLogger
 import com.matejdro.pebblenotificationcenter.logging.FileLoggingController
 import com.matejdro.pebblenotificationcenter.navigation.keys.ToolsScreenKey
@@ -11,6 +16,7 @@ import dev.zacsweers.metro.Inject
 import dispatch.core.withDefault
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import si.inova.kotlinova.core.outcome.CoroutineResourceManager
 import si.inova.kotlinova.core.outcome.Outcome
 import si.inova.kotlinova.navigation.services.ContributesScopedService
@@ -29,10 +35,11 @@ class ToolsViewModel(
    private val actionLogger: ActionLogger,
    private val context: Context,
    private val fileLoggingController: FileLoggingController,
+   private val preferenceStore: DataStore<Preferences>,
 ) : SingleScreenViewModel<ToolsScreenKey>(resources.scope) {
-   private val _appVersion = MutableStateFlow<String>("")
-   val appVersion: StateFlow<String>
-      get() = _appVersion
+   private val _uiState = MutableStateFlow<Outcome<ToolsState>>(Outcome.Progress())
+   val appVersion: StateFlow<Outcome<ToolsState>>
+      get() = _uiState
 
    private val _logSave = MutableStateFlow<Outcome<Uri?>>(Outcome.Success(null))
    val logSave: StateFlow<Outcome<Uri?>> = _logSave
@@ -41,7 +48,20 @@ class ToolsViewModel(
       actionLogger.logAction { "ToolsViewModel.onServiceRegistered()" }
 
       val pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0)
-      _appVersion.value = pInfo.versionName.orEmpty()
+      val versionName = pInfo.versionName.orEmpty()
+
+      resources.launchResourceControlTask(_uiState) {
+         emitAll(
+            preferenceStore.data.map { preferences ->
+               Outcome.Success(
+                  ToolsState(
+                     versionName,
+                     preferences
+                  )
+               )
+            }
+         )
+      }
    }
 
    fun getLogs() = resources.launchResourceControlTask(_logSave) {
@@ -88,6 +108,18 @@ class ToolsViewModel(
       actionLogger.logAction { "ToolsViewModel.resetLog()" }
       _logSave.value = Outcome.Success(null)
    }
+
+   fun <T> updatePreference(key: PreferenceKeyWithDefault<T>, value: T) = resources.launchWithExceptionReporting {
+      actionLogger.logAction { "ToolsViewModel.updatePreference($key)" }
+      preferenceStore.edit {
+         it[key] = value
+      }
+   }
 }
+
+data class ToolsState(
+   val versionName: String,
+   val preferences: Preferences,
+)
 
 private const val ZIP_BUFFER_SIZE = 1024

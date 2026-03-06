@@ -3,6 +3,7 @@ package com.matejdro.pebblenotificationcenter.tools.ui
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -19,9 +21,9 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,13 +31,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
+import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.notificationcenter.rules.keys.PreferenceKeyWithDefault
+import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.navigation.keys.OnboardingKey
 import com.matejdro.pebblenotificationcenter.navigation.keys.ToolsScreenKey
 import com.matejdro.pebblenotificationcenter.ui.components.ErrorAlertDialog
+import com.matejdro.pebblenotificationcenter.ui.components.ProgressErrorSuccessScaffold
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
+import me.zhanghai.compose.preference.LocalPreferenceTheme
+import me.zhanghai.compose.preference.SwitchPreference
+import me.zhanghai.compose.preference.preferenceTheme
 import si.inova.kotlinova.compose.flow.collectAsStateWithLifecycleAndBlinkingPrevention
 import si.inova.kotlinova.core.outcome.Outcome
 import si.inova.kotlinova.navigation.di.ContributesScreenBinding
@@ -52,16 +62,25 @@ class ToolsScreen(
 ) : Screen<ToolsScreenKey>() {
    @Composable
    override fun Content(key: ToolsScreenKey) {
-      val appVersion = viewModel.appVersion.collectAsStateWithLifecycle().value
+      val stateOutcome = viewModel.appVersion.collectAsStateWithLifecycle().value
       val logSaveStatus = viewModel.logSave.collectAsStateWithLifecycleAndBlinkingPrevention().value
 
-      Surface {
+      ProgressErrorSuccessScaffold(
+         stateOutcome,
+         Modifier
+            .fillMaxSize()
+            .safeDrawingPadding()
+      ) { state ->
          ToolsScreenContent(
-            appVersion,
+            state,
             logSaveStatus,
             { navigator.navigateTo(OnboardingKey) },
             viewModel::getLogs,
             viewModel::resetLog,
+            updatePreference = { key, value ->
+               @Suppress("UNCHECKED_CAST")
+               viewModel.updatePreference(key as PreferenceKeyWithDefault<Any?>, value)
+            }
          )
       }
    }
@@ -69,61 +88,91 @@ class ToolsScreen(
 
 @Composable
 private fun ToolsScreenContent(
-   appVersion: String,
+   state: ToolsState,
    loggingTransmissionState: Outcome<Uri?>?,
    openPermissions: () -> Unit,
    startLogSaving: () -> Unit,
    notifyLogIntentSent: () -> Unit,
+   updatePreference: (PreferenceKeyWithDefault<*>, Any?) -> Unit,
 ) {
-   LazyVerticalGrid(
-      GridCells.Adaptive(160.dp),
-      horizontalArrangement = Arrangement.spacedBy(16.dp),
-      verticalArrangement = Arrangement.spacedBy(16.dp),
-      contentPadding = WindowInsets.safeDrawing.asPaddingValues(),
-      modifier = Modifier
-         .padding(horizontal = 16.dp)
-         .fillMaxSize()
+   CompositionLocalProvider(
+      LocalPreferenceTheme provides preferenceTheme(
+         verticalSpacing = 0.dp,
+         padding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+      )
    ) {
-      item {
-         ToolButton(openPermissions, R.drawable.permissions, R.string.permissions)
-      }
+      LazyVerticalGrid(
+         GridCells.Adaptive(160.dp),
+         horizontalArrangement = Arrangement.spacedBy(16.dp),
+         verticalArrangement = Arrangement.spacedBy(16.dp),
+         contentPadding = WindowInsets.safeDrawing.asPaddingValues(),
+         modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxSize()
+      ) {
+         item {
+            ToolButton(openPermissions, R.drawable.permissions, R.string.permissions)
+         }
 
-      item {
-         ErrorAlertDialog(loggingTransmissionState)
+         item {
+            ErrorAlertDialog(loggingTransmissionState)
 
-         if (loggingTransmissionState is Outcome.Progress<*>) {
-            CircularProgressIndicator(
-               Modifier
-                  .size(60.dp)
-                  .wrapContentWidth()
-            )
-         } else {
-            ToolButton(startLogSaving, R.drawable.logs, R.string.save_logs)
+            if (loggingTransmissionState is Outcome.Progress<*>) {
+               CircularProgressIndicator(
+                  Modifier
+                     .size(60.dp)
+                     .wrapContentWidth()
+               )
+            } else {
+               ToolButton(startLogSaving, R.drawable.logs, R.string.save_logs)
 
-            val context = LocalContext.current
-            SideEffect {
-               loggingTransmissionState?.data?.let { targetUri ->
-                  val activityIntent = Intent(Intent.ACTION_SEND)
-                  activityIntent.putExtra(Intent.EXTRA_STREAM, targetUri)
-                  activityIntent.setType("application/zip")
+               val context = LocalContext.current
+               SideEffect {
+                  loggingTransmissionState?.data?.let { targetUri ->
+                     val activityIntent = Intent(Intent.ACTION_SEND)
+                     activityIntent.putExtra(Intent.EXTRA_STREAM, targetUri)
+                     activityIntent.setType("application/zip")
 
-                  activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                  activityIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                     activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                     activityIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
-                  context.startActivity(Intent.createChooser(activityIntent, null))
-                  notifyLogIntentSent()
+                     context.startActivity(Intent.createChooser(activityIntent, null))
+                     notifyLogIntentSent()
+                  }
                }
             }
          }
-      }
 
-      item(span = { GridItemSpan(maxLineSpan) }) {
-         Text(
-            stringResource(R.string.version, appVersion),
-            Modifier
-               .fillMaxWidth()
-               .wrapContentWidth(Alignment.CenterHorizontally)
-         )
+         item(span = { GridItemSpan(maxLineSpan) }) {
+            SwitchPreference(
+               state.preferences[GlobalPreferenceKeys.muteWatch],
+               onValueChange = {
+                  updatePreference(GlobalPreferenceKeys.muteWatch, it)
+               },
+               title = { Text(stringResource(R.string.setting_mute_watch)) },
+               summary = { Text(stringResource(R.string.setting_mute_watch_description)) }
+            )
+         }
+
+         item(span = { GridItemSpan(maxLineSpan) }) {
+            SwitchPreference(
+               state.preferences[GlobalPreferenceKeys.mutePhone],
+               onValueChange = {
+                  updatePreference(GlobalPreferenceKeys.mutePhone, it)
+               },
+               title = { Text(stringResource(R.string.setting_mute_phone)) },
+               summary = { Text(stringResource(R.string.setting_mute_phone_description)) }
+            )
+         }
+
+         item(span = { GridItemSpan(maxLineSpan) }) {
+            Text(
+               stringResource(R.string.version, state.versionName),
+               Modifier
+                  .fillMaxWidth()
+                  .wrapContentWidth(Alignment.CenterHorizontally)
+            )
+         }
       }
    }
 }
@@ -149,10 +198,12 @@ private fun ToolButton(onClick: () -> Unit, icon: Int, text: Int) {
 internal fun ToolsScreenPreview() {
    PreviewTheme {
       ToolsScreenContent(
-         appVersion = "1.0.0-alpha07",
+         state = ToolsState("1.0.0-alpha07", emptyPreferences()),
          loggingTransmissionState = Outcome.Success(null),
          openPermissions = {},
-         startLogSaving = {}
-      ) {}
+         startLogSaving = {},
+         notifyLogIntentSent = {},
+         updatePreference = { _, _ -> },
+      )
    }
 }

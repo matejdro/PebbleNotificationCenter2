@@ -22,6 +22,8 @@ dependencies {
    api(libs.kotlinova.navigation)
 
    implementation(projects.commonCompose)
+   implementation(projects.rules.api)
    implementation(libs.androidx.core)
+   implementation(libs.composePreference)
    implementation(libs.dispatch)
 }

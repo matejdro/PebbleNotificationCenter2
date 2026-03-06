@@ -3,4 +3,10 @@
     <string name="permissions">Permissions</string>
     <string name="version">Notification Center version %1$s</string>
     <string name="save_logs">Save logs</string>
+    <string name="setting_mute_watch">Mute watch</string>
+    <string name="setting_mute_watch_description">When enabled, watch will not vibrate for any notifications</string>
+    <string name="setting_mute_phone">Mute phone</string>
+    <string name="setting_mute_phone_description">When enabled and the watch is connected, phone will not vibrate or make sounds
+        for any notifications
+    </string>
 </resources>

@@ -1,7 +1,9 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import android.content.Context
+import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
 import com.matejdro.notificationcenter.rules.RuleOption
 import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.bluetooth.WatchSyncer
@@ -14,6 +16,7 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import kotlinx.coroutines.flow.first
 import logcat.logcat
 import java.util.concurrent.atomic.AtomicReference
 
@@ -25,6 +28,7 @@ class NotificationProcessor(
    private val watchSyncer: WatchSyncer,
    private val openController: WatchappOpenController,
    private val ruleResolver: RuleResolver,
+   private val globalPreferenceStore: DataStore<Preferences>,
 ) : NotificationRepository {
    private val notifications = HashMap<Int, ProcessedNotification>()
    private val notificationsByKey = HashMap<String, ProcessedNotification>()
@@ -112,7 +116,7 @@ class NotificationProcessor(
    }
 
    @Suppress("CyclomaticComplexMethod", "CognitiveComplexMethod") // Lots of successive checks
-   private fun getVibrationPattern(
+   private suspend fun getVibrationPattern(
       previousNotification: ProcessedNotification?,
       notification: ParsedNotification,
       suppressVibration: Boolean,
@@ -132,6 +136,11 @@ class NotificationProcessor(
 
       if (suppressVibration) {
          logcat { "Not vibrating: suppressVibration flag" }
+         return null
+      }
+
+      if (globalPreferenceStore.data.first()[GlobalPreferenceKeys.muteWatch]) {
+         logcat { "Not vibrating: watch muted" }
          return null
       }
 
