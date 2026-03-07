@@ -62,11 +62,11 @@ class ToolsScreen(
 ) : Screen<ToolsScreenKey>() {
    @Composable
    override fun Content(key: ToolsScreenKey) {
-      val stateOutcome = viewModel.appVersion.collectAsStateWithLifecycle().value
+      val stateOutcome = viewModel.appVersion.collectAsStateWithLifecycle()
       val logSaveStatus = viewModel.logSave.collectAsStateWithLifecycleAndBlinkingPrevention().value
 
       ProgressErrorSuccessScaffold(
-         stateOutcome,
+         stateOutcome::value,
          Modifier
             .fillMaxSize()
             .safeDrawingPadding()

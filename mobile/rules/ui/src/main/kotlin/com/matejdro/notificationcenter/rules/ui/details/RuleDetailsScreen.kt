@@ -57,7 +57,7 @@ class RuleDetailsScreen(
    override fun Content(key: RuleDetailsScreenKey) {
       val windowSizeClass = calculateWindowSizeClass(LocalContext.current.requireActivity())
 
-      val stateOutcome by viewModel.uiState.collectAsState()
+      val stateOutcome = viewModel.uiState.collectAsState()
 
       val renameDialog = renameDialog(navigator, { viewModel.renameRule(it) })
       val copyDialog = copyDialog(navigator, { viewModel.copyRule(it) })
@@ -72,7 +72,7 @@ class RuleDetailsScreen(
       var showDeleteConfirmation by remember { mutableStateOf(false) }
       if (showDeleteConfirmation) {
          DeleteDialog(
-            stateOutcome,
+            stateOutcome.value,
             { showDeleteConfirmation = false },
             {
                viewModel.deleteRule()
@@ -81,18 +81,18 @@ class RuleDetailsScreen(
       }
 
       ProgressErrorSuccessScaffold(
-         stateOutcome,
+         stateOutcome::value,
          Modifier.safeDrawingPadding(),
          errorText = { it.ruleUserFriendlyMessage() }
-      ) {
+      ) { state ->
          RuleDetailsScreenContent(
-            it,
+            state,
             windowSizeClass.widthSizeClass,
             rename = {
-               renameDialog.trigger(stateOutcome.data?.ruleMetadata?.name.orEmpty())
+               renameDialog.trigger(state.ruleMetadata.name.orEmpty())
             },
             copy = {
-               copyDialog.trigger(stateOutcome.data?.ruleMetadata?.name.orEmpty())
+               copyDialog.trigger(state.ruleMetadata.name.orEmpty())
             },
             delete = {
                showDeleteConfirmation = true
@@ -106,9 +106,9 @@ class RuleDetailsScreen(
             },
             changeRegex = { index, whitelist ->
                val regexText = if (whitelist) {
-                  stateOutcome.data?.whitelistRegexes?.elementAtOrNull(index)
+                  state.whitelistRegexes.elementAtOrNull(index)
                } else {
-                  stateOutcome.data?.blacklistRegexes?.elementAtOrNull(index)
+                  state.blacklistRegexes.elementAtOrNull(index)
                } ?: return@RuleDetailsScreenContent
 
                editRegexDialog.trigger(EditRegexData(whitelist, regexText, index))

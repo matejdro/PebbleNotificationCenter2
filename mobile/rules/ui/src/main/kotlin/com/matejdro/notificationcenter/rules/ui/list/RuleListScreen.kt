@@ -70,7 +70,8 @@ class RuleListScreen(
 ) : Screen<RuleListScreenKey>() {
    @Composable
    override fun Content(key: RuleListScreenKey) {
-      val stateOutcome = viewModel.uiState.collectAsStateWithLifecycleAndBlinkingPrevention().value
+      val stateOutcome = viewModel.uiState.collectAsStateWithLifecycleAndBlinkingPrevention()
+
       val addDialog = navigator.rememberNavigationPopup(
          navigationKey = { _: Unit, resultKey -> NameEntryScreenKey(getString(R.string.new_rule), resultKey) },
          onResult = {
@@ -96,7 +97,10 @@ class RuleListScreen(
          },
       )
 
-      ProgressErrorSuccessScaffold(stateOutcome, modifier = Modifier.safeDrawingPadding()) { state ->
+      ProgressErrorSuccessScaffold(
+         stateOutcome::value,
+         errorProgressModifier = Modifier.safeDrawingPadding()
+      ) { state ->
          RuleListScreenContent(
             state,
             addEmptyRule = { addDialog.trigger() },
