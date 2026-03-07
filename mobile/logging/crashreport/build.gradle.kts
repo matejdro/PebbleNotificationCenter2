@@ -6,9 +6,7 @@ plugins {
 android {
 
    namespace = "com.matejdro.pebblenotificationcenter.crashreport"
-   buildFeatures {
-      androidResources = true
-   }
+   androidResources.enable = true
 }
 
 dependencies {
