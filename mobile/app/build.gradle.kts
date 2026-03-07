@@ -2,7 +2,7 @@ plugins {
    androidAppModule
    compose
    navigation
-   parcelize
+   serialization
    showkase
    sqldelight
 }
@@ -142,7 +142,6 @@ dependencies {
    implementation(libs.kotlinova.navigation.navigation3)
    implementation(libs.logcat)
    implementation(libs.pebblekit)
-   implementation(libs.simpleStack)
    implementation(libs.sqldelight.android)
    implementation(libs.tinylog.api)
 }

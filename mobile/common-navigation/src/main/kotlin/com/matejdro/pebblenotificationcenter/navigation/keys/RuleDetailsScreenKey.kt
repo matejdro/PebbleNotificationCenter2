@@ -2,7 +2,7 @@ package com.matejdro.pebblenotificationcenter.navigation.keys
 
 import com.matejdro.pebblenotificationcenter.navigation.keys.base.BaseScreenKey
 import com.matejdro.pebblenotificationcenter.navigation.keys.base.DetailKey
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-@Parcelize
+@Serializable
 data class RuleDetailsScreenKey(val id: Int) : BaseScreenKey(), DetailKey

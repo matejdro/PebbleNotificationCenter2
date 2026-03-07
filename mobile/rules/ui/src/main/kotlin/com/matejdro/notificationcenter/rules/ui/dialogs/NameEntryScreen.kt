@@ -1,7 +1,6 @@
 package com.matejdro.notificationcenter.rules.ui.dialogs
 
 import android.annotation.SuppressLint
-import android.os.Parcelable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,14 +19,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.window.DialogProperties
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.notificationcenter.rules.ui.R
 import com.matejdro.pebblenotificationcenter.ui.components.AlertDialogInnerContent
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
-import kotlinx.parcelize.IgnoredOnParcel
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import si.inova.kotlinova.compose.result.LocalResultPassingStore
 import si.inova.kotlinova.compose.result.ResultKey
 import si.inova.kotlinova.navigation.instructions.goBack
@@ -177,7 +174,7 @@ internal fun NameEntryScreenBlankPreview() {
    }
 }
 
-@Parcelize
+@Serializable
 data class NameEntryScreenKey(
    val title: String,
    val result: ResultKey<Result>,
@@ -185,15 +182,13 @@ data class NameEntryScreenKey(
    val thirdButtonText: String? = null,
    val enableAutocorrect: Boolean = true,
 ) : ScreenKey(), DialogKey {
-   @IgnoredOnParcel
-   override val dialogProperties: DialogProperties = DialogProperties()
 
-   @Parcelize
-   sealed class Result : Parcelable {
-      @Parcelize
+   @Serializable
+   sealed class Result {
+      @Serializable
       data object ThirdButtonClicked : Result()
 
-      @Parcelize
+      @Serializable
       data class Text(val text: String) : Result()
    }
 }

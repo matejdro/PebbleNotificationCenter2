@@ -3,7 +3,7 @@ plugins {
    compose
    di
    navigation
-   parcelize
+   serialization
    showkase
    unmock
 }
