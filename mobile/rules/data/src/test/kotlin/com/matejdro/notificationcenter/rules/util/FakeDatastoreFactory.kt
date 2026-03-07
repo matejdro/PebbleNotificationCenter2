@@ -3,9 +3,8 @@ package com.matejdro.notificationcenter.rules.util
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
+import com.matejdro.notificationcenter.common.test.InMemoryDataStore
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 
 class FakeDatastoreFactory : DatastoreFactory {
    override fun createDatastore(
@@ -13,20 +12,5 @@ class FakeDatastoreFactory : DatastoreFactory {
       name: String,
    ): DataStore<Preferences> {
       return InMemoryDataStore(emptyPreferences())
-   }
-}
-
-/**
- * Data store that stores its data in memory. Used for testing.
- */
-private class InMemoryDataStore<T>(defaultValue: T) : DataStore<T> {
-   override val data = MutableStateFlow(defaultValue)
-
-   override suspend fun updateData(transform: suspend (t: T) -> T): T {
-      data.update {
-         transform(it)
-      }
-
-      return data.value
    }
 }
