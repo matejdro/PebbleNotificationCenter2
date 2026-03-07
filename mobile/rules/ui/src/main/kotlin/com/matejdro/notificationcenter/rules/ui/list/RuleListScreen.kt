@@ -99,7 +99,7 @@ class RuleListScreen(
 
       ProgressErrorSuccessScaffold(
          stateOutcome::value,
-         errorProgressModifierChanges = Modifier.safeDrawingPadding()
+         errorProgressModifier = Modifier.safeDrawingPadding()
       ) { state ->
          RuleListScreenContent(
             state,
