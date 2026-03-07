@@ -10,7 +10,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class ShowkaseLauncherImpl @Inject constructor() : ShowkaseLauncher {
+@Inject
+class ShowkaseLauncherImpl : ShowkaseLauncher {
    override fun launch(context: Context) {
       context.startActivity(Showkase.getBrowserIntent(context))
    }
