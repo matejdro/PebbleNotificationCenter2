@@ -1,56 +1,56 @@
 [versions]
 accompanist = "0.37.3"
+android-securityLints = "1.0.4"
 # See https://developer.android.com/jetpack/androidx/releases/compose-kotlin
 androidGradleCacheFix = "3.0.2"
 androidGradlePlugin = "8.13.2"
-android-securityLints = "1.0.4"
-androidx-activity-compose = "1.11.0"
-androidx-compose-material3 = "1.3.2"
-androidx-compose-runtime = "1.9.2"
+androidx-activity-compose = "1.12.4"
+androidx-compose-material3 = "1.4.0"
+androidx-compose-runtime = "1.10.4"
 androidx-core = "1.17.0"
-androidx-core-splashscreen = "1.0.1"
-androidx-datastore = "1.1.7"
-androidx-lifecycle = "2.9.4"
-androidx-navigation3 = "1.0.0"
+androidx-core-splashscreen = "1.2.0"
+androidx-datastore = "1.2.0"
+androidx-lifecycle = "2.10.0"
+androidx-navigation3 = "1.0.1"
 androidx-startup = "1.2.0"
 androidx-test-core = "1.7.0"
 androidx-test-runner = "1.7.0"
-androidx-workManager = "2.11.0"
-coil = "3.3.0"
+androidx-workManager = "2.11.1"
+coil = "3.4.0"
 composeDnd = "0.4.0"
-composePreference = "2.1.0"
+composePreference = "2.1.1"
 dependencyAnalysis = "3.5.1"
 desugarJdkLibs = "2.1.5"
 detekt = "2.0.0-alpha.2"
-detekt-compose = "0.4.27"
+detekt-compose = "0.5.6"
 dispatch = "1.0.0-beta10"
 # @keep used in kts scripts directly
 jacoco = "0.8.14"
+junit = "6.0.3"
 junit4 = "4.13.2"
-junit4-parameterinjector = "1.19"
-junit = "6.0.0"
-kermit = "2.0.4"
-kotest = "6.0.3"
-kotlin = "2.3.0"
+junit4-parameterinjector = "1.21"
+kermit = "2.1.0"
+kotest = "6.1.3"
+kotlin = "2.3.10"
 kotlin-coroutines = "1.10.2"
 kotlinova = "4.0.0-alpha14"
 ksp = "2.3.6"
 logcat = "0.4"
 metro = "0.10.1"
 moduleGraphAssert = "2.9.0"
-okio = "3.16.0"
-orgJson = "20250517"
-pebblekit = "0.1.0"
+okio = "3.16.4"
+orgJson = "20251224"
 paparazzi = "2.0.0-alpha04"
+pebblekit = "0.1.0"
 rebugger = "1.0.1"
 showkase = "1.0.5"
-simpleStack = "2.9.0"
-sqldelight = "2.1.0"
+simpleStack = "2.9.1"
+sqldelight = "2.2.1"
 tinylog = "2.7.0"
 turbine = "1.2.1"
 unmock-androidJar = "16-robolectric-13921718"
 unmock-plugin = "0.9.0"
-versionCatalogUpdate = "1.0.1"
+versionCatalogUpdate = "1.1.0"
 
 [libraries]
 accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive", version.ref = "accompanist" }
@@ -83,7 +83,7 @@ androidx-navigation3 = { module = "androidx.navigation3:navigation3-ui", version
 androidx-startup = { module = "androidx.startup:startup-runtime", version.ref = "androidx-startup" }
 androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test-core" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test-runner" }
-androidx-workManager = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidx-workManager" }
+androidx-workManager = { module = "androidx.work:work-runtime-ktx", version.ref = "androidx-workManager" }
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 composeDnd = { module = "com.mohamedrejeb.dnd:compose-dnd", version.ref = "composeDnd" }
@@ -96,11 +96,11 @@ detekt-ktlint = { module = "dev.detekt:detekt-rules-ktlint-wrapper", version.ref
 detekt-plugin = { module = "dev.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 dispatch = { module = "com.rickbusarow.dispatch:dispatch-core", version.ref = "dispatch" }
 dispatch-test = { module = "com.rickbusarow.dispatch:dispatch-test", version.ref = "dispatch" }
-junit4 = { module = "junit:junit", version.ref = "junit4" }
-junit4-parameterinjector = { module = "com.google.testparameterinjector:test-parameter-injector", version.ref = "junit4-parameterinjector" }
 junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit" }
+junit4 = { module = "junit:junit", version.ref = "junit4" }
+junit4-parameterinjector = { module = "com.google.testparameterinjector:test-parameter-injector", version.ref = "junit4-parameterinjector" }
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
@@ -124,9 +124,9 @@ okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 orgJson = { module = "org.json:json", version.ref = "orgJson" }
 pebblekit = { module = "io.rebble.pebblekit2:client", version.ref = "pebblekit" }
 pebblekit-api = { module = "io.rebble.pebblekit2:client-api", version.ref = "pebblekit" }
-pebblekit-ui = { module = "io.rebble.pebblekit2:client-ui", version.ref = "pebblekit" }
 pebblekit-common = { module = "io.rebble.pebblekit2:common", version.ref = "pebblekit" }
 pebblekit-common-api = { module = "io.rebble.pebblekit2:common-api", version.ref = "pebblekit" }
+pebblekit-ui = { module = "io.rebble.pebblekit2:client-ui", version.ref = "pebblekit" }
 rebugger = { module = "io.github.theapache64:rebugger", version.ref = "rebugger" }
 showkase = { module = "com.airbnb.android:showkase", version.ref = "showkase" }
 showkase-processor = { module = "com.airbnb.android:showkase-processor", version.ref = "showkase" }
@@ -141,7 +141,6 @@ tinylog-impl = { module = "org.tinylog:tinylog-impl", version.ref = "tinylog" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 unmock-androidJar = { module = "org.robolectric:android-all", version.ref = "unmock-androidJar" }
 unmock-plugin = { module = "com.github.bjoernq:unmockplugin", version.ref = "unmock-plugin" }
-
 
 [plugins]
 detekt = { id = "dev.detekt", version.ref = "detekt" }
