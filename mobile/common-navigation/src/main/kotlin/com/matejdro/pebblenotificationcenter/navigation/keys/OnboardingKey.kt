@@ -1,7 +1,7 @@
 package com.matejdro.pebblenotificationcenter.navigation.keys
 
 import com.matejdro.pebblenotificationcenter.navigation.keys.base.BaseScreenKey
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-@Parcelize
+@Serializable
 data object OnboardingKey : BaseScreenKey()

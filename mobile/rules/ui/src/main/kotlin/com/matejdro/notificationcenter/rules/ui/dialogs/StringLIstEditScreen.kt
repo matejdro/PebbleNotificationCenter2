@@ -31,14 +31,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.notificationcenter.rules.ui.R
 import com.matejdro.pebblenotificationcenter.ui.components.AlertDialogInnerContent
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
-import kotlinx.parcelize.IgnoredOnParcel
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import si.inova.kotlinova.compose.result.LocalResultPassingStore
 import si.inova.kotlinova.compose.result.ResultKey
 import si.inova.kotlinova.navigation.instructions.goBack
@@ -190,12 +188,9 @@ internal fun StringListAddFieldPreview() {
    }
 }
 
-@Parcelize
+@Serializable
 data class StringListScreenKey(
    val title: String,
    val initialList: List<String>,
    val result: ResultKey<List<String>>,
-) : ScreenKey(), DialogKey {
-   @IgnoredOnParcel
-   override val dialogProperties: DialogProperties = DialogProperties()
-}
+) : ScreenKey(), DialogKey

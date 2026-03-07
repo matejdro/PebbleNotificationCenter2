@@ -25,7 +25,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.notificationcenter.rules.ui.R
 import com.matejdro.pebblenotificationcenter.notification.NotificationServiceController
@@ -35,8 +34,7 @@ import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.parcelize.IgnoredOnParcel
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import si.inova.kotlinova.compose.result.LocalResultPassingStore
 import si.inova.kotlinova.compose.result.ResultKey
 import si.inova.kotlinova.navigation.instructions.goBack
@@ -209,11 +207,8 @@ internal fun ChannelSelectionSelectAllChosenPreview() {
    }
 }
 
-@Parcelize
+@Serializable
 data class ChannelSelectionScreenKey(
    val pkg: String,
    val result: ResultKey<List<String>>,
-) : ScreenKey(), DialogKey {
-   @IgnoredOnParcel
-   override val dialogProperties: DialogProperties = DialogProperties()
-}
+) : ScreenKey(), DialogKey

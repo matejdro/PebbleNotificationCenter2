@@ -33,7 +33,6 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.matejdro.notificationcenter.rules.ui.R
@@ -44,8 +43,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import kotlinx.parcelize.IgnoredOnParcel
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import si.inova.kotlinova.compose.result.LocalResultPassingStore
 import si.inova.kotlinova.compose.result.ResultKey
 import si.inova.kotlinova.navigation.instructions.goBack
@@ -239,11 +237,8 @@ internal fun AppSelectionScreenPreview() {
    }
 }
 
-@Parcelize
+@Serializable
 data class AppSelectionScreenKey(
    val result: ResultKey<String>,
    val showAnyApp: Boolean,
-) : ScreenKey(), DialogKey {
-   @IgnoredOnParcel
-   override val dialogProperties: DialogProperties = DialogProperties()
-}
+) : ScreenKey(), DialogKey

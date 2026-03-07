@@ -71,7 +71,7 @@ class RuleDetailsViewModelTest {
       viewModel.onServiceRegistered()
       runCurrent()
 
-      viewModel.uiState.value.shouldBeErrorWith(exceptionType = RuleMissingException::class.java)
+      viewModel.uiState.value.shouldBeErrorWith(exceptionType = RuleMissingException::class)
    }
 
    @Test

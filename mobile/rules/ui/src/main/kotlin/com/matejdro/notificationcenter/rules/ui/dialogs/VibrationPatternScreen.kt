@@ -42,7 +42,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import androidx.core.os.bundleOf
@@ -55,8 +54,7 @@ import com.matejdro.pebblenotificationcenter.notification.utils.parseVibrationPa
 import com.matejdro.pebblenotificationcenter.ui.components.AlertDialogInnerContent
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
-import kotlinx.parcelize.IgnoredOnParcel
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import si.inova.kotlinova.compose.result.LocalResultPassingStore
 import si.inova.kotlinova.compose.result.ResultKey
 import si.inova.kotlinova.navigation.instructions.goBack
@@ -290,13 +288,9 @@ internal fun VibrationPatternScreenBlankPreview() {
    }
 }
 
-@Parcelize
+@Serializable
 data class VibrationPatternScreenKey(
    val existingPattern: String,
    val result: ResultKey<String>,
-) : ScreenKey(), DialogKey {
-   @IgnoredOnParcel
-   override val dialogProperties: DialogProperties = DialogProperties()
-}
-
+) : ScreenKey(), DialogKey
 private const val LONG_VIBRATION = 10_000L

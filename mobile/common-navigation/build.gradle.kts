@@ -1,7 +1,7 @@
 plugins {
    androidLibraryModule
    compose
-   parcelize
+   serialization
 }
 
 dependencies {

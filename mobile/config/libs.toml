@@ -33,7 +33,8 @@ kermit = "2.1.0"
 kotest = "6.1.3"
 kotlin = "2.3.10"
 kotlin-coroutines = "1.10.2"
-kotlinova = "4.0.0-alpha14"
+kotlin-serializationRuntime = "1.10.0"
+kotlinova = "4.0.0-alpha16"
 ksp = "2.3.6"
 logcat = "0.4"
 metro = "0.10.1"
@@ -44,7 +45,6 @@ paparazzi = "2.0.0-alpha04"
 pebblekit = "0.1.0"
 rebugger = "1.0.1"
 showkase = "1.0.5"
-simpleStack = "2.9.1"
 sqldelight = "2.2.1"
 tinylog = "2.7.0"
 turbine = "1.2.1"
@@ -107,6 +107,8 @@ kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", 
 kotlin-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlin-coroutines" }
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-plugin-compose = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
+kotlin-plugin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
+kotlin-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlin-serializationRuntime" }
 kotlinova-compose = { module = "si.inova.kotlinova:compose", version.ref = "kotlinova" }
 kotlinova-core = { module = "si.inova.kotlinova:core", version.ref = "kotlinova" }
 kotlinova-core-test = { module = "si.inova.kotlinova:core-test", version.ref = "kotlinova" }
@@ -130,7 +132,6 @@ pebblekit-ui = { module = "io.rebble.pebblekit2:client-ui", version.ref = "pebbl
 rebugger = { module = "io.github.theapache64:rebugger", version.ref = "rebugger" }
 showkase = { module = "com.airbnb.android:showkase", version.ref = "showkase" }
 showkase-processor = { module = "com.airbnb.android:showkase-processor", version.ref = "showkase" }
-simpleStack = { module = "com.github.Zhuinden:simple-stack", version.ref = "simpleStack" }
 sqldelight-android = { module = "app.cash.sqldelight:android-driver", version.ref = "sqldelight" }
 sqldelight-async = { module = "app.cash.sqldelight:async-extensions", version.ref = "sqldelight" }
 sqldelight-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
