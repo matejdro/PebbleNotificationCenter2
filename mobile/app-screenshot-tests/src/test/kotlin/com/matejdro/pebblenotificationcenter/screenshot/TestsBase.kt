@@ -1,10 +1,8 @@
-// Package is intentionally short to reduce image file name
-package screenshot
+package com.matejdro.pebblenotificationcenter.screenshot
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalInspectionMode
-import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.DeviceConfig.Companion.PIXEL_5
 import app.cash.paparazzi.Paparazzi
 import com.airbnb.android.showkase.models.Showkase
@@ -14,7 +12,6 @@ import com.android.resources.NightMode
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import com.google.testing.junit.testparameterinjector.TestParameterValuesProvider
 import com.matejdro.pebblenotificationcenter.showkase.getMetadata
-import org.junit.Before
 import org.junit.Rule
 import org.junit.runner.RunWith
 
@@ -23,29 +20,31 @@ import org.junit.runner.RunWith
 abstract class TestsBase {
    @get:Rule
    val paparazzi = Paparazzi(
-      deviceConfig = DeviceConfig.PIXEL_5,
+      deviceConfig = PIXEL_5,
       theme = "android:Theme.Material.Light.NoActionBar",
       maxPercentDifference = 0.0,
       showSystemUi = false,
-      renderingMode = SessionParams.RenderingMode.SHRINK
+      renderingMode = SessionParams.RenderingMode.SHRINK,
+      snapshotHandler = determinedHandlerWithRenaming(maxPercentDifference = 0.0),
    )
 
    object PreviewProvider : TestParameterValuesProvider() {
       override fun provideValues(context: Context): List<*> {
          val splitIndex = context.getOtherAnnotation(SplitIndex::class.java).index
-         val whitelistedPackages = Splits.paparazziSplits.elementAt(splitIndex)
+         val totalSplits = System.getProperty("maxParallelForks")?.toInt() ?: error("Missing maxParallelForks property")
 
-         val components = Showkase.getMetadata().componentList
-            .filter { showkaseBrowserComponent ->
-               val isInSplit = if (whitelistedPackages.isNotEmpty()) {
-                  whitelistedPackages.any { showkaseBrowserComponent.componentKey.startsWith(it) }
-               } else {
-                  val blacklistedPackages = Splits.paparazziSplits.flatten()
-                  blacklistedPackages.all { !showkaseBrowserComponent.componentKey.startsWith(it) }
-               }
+         val allComponents = Showkase.getMetadata().componentList
+         val perSplit = allComponents.size / totalSplits
 
-               isInSplit && showkaseBrowserComponent.group != "Default Group"
-            }
+         val start = splitIndex * perSplit
+         val end = if (splitIndex == totalSplits - 1) {
+            allComponents.size
+         } else {
+            start + perSplit
+         }
+
+         val components = allComponents
+            .subList(start, end)
             .map { TestKey(it) }
 
          for (i in components.indices) {
@@ -68,13 +67,6 @@ abstract class TestsBase {
       override fun toString(): String = key
    }
 
-   @Before
-   fun setUp() {
-      // Note: if you have lottie in your project, uncomment this
-      // Workaround for the https://github.com/cashapp/paparazzi/issues/630
-      // LottieTask.EXECUTOR = Executor(Runnable::run)
-   }
-
    protected open fun test(
 
       testKey: TestKey,
@@ -84,16 +76,18 @@ abstract class TestsBase {
             testKey.showkaseBrowserComponent.component()
          }
       }
+      val previewName = testKey.toString()
+      require(previewName.isNotBlank()) { "Test name should not be blank for ${testKey.key}" }
 
-      paparazzi.snapshot {
+      paparazzi.snapshot(previewName) {
          composable()
       }
       paparazzi.unsafeUpdateConfig(
-         DeviceConfig.PIXEL_5.copy(
+         PIXEL_5.copy(
             nightMode = NightMode.NIGHT
          )
       )
-      paparazzi.snapshot("night") {
+      paparazzi.snapshot("${previewName}_night") {
          composable()
       }
       paparazzi.unsafeUpdateConfig(
@@ -105,7 +99,7 @@ abstract class TestsBase {
             nightMode = NightMode.NOTNIGHT
          )
       )
-      paparazzi.snapshot("small") {
+      paparazzi.snapshot("${previewName}_small") {
          composable()
       }
       paparazzi.unsafeUpdateConfig(
@@ -113,7 +107,7 @@ abstract class TestsBase {
             fontScale = 1.5f
          )
       )
-      paparazzi.snapshot("largefont") {
+      paparazzi.snapshot("${previewName}_largefont") {
          composable()
       }
    }
