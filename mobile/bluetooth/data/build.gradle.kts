@@ -17,9 +17,9 @@ dependencies {
    implementation(libs.okio)
    implementation(libs.pebblekit.common)
 
-   testImplementation(projects.bluetooth.test)
+   testImplementation(testFixtures(projects.bluetooth.api))
    testImplementation(projects.bucketsync.test)
    testImplementation(projects.bucketsync.data)
-   testImplementation(projects.notification.test)
+   testImplementation(testFixtures(projects.notification.api))
    testImplementation(libs.kotlinova.core.test)
 }

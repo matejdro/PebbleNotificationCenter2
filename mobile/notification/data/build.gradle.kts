@@ -27,8 +27,8 @@ dependencies {
    implementation(libs.kotlin.coroutines)
    implementation(libs.kotlinova.core)
 
-   testImplementation(projects.bluetooth.test)
-   testImplementation(projects.notification.test)
+   testImplementation(testFixtures(projects.bluetooth.api))
+   testImplementation(testFixtures(projects.notification.api))
    testImplementation(testFixtures(projects.rules.api))
    testImplementation(libs.kotlinova.core.test)
 

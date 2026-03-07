@@ -25,8 +25,5 @@ inline val PluginDependenciesSpec.parcelize: PluginDependencySpec
 inline val PluginDependenciesSpec.navigation: PluginDependencySpec
    get() = id("navigation")
 
-inline val PluginDependenciesSpec.testHelpers: PluginDependencySpec
-   get() = id("test-module")
-
 inline val PluginDependenciesSpec.testFixtures: PluginDependencySpec
    get() = id("test-fixtures")
