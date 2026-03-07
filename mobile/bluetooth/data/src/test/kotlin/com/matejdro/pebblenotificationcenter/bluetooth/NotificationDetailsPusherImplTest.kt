@@ -121,9 +121,9 @@ class NotificationDetailsPusherImplTest {
    fun `Cancel previous packets when new request is made`() = scope.runTest {
       setup()
 
-      repeat(3) {
+      repeat(3) { inex ->
          notificationRepository.putNotification(
-            it,
+            inex,
             ProcessedNotification(
                ParsedNotification(
                   "",

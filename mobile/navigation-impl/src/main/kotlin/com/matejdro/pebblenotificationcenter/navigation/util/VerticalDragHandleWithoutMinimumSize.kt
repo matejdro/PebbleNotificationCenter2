@@ -41,7 +41,11 @@ internal fun VerticalDragHandleWithoutMinimumSize(
    Box(
       modifier = modifier
          .hoverable(interactionSource)
-         .pressable(interactionSource, { isPressed = true }, { isPressed = false })
+         .pressable(
+            interactionSource = interactionSource,
+            onPressed = { isPressed = true },
+            onReleasedOrCancelled = { isPressed = false }
+         )
          .graphicsLayer {
             shape =
                when {

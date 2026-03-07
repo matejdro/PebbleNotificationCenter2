@@ -802,6 +802,10 @@ potential-bugs:
       # Order of the Width/height are generally well known, it's more noise to make it explicit
       - androidx.compose.ui.layout.MeasureScope.layout
       - androidx.compose.ui.unit.Constraints.Companion.fixed
+      - androidx.compose.ui.text.TextRange.<init>
+      - androidx.compose.ui.text.TextRange
+      - com.matejdro.notificationcenter.rules.keys.StringPreferenceKeyWithDefault.<init>
+      - com.matejdro.notificationcenter.rules.keys.NullableStringPreferenceKeyWithDefault.<init>
     excludes: *testFolders
     ignoreAnnotated:
       - "Preview"

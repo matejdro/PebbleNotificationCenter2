@@ -83,7 +83,7 @@ class TabListDetailScene(
       val mainContent: @Composable (() -> Unit) = {
          if (input.listEntry != null) {
             if (input.showListDetail) {
-               ListDetail(input.listEntry, input.detailEntry, preferences)
+               ListDetail(listEntry = input.listEntry, detailEntry = input.detailEntry, preferences = preferences)
             } else {
                input.listEntry.Content()
             }
@@ -235,9 +235,9 @@ private fun ListDetail(
       }
 
       TwoPane(
-         if (flipListDetail) detailPane else listEntry::Content,
-         if (flipListDetail) listEntry::Content else detailPane,
-         twoPaneStrategy,
+         first = if (flipListDetail) detailPane else listEntry::Content,
+         second = if (flipListDetail) listEntry::Content else detailPane,
+         strategy = twoPaneStrategy,
          displayFeatures = displayFeatures,
          modifier = Modifier
             .fillMaxSize()

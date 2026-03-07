@@ -43,7 +43,12 @@ private class PredictiveBackFadeFloatAnimationSpec(
       // Animation spec that attempts to mimic Google's back preview guidelines as close as possible
       // https://developer.android.com/design/ui/mobile/guides/patterns/predictive-back#back-preview
 
-      val position = tweenSpec.getValueFromNanos(playTimeNanos, 0f, 1f, initialVelocity)
+      val position = tweenSpec.getValueFromNanos(
+         playTimeNanos = playTimeNanos,
+         initialValue = 0f,
+         targetValue = 1f,
+         initialVelocity = initialVelocity
+      )
       return if (targetValue < 0.5f) {
          // We are in "Fade Out" animation. Complete the fade at 35%
          (1f - (position * 2.85f)).coerceAtLeast(0f)

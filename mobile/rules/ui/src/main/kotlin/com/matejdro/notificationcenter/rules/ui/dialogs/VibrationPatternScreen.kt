@@ -1,5 +1,6 @@
 package com.matejdro.notificationcenter.rules.ui.dialogs
 
+import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.os.Build
 import android.os.SystemClock
@@ -35,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -70,18 +72,19 @@ class VibrationPatternScreen(private val navigator: Navigator) : Screen<Vibratio
    override fun Content(key: VibrationPatternScreenKey) {
       val resultPassingStore = LocalResultPassingStore.current
       val context = LocalContext.current
+      val resources = LocalResources.current
 
       VibrationPatternScreenContent(
          key,
-         accept = {
+         accept = { pattern ->
             navigator.goBack()
-            resultPassingStore.sendResult(key.result, it)
+            resultPassingStore.sendResult(key.result, pattern)
          },
          dismiss = { navigator.goBack() },
          test = { pattern ->
             val notification = NotificationCompat.Builder(context, CHANNEL_ID_TESTS)
-               .setContentTitle(context.getString(R.string.vibration_pattern_test))
-               .setContentText(context.getString(R.string.feel_the_new_pattern))
+               .setContentTitle(resources.getString(R.string.vibration_pattern_test))
+               .setContentText(resources.getString(R.string.feel_the_new_pattern))
                .setSmallIcon(R.drawable.ic_watch_vibrate)
                .addExtras(
                   bundleOf(
@@ -257,6 +260,7 @@ private fun VibrationPatternScreenContent(
 @ShowkaseComposable(group = "test")
 @Composable
 @FullScreenPreviews
+@SuppressLint("VisibleForTests") // Previews are sort of tests
 internal fun VibrationPatternScreenPreview() {
    PreviewTheme {
       Box {

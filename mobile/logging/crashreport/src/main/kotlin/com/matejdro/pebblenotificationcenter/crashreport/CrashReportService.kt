@@ -155,7 +155,8 @@ class CrashReportService : Service() {
                   ),
                   PendingIntent.FLAG_IMMUTABLE,
                ),
-            ).build()
+            )
+            .build()
 
          notificationManager.notify(id, notification)
       }

@@ -25,20 +25,23 @@ class NotificationServiceStatusImpl(private val context: Context) : Notification
 
       return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
          context.getSystemService<CompanionDeviceManager>()
-            ?.myAssociations?.isNotEmpty() == true &&
+            ?.myAssociations
+            ?.isNotEmpty() == true &&
             context.getSystemService<NotificationManager>()
                ?.isNotificationListenerAccessGranted(getListenerComponent()) == true
       } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
          @Suppress("DEPRECATION")
          context.getSystemService<CompanionDeviceManager>()
-            ?.associations?.isNotEmpty() == true &&
+            ?.associations
+            ?.isNotEmpty() == true &&
             context.getSystemService<NotificationManager>()
                ?.isNotificationListenerAccessGranted(getListenerComponent()) == true
       } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
          val companionManager = context.getSystemService<CompanionDeviceManager>()
          @Suppress("DEPRECATION")
          companionManager
-            ?.associations?.isNotEmpty() == true && companionManager.hasNotificationAccess(getListenerComponent())
+            ?.associations
+            ?.isNotEmpty() == true && companionManager.hasNotificationAccess(getListenerComponent())
       } else {
          val enabledNotificationListeners = Settings.Secure.getString(
             context.contentResolver,

@@ -57,7 +57,10 @@ class WatchappConnectionImpl(
 
          4u -> {
             if (watchBufferSize > 0) {
-               notificationDetailsPusher.pushNotificationDetails(data.requireUint(1u).toInt(), watchBufferSize)
+               notificationDetailsPusher.pushNotificationDetails(
+                  bucketId = data.requireUint(1u).toInt(),
+                  maxPacketSize = watchBufferSize
+               )
             }
 
             ReceiveResult.Ack
@@ -114,8 +117,8 @@ class WatchappConnectionImpl(
       val menuId = (data[3u] as? PebbleDictionaryItem.UInt32)?.value ?: 0u
       val success = if (menuId == 0u) {
          actionHandler.handleAction(
-            data.requireUint(1u).toInt(),
-            data.requireUint(2u).toInt()
+            notificationId = data.requireUint(1u).toInt(),
+            actionIndex = data.requireUint(2u).toInt()
          )
       } else {
          val submenuType = SubmenuType.entries.elementAtOrNull(menuId.toInt() - 1)
@@ -135,6 +138,9 @@ class WatchappConnectionImpl(
       return if (success) ReceiveResult.Ack else ReceiveResult.Nack
    }
 
+   // Magic numbers are a whole point of this function (protocol constants).
+   // Use is not required for memory-only Buffer
+   @Suppress("MagicNumber", "MissingUseCall")
    private suspend fun pushVibration() {
       val vibrationPattern = notificationRepository.pollNextVibration()
       logcat { "Next vibration after packets change: ${vibrationPattern?.contentToString() ?: "null"}" }

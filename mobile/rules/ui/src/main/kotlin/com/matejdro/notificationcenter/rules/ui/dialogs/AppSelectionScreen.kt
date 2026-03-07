@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
@@ -63,9 +64,9 @@ class AppSelectionScreen(private val navigator: Navigator) : Screen<AppSelection
       AppSelectionScreenContent(
          showAnyApp = key.showAnyApp,
          dismiss = { navigator.goBack() },
-         accept = {
+         accept = { pkgName ->
             navigator.goBack()
-            resultPassingStore.sendResult(key.result, it)
+            resultPassingStore.sendResult(key.result, pkgName)
          }
       )
    }
@@ -79,26 +80,28 @@ private fun AppSelectionScreenContent(
 ) {
    var appList by remember { mutableStateOf<List<App>>(emptyList()) }
 
+   val resources = LocalResources.current
    val context = LocalContext.current
-   LaunchedEffect(context) {
+
+   LaunchedEffect(resources) {
       withContext(Dispatchers.Default) {
          val packageManager = context.packageManager
          val anyAppEntry = if (showAnyApp) {
-            App("", context.getString(R.string.any_app))
+            App(pkg = "", name = resources.getString(R.string.any_app))
          } else {
             null
          }
 
          appList = listOfNotNull(anyAppEntry) + packageManager.getInstalledPackages(0)
-            .mapNotNull {
-               val info = it.applicationInfo ?: return@mapNotNull null
-               App(it.packageName, packageManager.getApplicationLabel(info).toString())
+            .mapNotNull { pkgInfo ->
+               val info = pkgInfo.applicationInfo ?: return@mapNotNull null
+               App(pkg = pkgInfo.packageName, name = packageManager.getApplicationLabel(info).toString())
             }
             .sortedBy { it.name }
       }
    }
 
-   AppSelectionScreenContent(appList, dismiss, accept)
+   AppSelectionScreenContent(appList = appList, dismiss = dismiss, accept = accept)
 }
 
 @Composable

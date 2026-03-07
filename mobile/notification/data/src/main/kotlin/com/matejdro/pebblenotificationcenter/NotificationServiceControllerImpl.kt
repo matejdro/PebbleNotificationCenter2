@@ -73,7 +73,7 @@ class NotificationServiceControllerImpl : NotificationServiceController {
 
       return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
          service.getNotificationChannels(pkg, Process.myUserHandle()).orEmpty().map {
-            LightNotificationChannel(it.id, it.name.toString())
+            LightNotificationChannel(id = it.id, title = it.name.toString())
          }
       } else {
          emptyList()

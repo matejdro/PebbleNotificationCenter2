@@ -77,12 +77,12 @@ internal fun appPickingDialog(
          navigationKey = { showAnyApp: Boolean, resultKey ->
             AppSelectionScreenKey(resultKey, showAnyApp)
          },
-         onResult = {
-            if (it.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-               lastSelectedPkg = it
-               channelPickerDialog.trigger(it)
+         onResult = { pkgName ->
+            if (pkgName.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+               lastSelectedPkg = pkgName
+               channelPickerDialog.trigger(pkgName)
             } else {
-               changeTargetApp(it, emptyList())
+               changeTargetApp(pkgName, emptyList())
             }
          }
       )
@@ -101,13 +101,13 @@ internal fun renameDialog(navigator: Navigator, acceptName: (String) -> Unit): P
             initialText = oldName
          )
       },
-      onResult = {
-         if (it !is NameEntryScreenKey.Result.Text) {
+      onResult = { result ->
+         if (result !is NameEntryScreenKey.Result.Text) {
             return@rememberNavigationPopup
          }
 
-         if (!it.text.isBlank()) {
-            acceptName(it.text)
+         if (!result.text.isBlank()) {
+            acceptName(result.text)
          }
       }
    )
@@ -123,12 +123,12 @@ internal fun copyDialog(navigator: Navigator, acceptName: (String) -> Unit): Pop
             initialText = oldName
          )
       },
-      onResult = {
-         if (it !is NameEntryScreenKey.Result.Text) {
+      onResult = { result ->
+         if (result !is NameEntryScreenKey.Result.Text) {
             return@rememberNavigationPopup
          }
 
-         acceptName(it.text)
+         acceptName(result.text)
       }
    )
 }
@@ -148,12 +148,12 @@ internal fun addRegexDialog(
             enableAutocorrect = false
          )
       },
-      onResult = {
-         if (it !is NameEntryScreenKey.Result.Text) {
+      onResult = { result ->
+         if (result !is NameEntryScreenKey.Result.Text) {
             return@rememberNavigationPopup
          }
 
-         accept(lastWhitelist, it.text)
+         accept(lastWhitelist, result.text)
       }
    )
 
@@ -180,11 +180,11 @@ internal fun editRegexDialog(
             thirdButtonText = getString(R.string.delete_condition)
          )
       },
-      onResult = {
+      onResult = { result ->
          val data = lastData ?: return@rememberNavigationPopup
-         val resultValue = when (it) {
+         val resultValue = when (result) {
             is NameEntryScreenKey.Result.Text -> {
-               it.text
+               result.text
             }
 
             NameEntryScreenKey.Result.ThirdButtonClicked -> null

@@ -117,9 +117,9 @@ class MainActivity : ComponentActivity() {
                      entryDecorators = listOf(
                         rememberSaveableStateHolderNavEntryDecorator(),
                         NavEntryDecorator<ScreenKey>(
-                           decorate = {
+                           decorate = { contentKey ->
                               Surface {
-                                 it.Content()
+                                 contentKey.Content()
                               }
                            }
                         )

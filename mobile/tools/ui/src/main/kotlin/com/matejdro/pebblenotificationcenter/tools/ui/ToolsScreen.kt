@@ -72,11 +72,11 @@ class ToolsScreen(
             .safeDrawingPadding()
       ) { state ->
          ToolsScreenContent(
-            state,
-            logSaveStatus,
-            { navigator.navigateTo(OnboardingKey) },
-            viewModel::getLogs,
-            viewModel::resetLog,
+            state = state,
+            loggingTransmissionState = logSaveStatus,
+            openPermissions = { navigator.navigateTo(OnboardingKey) },
+            startLogSaving = viewModel::getLogs,
+            notifyLogIntentSent = viewModel::resetLog,
             updatePreference = { key, value ->
                @Suppress("UNCHECKED_CAST")
                viewModel.updatePreference(key as PreferenceKeyWithDefault<Any?>, value)
@@ -111,7 +111,7 @@ private fun ToolsScreenContent(
             .fillMaxSize()
       ) {
          item {
-            ToolButton(openPermissions, R.drawable.permissions, R.string.permissions)
+            ToolButton(onClick = openPermissions, icon = R.drawable.permissions, text = R.string.permissions)
          }
 
          item {
@@ -124,7 +124,7 @@ private fun ToolsScreenContent(
                      .wrapContentWidth()
                )
             } else {
-               ToolButton(startLogSaving, R.drawable.logs, R.string.save_logs)
+               ToolButton(onClick = startLogSaving, icon = R.drawable.logs, text = R.string.save_logs)
 
                val context = LocalContext.current
                SideEffect {

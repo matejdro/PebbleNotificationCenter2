@@ -22,7 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
@@ -59,10 +59,10 @@ class ChannelSelectionScreen(
       var channelList by remember<MutableState<List<LightNotificationChannel>>> { mutableStateOf(emptyList()) }
       var selectedChannels by remember<MutableState<List<String>>> { mutableStateOf(listOf("")) }
 
-      val context = LocalContext.current
-      LaunchedEffect(context, notificationServiceController) {
+      val resources = LocalResources.current
+      LaunchedEffect(resources, notificationServiceController) {
          withContext(Dispatchers.Default) {
-            val anyAppEntry = LightNotificationChannel("", context.getString(R.string.select_all))
+            val anyAppEntry = LightNotificationChannel(id = "", title = resources.getString(R.string.select_all))
 
             channelList = listOf(anyAppEntry) +
                notificationServiceController.getNotificationChannels(key.pkg)
@@ -132,9 +132,9 @@ private fun ChannelSelectionScreenContent(
          LazyColumn {
             items(channels) { channel ->
                ChannelItem(
-                  channel,
-                  allSelected || selectedChannels.contains(channel.id),
-                  channel.id.isEmpty() || !allSelected,
+                  channel = channel,
+                  selected = allSelected || selectedChannels.contains(channel.id),
+                  enabled = channel.id.isEmpty() || !allSelected,
                   toggle = {
                      select(channel.id, it)
                   }

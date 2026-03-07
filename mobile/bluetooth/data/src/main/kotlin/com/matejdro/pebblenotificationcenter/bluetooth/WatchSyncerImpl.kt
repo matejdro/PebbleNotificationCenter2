@@ -30,6 +30,9 @@ class WatchSyncerImpl(
       }
    }
 
+   // Magic numbers are a whole point of this function (protocol constants).
+   // Use is not required for memory-only Buffer
+   @Suppress("MagicNumber", "MissingUseCall")
    override suspend fun syncNotification(notification: ProcessedNotification): Int {
       val buffer = Buffer()
 
@@ -93,7 +96,10 @@ class WatchSyncerImpl(
    }
 
    override suspend fun prepareNotificationReadStatus(notification: ProcessedNotification) {
-      bucketSyncRepository.updateBucketFlagsSilently(notification.bucketId.toUByte(), getNotificationFlags(notification))
+      bucketSyncRepository.updateBucketFlagsSilently(
+         id = notification.bucketId.toUByte(),
+         flags = getNotificationFlags(notification)
+      )
    }
 }
 

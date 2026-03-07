@@ -74,13 +74,13 @@ class RuleListScreen(
 
       val addDialog = navigator.rememberNavigationPopup(
          navigationKey = { _: Unit, resultKey -> NameEntryScreenKey(getString(R.string.new_rule), resultKey) },
-         onResult = {
-            if (it !is NameEntryScreenKey.Result.Text) {
+         onResult = { name ->
+            if (name !is NameEntryScreenKey.Result.Text) {
                return@rememberNavigationPopup
             }
 
-            if (!it.text.isBlank()) {
-               viewModel.addRule(it.text)
+            if (!name.text.isBlank()) {
+               viewModel.addRule(name.text)
             }
          }
       )
@@ -113,9 +113,9 @@ class RuleListScreen(
                appPickerDialog.trigger(false)
             },
             setOrder = viewModel::reorder,
-            openDetails = {
+            openDetails = { id ->
                navigator.navigate(
-                  OpenScreenOrReplaceExistingType(RuleDetailsScreenKey(it))
+                  OpenScreenOrReplaceExistingType(RuleDetailsScreenKey(id))
                )
             }
          )
