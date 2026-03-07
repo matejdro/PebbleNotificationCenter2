@@ -136,7 +136,13 @@ jobs:
         run: "uv tool install pebble-tool && (pebble sdk install latest || true)"
         if: "${{ env.BUILD_WATCH == 'true' }}"
       - name: Globally enable build cache and parallel execution
-        run: "mkdir -p ~/.gradle && echo -e 'org.gradle.caching=true\norg.gradle.parallel=true' >> ~/.gradle/gradle.properties"
+        run: |
+          mkdir -p ~/.gradle
+          
+          cat >> ~/.gradle/gradle.properties<< EOF
+          org.gradle.caching=true
+          org.gradle.parallel=true
+          EOF
         if: "${{ env.BUILD_MOBILE == 'true' }}"
       - uses: actions/setup-java@v4
         with:
