@@ -8,8 +8,8 @@ com.zhuinden.simplestack.Backstack
 si.inova.kotlinova.core.time.AndroidDateTimeFormatter
 si.inova.kotlinova.core.time.FakeAndroidDateTimeFormatter
 si.inova.kotlinova.core.outcome.CauseException
-// Technically, only the androidx.datastore.core.DataStore is stable, but it seems it only works with this wildcard
-androidx.datastore.**
+androidx.datastore.core.DataStore<_>
+androidx.datastore.preferences.core.Preferences
 io.rebble.pebblekit2.client.PebbleAndroidAppPicker
 
 // Suspend lamdas
