@@ -154,18 +154,19 @@ jobs:
       # Install extra android platform needed for Paparazzi
       - run: sdkmanager "platforms;android-33" "platforms;android-34"
         if: "${{ env.BUILD_MOBILE == 'true' }}"
+      - name: Enable Gradle remote build cache
+        uses: burrunan/gradle-cache-action@663fbad34e03c8f12b27f4999ac46e3d90f87eca
+        with:
+          debug: false
+          concurrent: true
+          read-only: false
+          build-root-directory: mobile
 
       # Build mobile app
 
       - name: Compile app
-        uses: burrunan/gradle-cache-action@v3.0.1
-        with:
-          arguments: "compileDebugKotlin assembleRelease --daemon"
-          build-root-directory: mobile
-          daemon: false
-          debug: false
-          concurrent: true
-          read-only: ${{ github.ref != 'refs/heads/master' }}
+        run: "./gradlew compileDebugKotlin assembleRelease"
+        working-directory: mobile
         env:
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
@@ -186,48 +187,28 @@ jobs:
 
       # Tests
       - name: Compile Unit Tests
-        uses: burrunan/gradle-cache-action@v3.0.1
-        with:
-          arguments: "compileDebugUnitTestSources compileReleaseUnitTestSources --daemon"
-          build-root-directory: mobile
-          debug: false
-          concurrent: true
+        run: "./gradlew compileDebugUnitTestSources compileReleaseUnitTestSources"
+        working-directory: mobile
       - name: Lint
-        uses: burrunan/gradle-cache-action@v3.0.1
-        with:
-          arguments: "lintRelease runDebugDetekt assertModuleGraph buildHealth detectTooManyFiles :bucketsync:data:verifyDebugDatabaseMigration reportMerge --continue --daemon"
-          build-root-directory: mobile
-          debug: false
-          concurrent: true
+        run: "./gradlew lintRelease runDebugDetekt assertModuleGraph buildHealth detectTooManyFiles :bucketsync:data:verifyDebugDatabaseMigration reportMerge --continue"
+        working-directory: mobile
         if: "${{ env.BUILD_MOBILE == 'true' }}"
       - name: Double check db with generated schema
-        uses: burrunan/gradle-cache-action@v3.0.1
-        with:
-          arguments: ":bucketsync:data:generateDebugDatabaseSchema :bucketsync:data:verifyDebugDatabaseMigration --daemon"
-          build-root-directory: mobile
-          debug: false
-          concurrent: true
+        run: "./gradlew :bucketsync:data:generateDebugDatabaseSchema :bucketsync:data:verifyDebugDatabaseMigration"
+        working-directory: mobile
         if: "${{ env.BUILD_MOBILE == 'true' }}"
         if: "${{ env.BUILD_MOBILE == 'true' }}"
       - name: Run Unit Tests
-        uses: burrunan/gradle-cache-action@v3.0.1
-        with:
-          arguments: "runDebugTests -x :app-screenshot-tests:testDebugUnitTest --daemon --continue"
-          build-root-directory: mobile
-          debug: false
-          concurrent: true
+        run: "./gradlew runDebugTests -x :app-screenshot-tests:testDebugUnitTest --continue"
+        working-directory: mobile
         if: "${{ env.BUILD_MOBILE == 'true' }}"
       - name: "Generate new Screenshot Tests"
         run: "config/generate-screenshots.sh master"
         working-directory: mobile
         if: "${{ env.BUILD_MOBILE == 'true' }}"
       - name: "Run Screenshot Tests"
-        uses: burrunan/gradle-cache-action@v3.0.1
-        with:
-          arguments: "--continue verifyPaparazziDebug --daemon"
-          build-root-directory: mobile
-          debug: false
-          concurrent: true
+        run: "./gradlew --continue verifyPaparazziDebug"
+        working-directory: mobile
         if: "${{ env.BUILD_MOBILE == 'true' }}"
       - name: "Upload Screenshot test failures"
         uses: actions/upload-artifact@v4
