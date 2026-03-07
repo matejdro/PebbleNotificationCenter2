@@ -5,25 +5,16 @@ androidGradleCacheFix = "3.0.2"
 androidGradlePlugin = "8.13.0"
 android-securityLints = "1.0.4"
 androidx-activity-compose = "1.11.0"
-androidx-benchmark = "1.4.1"
 androidx-compose-material3 = "1.3.2"
 androidx-compose-runtime = "1.9.2"
-androidx-compose-tracing = "1.9.2"
 androidx-core = "1.17.0"
 androidx-core-splashscreen = "1.0.1"
 androidx-datastore = "1.1.7"
 androidx-lifecycle = "2.9.4"
 androidx-navigation3 = "1.0.0"
-androidx-perfetto = "1.0.0"
-androidx-profileInstaller = "1.4.1"
 androidx-startup = "1.2.0"
-androidx-r8 = "8.11.18"
 androidx-test-core = "1.7.0"
-androidx-test-ext = "1.3.0"
-androidx-test-orchestrator = "1.6.1"
 androidx-test-runner = "1.7.0"
-androidx-test-services = "1.6.0"
-androidx-test-uiautomator = "2.3.0"
 androidx-workManager = "2.11.0"
 coil = "3.3.0"
 composeDnd = "0.4.0"
@@ -51,9 +42,6 @@ ksp = "2.2.20-2.0.2"
 logcat = "0.4"
 metro = "0.7.3"
 moduleGraphAssert = "2.9.0"
-moshi = "1.15.2"
-moshi-ir = "0.32.0"
-okhttp = "5.1.0"
 okio = "3.16.0"
 orgJson = "20250517"
 pebblekit = "0.1.0"
@@ -67,7 +55,6 @@ turbine = "1.2.1"
 unmock-androidJar = "16-robolectric-13921718"
 unmock-plugin = "0.9.0"
 versionCatalogUpdate = "1.0.1"
-whatTheStack = "1.0.0-alpha08"
 
 [libraries]
 accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive", version.ref = "accompanist" }
@@ -78,23 +65,18 @@ android-agp = { module = "com.android.tools.build:gradle", version.ref = "androi
 android-securityLints = { module = "com.android.security.lint:lint", version.ref = "android-securityLints" }
 androidGradleCacheFix = { module = "org.gradle.android.cache-fix:org.gradle.android.cache-fix.gradle.plugin", version.ref = "androidGradleCacheFix" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
-androidx-benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "androidx-benchmark" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "androidx-compose-material3" }
 androidx-compose-material3-sizeClasses = { module = "androidx.compose.material3:material3-window-size-class", version.ref = "androidx-compose-material3" }
-androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "androidx-compose-runtime" }
 androidx-compose-runtime-annotation = { module = "androidx.compose.runtime:runtime-annotation", version.ref = "androidx-compose-runtime" }
-androidx-compose-tracing = { module = "androidx.compose.runtime:runtime-tracing", version.ref = "androidx-compose-tracing" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "androidx-compose-runtime" }
 androidx-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics", version.ref = "androidx-compose-runtime" }
 androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-compose-runtime" }
 androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-compose-runtime" }
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "androidx-compose-runtime" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "androidx-compose-runtime" }
-androidx-compose-ui-util = { module = "androidx.compose.ui:ui-util", version.ref = "androidx-compose-runtime" }
 androidx-core = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-core-splashscreen" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "androidx-datastore" }
-androidx-datastore-core = { module = "androidx.datastore:datastore-core", version.ref = "androidx-datastore" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "androidx-datastore" }
 androidx-lifecycle-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
@@ -102,17 +84,9 @@ androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-kt
 androidx-lifecycle-viewModel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewModel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-navigation3 = { module = "androidx.navigation3:navigation3-ui", version.ref = "androidx-navigation3" }
-androidx-perfetto = { module = "androidx.tracing:tracing-perfetto", version.ref = "androidx-perfetto" }
-androidx-perfetto-binary = { module = "androidx.tracing:tracing-perfetto-binary", version.ref = "androidx-perfetto" }
-androidx-profileInstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "androidx-profileInstaller" }
-androidx-r8 = { module = "com.android.tools:r8", version.ref = "androidx-r8" }
 androidx-startup = { module = "androidx.startup:startup-runtime", version.ref = "androidx-startup" }
 androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test-core" }
-androidx-test-junitRules = { module = "androidx.test.ext:junit", version.ref = "androidx-test-ext" }
-androidx-test-orchestrator = { module = "androidx.test:orchestrator", version.ref = "androidx-test-orchestrator" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test-runner" }
-androidx-test-services = { module = "androidx.test.services:test-services", version.ref = "androidx-test-services" }
-androidx-test-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "androidx-test-uiautomator" }
 androidx-workManager = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidx-workManager" }
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
@@ -127,7 +101,6 @@ detekt-compose = { module = "io.nlopez.compose.rules:detekt", version.ref = "det
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 detekt-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 dispatch = { module = "com.rickbusarow.dispatch:dispatch-core", version.ref = "dispatch" }
-dispatch-espresso = { module = "com.rickbusarow.dispatch:dispatch-android-espresso", version.ref = "dispatch" }
 dispatch-test = { module = "com.rickbusarow.dispatch:dispatch-test", version.ref = "dispatch" }
 junit4 = { module = "junit:junit", version.ref = "junit4" }
 junit4-parameterinjector = { module = "com.google.testparameterinjector:test-parameter-injector", version.ref = "junit4-parameterinjector" }
@@ -140,9 +113,7 @@ kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", 
 kotlin-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlin-coroutines" }
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-plugin-compose = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
-kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
 kotlinova-compose = { module = "si.inova.kotlinova:compose", version.ref = "kotlinova" }
-kotlinova-compose-androidTest = { module = "si.inova.kotlinova:compose-android-test", version.ref = "kotlinova" }
 kotlinova-core = { module = "si.inova.kotlinova:core", version.ref = "kotlinova" }
 kotlinova-core-test = { module = "si.inova.kotlinova:core-test", version.ref = "kotlinova" }
 kotlinova-gradle = { module = "si.inova.kotlinova:gradle", version.ref = "kotlinova" }
@@ -155,11 +126,6 @@ ksp = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin"
 logcat = { module = "com.squareup.logcat:logcat", version.ref = "logcat" }
 metro-plugin = { module = "dev.zacsweers.metro:gradle-plugin", version.ref = "metro" }
 moduleGraphAssert = { module = "com.jraska.module.graph.assertion:plugin", version.ref = "moduleGraphAssert" }
-moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
-moshi-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
-moshi-ir = { module = "dev.zacsweers.moshix:dev.zacsweers.moshix.gradle.plugin", version.ref = "moshi-ir" }
-okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
-okhttp-mockWebServer = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 orgJson = { module = "org.json:json", version.ref = "orgJson" }
 pebblekit = { module = "io.rebble.pebblekit2:client", version.ref = "pebblekit" }
@@ -167,7 +133,6 @@ pebblekit-api = { module = "io.rebble.pebblekit2:client-api", version.ref = "peb
 pebblekit-ui = { module = "io.rebble.pebblekit2:client-ui", version.ref = "pebblekit" }
 pebblekit-common = { module = "io.rebble.pebblekit2:common", version.ref = "pebblekit" }
 pebblekit-common-api = { module = "io.rebble.pebblekit2:common-api", version.ref = "pebblekit" }
-paparazzi = { module = "app.cash.paparazzi:paparazzi", version.ref = "paparazzi" }
 rebugger = { module = "io.github.theapache64:rebugger", version.ref = "rebugger" }
 showkase = { module = "com.airbnb.android:showkase", version.ref = "showkase" }
 showkase-processor = { module = "com.airbnb.android:showkase-processor", version.ref = "showkase" }
@@ -182,7 +147,6 @@ tinylog-impl = { module = "org.tinylog:tinylog-impl", version.ref = "tinylog" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 unmock-androidJar = { module = "org.robolectric:android-all", version.ref = "unmock-androidJar" }
 unmock-plugin = { module = "com.github.bjoernq:unmockplugin", version.ref = "unmock-plugin" }
-whatTheStack = { module = "com.github.fvito:WhatTheStack", version.ref = "whatTheStack" }
 
 
 [plugins]
