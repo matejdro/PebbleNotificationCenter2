@@ -91,46 +91,27 @@ jobs:
         run: pebble build
         working-directory: watch
 
-      # Publish results
+        #     GitHub Actions does not allow PR actions triggered from external contributors
+        #     to post comments. As a workaround, we upload metadata artifacts
+        #     and then sarif-comment.yaml workflow will run, which will post the comment
 
-      - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action/linux@v2
-        if: always()
+      - run: echo ${{ github.event.number }} > pr_number.txt
+        if: (!cancelled())
+      - name: Upload Results
+        if: (!cancelled())
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6
         with:
-          comment_mode: failures
-          junit_files: |
+          name: results
+          path: |
             **/build/outputs/*-results/**/*.xml
             **/build/*-results/**/*.xml
-      - name: Post SARIF findings as comments in the pull request
-        if: always()
-        uses: inovait/sarif-to-comment-action/composite@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          branch: ${{ github.head_ref }}
-          pr-number: ${{ github.event.number }}
-          title: Lint report
-          show-rule-details: false
-          sarif-file: 'mobile/merge.sarif'
+            pr_number.txt
+            ${{ github.event_path }}
+            mobile/merge.sarif
+            mobile/build/reports/jacoco/aggregatedJacocoReport/aggregatedJacocoReport.xml
       - name: "Upload Screenshot test failures"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6
         if: failure()
         with:
           name: failed-screenshot-tests
           path: mobile/app-screenshot-tests/build/paparazzi/failures
-      - name: Add coverage to PR
-        id: jacoco
-        uses: madrapps/jacoco-report@50d3aff4548aa991e6753342d9ba291084e63848
-        with:
-          paths: |
-            ${{ github.workspace }}/mobile/build/reports/jacoco/aggregatedJacocoReport/*.xml,
-          token: ${{ secrets.GITHUB_TOKEN }}
-          update-comment: true
-          title: Code Coverage
-          min-coverage-overall: 50
-          min-coverage-changed-files: 30
-      - name: "Upload jacoco coverage report"
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-coverage
-          path: ${{ github.workspace }}/mobile/build/reports/jacoco/aggregatedJacocoReport/html
