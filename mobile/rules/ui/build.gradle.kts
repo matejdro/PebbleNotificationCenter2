@@ -33,7 +33,7 @@ dependencies {
    implementation(libs.dispatch)
    implementation(libs.kotlinova.core)
 
-   testImplementation(projects.notification.test)
+   testImplementation(testFixtures(projects.notification.api))
    testImplementation(testFixtures(projects.rules.api))
    testImplementation(libs.kotlin.coroutines)
    testImplementation(libs.kotlinova.core.test)

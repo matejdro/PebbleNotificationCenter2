@@ -21,7 +21,7 @@ dependencies {
    implementation(libs.androidx.datastore.preferences)
    implementation(libs.kotlinova.core)
 
-   testImplementation(projects.common.test)
+   testImplementation(testFixtures(projects.common))
    testImplementation(libs.kotlin.coroutines)
    testImplementation(libs.kotlinova.core)
    testImplementation(libs.kotlinova.core.test)
