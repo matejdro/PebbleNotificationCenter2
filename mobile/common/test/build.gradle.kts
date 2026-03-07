@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+   implementation(libs.androidx.datastore)
    implementation(libs.kotlin.coroutines.test)
    implementation(libs.kotlin.coroutines)
    implementation(libs.dispatch.test)
