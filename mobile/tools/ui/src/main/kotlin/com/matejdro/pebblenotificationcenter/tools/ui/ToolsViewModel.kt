@@ -44,6 +44,7 @@ class ToolsViewModel(
       _appVersion.value = pInfo.versionName.orEmpty()
    }
 
+   @Suppress("MissingUseCall") // Stream wrapping is fine
    fun getLogs() = resources.launchResourceControlTask(_logSave) {
       actionLogger.logAction { "ToolsViewModel.getLogs()" }
 

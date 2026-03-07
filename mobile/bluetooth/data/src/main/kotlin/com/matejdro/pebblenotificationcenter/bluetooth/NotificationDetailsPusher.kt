@@ -28,6 +28,9 @@ class NotificationDetailsPusherImpl(
    private var previousDetailsSendingJob: Job? = null
    private var previousVibrationSendingJob: Job? = null
 
+   // Magic numbers are a whole point of this function (protocol constants).
+   // Use is not required for memory-only Buffer
+   @Suppress("MagicNumber", "MissingUseCall")
    override fun pushNotificationDetails(bucketId: Int, maxPacketSize: Int) {
       previousDetailsSendingJob?.cancel()
 
@@ -73,6 +76,9 @@ class NotificationDetailsPusherImpl(
       }
    }
 
+   // Magic numbers are a whole point of this function (protocol constants).
+   // Use is not required for memory-only Buffer
+   @Suppress("MagicNumber", "MissingUseCall")
    private fun pushVibration() {
       val vibrationPattern = notificationRepository.pollNextVibration()
       logcat { "Next vibration: ${vibrationPattern?.contentToString() ?: "null"}" }

@@ -26,9 +26,9 @@ class SubmenuActionHandlerImpl(
       payload as ReplySubmenuPayload
 
       return serviceController.triggerReplyAction(
-         payload.intent,
-         payload.remoteInputResultKey,
-         voiceInputText ?: payload.text
+         pendingIntent = payload.intent,
+         remoteInputKey = payload.remoteInputResultKey,
+         text = voiceInputText ?: payload.text
       )
    }
 }

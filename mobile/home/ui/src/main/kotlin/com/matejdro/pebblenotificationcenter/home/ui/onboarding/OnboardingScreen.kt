@@ -157,8 +157,8 @@ private fun NotificationPermission() {
    var rejectedPermission by remember { mutableStateOf(false) }
    val permissionState = rememberPermissionState(
       Manifest.permission.POST_NOTIFICATIONS,
-   ) {
-      if (!it) {
+   ) { granted ->
+      if (!granted) {
          rejectedPermission = true
       }
    }

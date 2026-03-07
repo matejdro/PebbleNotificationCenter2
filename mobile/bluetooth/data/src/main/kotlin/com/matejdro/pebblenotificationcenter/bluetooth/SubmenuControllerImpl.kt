@@ -21,6 +21,9 @@ class SubmenuControllerImpl(
 
    private val menuItems = ConcurrentHashMap<MenuItemKey, List<SubmenuItem<*>>>()
 
+   // Magic numbers are a whole point of this function (protocol constants).
+   // Use is not required for memory-only Buffer
+   @Suppress("MagicNumber", "MissingUseCall")
    override suspend fun showSubmenuOnTheWatch(
       notificationId: UByte,
       type: SubmenuType,

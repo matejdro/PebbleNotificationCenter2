@@ -123,7 +123,8 @@ class NotificationProcessor(
             ?: parseVibrationPattern(preferences[RuleOption.vibrationPattern])
             ?: error("Invalid vibration pattern '${preferences[RuleOption.vibrationPattern]}'")
          )
-         .map { it.toInt() }.toIntArray()
+         .map { it.toInt() }
+         .toIntArray()
 
       if (notification.forceVibrate) {
          logcat { "Force notification: always vibrate" }
@@ -171,14 +172,14 @@ class NotificationProcessor(
       val nativeActions = parsedNotification.nativeActions.map { action ->
          val remoteInputResultKey = action.remoteInputResultKey
          if (remoteInputResultKey == null) {
-            Action.Native(action.text, action.pendingIntent)
+            Action.Native(title = action.text, intent = action.pendingIntent)
          } else {
             Action.Reply(
-               action.text,
-               action.pendingIntent,
-               remoteInputResultKey,
-               action.cannedTexts,
-               action.allowFreeFormInput
+               title = action.text,
+               intent = action.pendingIntent,
+               remoteInputResultKey = remoteInputResultKey,
+               cannedTexts = action.cannedTexts,
+               allowFreeFormInput = action.allowFreeFormInput
             )
          }
       }

@@ -57,11 +57,11 @@ class ToolsScreen(
 
       Surface {
          ToolsScreenContent(
-            appVersion,
-            logSaveStatus,
-            { navigator.navigateTo(OnboardingKey) },
-            viewModel::getLogs,
-            viewModel::resetLog,
+            appVersion = appVersion,
+            loggingTransmissionState = logSaveStatus,
+            openPermissions = { navigator.navigateTo(OnboardingKey) },
+            startLogSaving = viewModel::getLogs,
+            notifyLogIntentSent = viewModel::resetLog,
          )
       }
    }
@@ -85,7 +85,7 @@ private fun ToolsScreenContent(
          .fillMaxSize()
    ) {
       item {
-         ToolButton(openPermissions, R.drawable.permissions, R.string.permissions)
+         ToolButton(onClick = openPermissions, icon = R.drawable.permissions, text = R.string.permissions)
       }
 
       item {
@@ -98,7 +98,7 @@ private fun ToolsScreenContent(
                   .wrapContentWidth()
             )
          } else {
-            ToolButton(startLogSaving, R.drawable.logs, R.string.save_logs)
+            ToolButton(onClick = startLogSaving, icon = R.drawable.logs, text = R.string.save_logs)
 
             val context = LocalContext.current
             SideEffect {

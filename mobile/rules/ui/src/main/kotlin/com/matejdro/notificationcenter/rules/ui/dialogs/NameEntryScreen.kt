@@ -1,5 +1,6 @@
 package com.matejdro.notificationcenter.rules.ui.dialogs
 
+import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -45,9 +46,9 @@ class NameEntryScreen(private val navigator: Navigator) : Screen<NameEntryScreen
       NameEntryScreenContent(
          key,
          dismiss = { navigator.goBack() },
-         accept = {
+         accept = { name ->
             navigator.goBack()
-            resultPassingStore.sendResult(key.result, NameEntryScreenKey.Result.Text(it))
+            resultPassingStore.sendResult(key.result, NameEntryScreenKey.Result.Text(name))
          },
          thirdButtonClick = {
             navigator.goBack()
@@ -121,6 +122,7 @@ private fun NameEntryScreenContent(
 @ShowkaseComposable(group = "test")
 @Composable
 @FullScreenPreviews
+@SuppressLint("VisibleForTests") // Previews are sort of tests
 internal fun NameEntryScreenPreview() {
    PreviewTheme {
       Box {

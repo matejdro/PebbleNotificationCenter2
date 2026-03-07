@@ -72,9 +72,9 @@ class RuleDetailsScreen(
       var showDeleteConfirmation by remember { mutableStateOf(false) }
       if (showDeleteConfirmation) {
          DeleteDialog(
-            stateOutcome.value,
-            { showDeleteConfirmation = false },
-            {
+            stateOutcome = stateOutcome.value,
+            dismiss = { showDeleteConfirmation = false },
+            delete = {
                viewModel.deleteRule()
             }
          )
@@ -89,10 +89,10 @@ class RuleDetailsScreen(
             state,
             windowSizeClass.widthSizeClass,
             rename = {
-               renameDialog.trigger(state.ruleMetadata.name.orEmpty())
+               renameDialog.trigger(state.ruleMetadata.name)
             },
             copy = {
-               copyDialog.trigger(state.ruleMetadata.name.orEmpty())
+               copyDialog.trigger(state.ruleMetadata.name)
             },
             delete = {
                showDeleteConfirmation = true
@@ -100,9 +100,9 @@ class RuleDetailsScreen(
             changeTargetApp = {
                appPickerDialog.trigger(true)
             },
-            setPreference = SetPreference { key, value ->
+            setPreference = SetPreference { prefKey, value ->
                @Suppress("UNCHECKED_CAST")
-               viewModel.updatePreference(key as PreferenceKeyWithDefault<Any?>, value)
+               viewModel.updatePreference(prefKey as PreferenceKeyWithDefault<Any?>, value)
             },
             changeRegex = { index, whitelist ->
                val regexText = if (whitelist) {

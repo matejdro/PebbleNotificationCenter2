@@ -44,12 +44,12 @@ class NotificationParser(
       }
 
       return ParsedNotification(
-         sbn.key,
-         sbn.packageName,
-         title,
-         subtitle,
-         text.orEmpty(),
-         Instant.ofEpochMilli(notification.parseMessagingStyleTimestamp() ?: timestampMillis),
+         key = sbn.key,
+         pkg = sbn.packageName,
+         title = title,
+         subtitle = subtitle,
+         body = text.orEmpty(),
+         timestamp = Instant.ofEpochMilli(notification.parseMessagingStyleTimestamp() ?: timestampMillis),
          isSilent = isSilent,
          isFilteredByDoNotDisturb = ranking?.matchesInterruptionFilter() == false,
          nativeActions = notification.parseActions(),
@@ -97,7 +97,7 @@ class NotificationParser(
          updatedSubtitle = subtitle
          updatedText = text
       }
-      return Pair(updatedSubtitle, updatedText)
+      return updatedSubtitle to updatedText
    }
 
    private fun processChannel(notification: Notification, channel: Any?): Pair<String?, Boolean> {
@@ -129,15 +129,15 @@ class NotificationParser(
       val messages = (messagingStyle.messages + messagingStyle.historicMessages).sortedByDescending { it.timestamp }
 
       var lastName: CharSequence? = null
-      return messages.joinToString("\n") {
-         val person = it.person ?: messagingStyle.user
-         val text = it.text?.toString().orEmpty()
-         if (lastName != person.name) {
-            "${person.name}: $text"
+      return messages.joinToString("\n") { message ->
+         val personName = message.person?.name ?: messagingStyle.user.name
+         val text = message.text?.toString().orEmpty()
+         if (personName != null && lastName != personName) {
+            "$personName: $text"
          } else {
             text
          }.also {
-            lastName = person.name
+            lastName = personName
          }
       }
    }

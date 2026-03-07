@@ -808,7 +808,8 @@ class NotificationParserTest {
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
          .shouldNotBeNull()
          .nativeActions
-         .first().apply {
+         .first()
+         .apply {
             this.text shouldBe "Reply"
             this.allowFreeFormInput shouldBe true
             this.remoteInputResultKey shouldBe "RemoteInputResult"
@@ -842,7 +843,8 @@ class NotificationParserTest {
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
          .shouldNotBeNull()
          .nativeActions
-         .first().apply {
+         .first()
+         .apply {
             this.allowFreeFormInput shouldBe false
          }
    }

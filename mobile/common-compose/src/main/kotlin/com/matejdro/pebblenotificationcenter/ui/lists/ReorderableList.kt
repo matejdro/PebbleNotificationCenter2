@@ -108,7 +108,7 @@ fun <T> ReorderableListContainer(
                   }
                }
             },
-            onDrop = {
+            onDrop = { state ->
                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                   vibrator?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
                } else {
@@ -119,7 +119,7 @@ fun <T> ReorderableListContainer(
                dragging = false
                lastDragIndex = -1
                @Suppress("UNCHECKED_CAST")
-               setOrder(it.key as K, reorderingList.indexOf(it.data))
+               setOrder(state.key as K, reorderingList.indexOf(state.data))
             },
             draggableContent = {
                content(

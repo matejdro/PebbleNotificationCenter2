@@ -26,10 +26,10 @@ class FakePebbleInfoRetriever : PebbleInfoRetriever {
    }
 
    fun setConnectedWatchIds(watches: List<WatchIdentifier>) {
-      connectedWatches.value = watches.map {
+      connectedWatches.value = watches.map { watchId ->
          ConnectedWatch(
-            id = it,
-            name = it.value,
+            id = watchId,
+            name = watchId.value,
             platform = "",
             revision = "",
             firmwareVersionMajor = 1,
