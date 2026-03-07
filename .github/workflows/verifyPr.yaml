@@ -85,7 +85,7 @@ jobs:
       - name: Run Unit Tests
         uses: burrunan/gradle-cache-action@v3.0.1
         with:
-          arguments: "test -x :app-screenshot-tests:testDebugUnitTest -x :app-screenshot-tests:testReleaseUnitTest --daemon"
+          arguments: "test -x :app-screenshot-tests:testDebugUnitTest -x :app-screenshot-tests:testReleaseUnitTest --daemon --continue"
           build-root-directory: mobile
           debug: false
           concurrent: true
