@@ -261,7 +261,7 @@ internal fun VibrationPatternScreenPreview() {
    PreviewTheme {
       Box {
          VibrationPatternScreenContent(
-            VibrationPatternScreenKey("100, 200", ResultKey(0)),
+            VibrationPatternScreenKey("100, 200", ResultKey(0, 0)),
             {},
             {},
             {},
@@ -277,7 +277,7 @@ internal fun VibrationPatternScreenBlankPreview() {
    PreviewTheme {
       Box {
          VibrationPatternScreenContent(
-            VibrationPatternScreenKey("", ResultKey(0)),
+            VibrationPatternScreenKey("", ResultKey(0, 0)),
             {},
             {},
             {},

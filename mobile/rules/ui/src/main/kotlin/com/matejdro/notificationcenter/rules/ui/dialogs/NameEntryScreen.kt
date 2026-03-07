@@ -125,7 +125,7 @@ internal fun NameEntryScreenPreview() {
    PreviewTheme {
       Box {
          NameEntryScreenContent(
-            NameEntryScreenKey("Enter text:", ResultKey(0), "Hello"),
+            NameEntryScreenKey("Enter text:", ResultKey(0, 0), "Hello"),
             {},
             {},
             {},
@@ -143,7 +143,7 @@ internal fun NameEntryScreenWithThirdButtonPreview() {
          NameEntryScreenContent(
             NameEntryScreenKey(
                "Enter text:",
-               ResultKey(0),
+               ResultKey(0, 0),
                "Hello",
                thirdButtonText = "Delete"
             ),
@@ -164,7 +164,7 @@ internal fun NameEntryScreenBlankPreview() {
          NameEntryScreenContent(
             NameEntryScreenKey(
                "Enter text:",
-               ResultKey(0),
+               ResultKey(0, 0),
                "",
             ),
             {},
