@@ -382,7 +382,7 @@ private val FAKE_APP_PICKER = object : PebbleAndroidAppPicker {
    override var enableAutoSelect: Boolean = false
 
    override suspend fun getCurrentlySelectedApp(): String? {
-      throw UnsupportedOperationException("Not supported in preview")
+      return null
    }
 
    override suspend fun selectApp(packageName: String?) {
