@@ -413,7 +413,7 @@ class RuleDetailsViewModelTest {
       viewModel.deleteRule(largeScreen = true)
       runCurrent()
 
-      navigator.backstack.shouldContainExactly(RuleDetailsScreenKey(3))
+      navigator.backstack.shouldContainExactly(defaultScreenKey, RuleDetailsScreenKey(3))
    }
 
    private suspend fun insertDefaultRules() {
