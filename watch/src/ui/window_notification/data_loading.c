@@ -168,14 +168,14 @@ void notification_window_ingest_bucket_metadata()
             window_notification_data.dot_states[count_without_settings] = NORMAL;
         }
 
+        if (id == window_notification_data.currently_selected_bucket)
+        {
+            current_bucket_index = count_without_settings;
+        }
+
         if (id != 1)
         {
             count_without_settings++;
-        }
-
-        if (id == window_notification_data.currently_selected_bucket)
-        {
-            current_bucket_index = i;
         }
     }
 
