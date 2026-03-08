@@ -77,9 +77,9 @@ class ToolsScreen(
             openPermissions = { navigator.navigateTo(OnboardingKey) },
             startLogSaving = viewModel::getLogs,
             notifyLogIntentSent = viewModel::resetLog,
-            updatePreference = { key, value ->
+            updatePreference = { prefKey, value ->
                @Suppress("UNCHECKED_CAST")
-               viewModel.updatePreference(key as PreferenceKeyWithDefault<Any?>, value)
+               viewModel.updatePreference(prefKey as PreferenceKeyWithDefault<Any?>, value)
             }
          )
       }
