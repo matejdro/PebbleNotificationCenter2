@@ -197,7 +197,6 @@ jobs:
         run: "./gradlew :bucketsync:data:generateDebugDatabaseSchema :bucketsync:data:verifyDebugDatabaseMigration"
         working-directory: mobile
         if: "${{ env.BUILD_MOBILE == 'true' }}"
-        if: "${{ env.BUILD_MOBILE == 'true' }}"
       - name: Run Unit Tests
         run: "./gradlew runDebugTests -x :app-screenshot-tests:testDebugUnitTest --continue"
         working-directory: mobile
