@@ -4,9 +4,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import com.matejdro.bucketsync.BucketSyncRepository
 import com.matejdro.bucketsync.FakeBucketSyncRepository
-import com.matejdro.bucketsync.InMemoryDataStore
 import com.matejdro.bucketsync.api.Bucket
 import com.matejdro.bucketsync.api.BucketUpdate
+import com.matejdro.notificationcenter.common.test.InMemoryDataStore
 import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
 import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification

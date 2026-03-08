@@ -1,8 +1,12 @@
 package com.matejdro.pebblenotificationcenter.bluetooth
 
+import androidx.datastore.preferences.core.emptyPreferences
 import com.matejdro.bucketsync.BucketSyncWatchLoopImpl
 import com.matejdro.bucketsync.FakeBucketSyncRepository
 import com.matejdro.bucketsync.background.FakeBackgroundSyncNotifier
+import com.matejdro.notificationcenter.common.test.InMemoryDataStore
+import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebble.bluetooth.common.PacketQueue
 import com.matejdro.pebble.bluetooth.common.test.FakePebbleSender
 import com.matejdro.pebble.bluetooth.common.test.sentData
@@ -21,6 +25,7 @@ import io.rebble.pebblekit2.common.model.ReceiveResult
 import io.rebble.pebblekit2.common.model.WatchIdentifier
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
@@ -47,6 +52,8 @@ class WatchappConnectionImplTest {
 
    private val packetQueue = PacketQueue(sender, watch, WATCHAPP_UUID)
 
+   private val globalPreferences = InMemoryDataStore(emptyPreferences())
+
    private val connection = WatchappConnectionImpl(
       scope.backgroundScope,
       watchappOpenController,
@@ -63,7 +70,8 @@ class WatchappConnectionImplTest {
       actionHandler,
       submenuActionHandler,
       notificationsRepository,
-      watch
+      watch,
+      globalPreferences,
    )
 
    @Test
@@ -370,6 +378,40 @@ class WatchappConnectionImplTest {
          ),
       )
       actionHandler.lastHandledAction shouldBe null
+   }
+
+   @Test
+   fun `Change mute watch setting`() = scope.runTest {
+      receiveStandardHelloPacket(bufferSize = 123u)
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(10u),
+            1u to PebbleDictionaryItem.UInt32(0u),
+            2u to PebbleDictionaryItem.UInt32(1u),
+         )
+      )
+      runCurrent()
+
+      globalPreferences.data.first()[GlobalPreferenceKeys.muteWatch] shouldBe true
+      result shouldBe ReceiveResult.Ack
+   }
+
+   @Test
+   fun `Change mute phone setting`() = scope.runTest {
+      receiveStandardHelloPacket(bufferSize = 123u)
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(10u),
+            1u to PebbleDictionaryItem.UInt32(1u),
+            2u to PebbleDictionaryItem.UInt32(1u),
+         )
+      )
+      runCurrent()
+
+      globalPreferences.data.first()[GlobalPreferenceKeys.mutePhone] shouldBe true
+      result shouldBe ReceiveResult.Ack
    }
 
    private suspend fun receiveStandardHelloPacket(version: UInt = 0u, bufferSize: UInt = 1000u): ReceiveResult =

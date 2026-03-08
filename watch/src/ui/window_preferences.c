@@ -1,6 +1,7 @@
 #include "window_preferences.h"
 
 #include "commons/connection/bucket_sync.h"
+#include "connection/packets.h"
 #include "layers/status_bar.h"
 
 static CustomStatusBarLayer* status_bar = NULL;
@@ -9,18 +10,29 @@ static SimpleMenuItem section_muting[2] = {};
 static SimpleMenuSection sections[1] = {};
 static SimpleMenuLayer* menu_layer = NULL;
 
+static uint8_t preferences[1];
 
-static void toggle_phone_mute()
+static void set_preference(uint8_t id, bool value)
 {
+    const bool result = send_setting(id, value ? 1 : 0);
+    if (!result)
+    {
+        vibes_double_pulse();
+    }
 }
 
 static void toggle_watch_mute()
 {
+    set_preference(0, !(preferences[0] & 0x01));
+}
+
+static void toggle_phone_mute()
+{
+    set_preference(1, !(preferences[0] & 0x02));
 }
 
 static void update_data()
 {
-    uint8_t preferences[1];
     const bool bucket_exists = bucket_sync_load_bucket(1, preferences);
     if (!bucket_exists)
     {

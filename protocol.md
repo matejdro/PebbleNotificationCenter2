@@ -118,6 +118,15 @@ Sent from the watch when selects an action from the action menu
 
 Sent from the watch when it wants to close. Phone app will open the last app, closing the NC in the process.
 
+### Change a setting (packet 10)
+
+* `1` - ID of the setting (uint8)
+  * 0 - Mute watch
+  * 1 - Mute phone
+* `2` - Value of the setting (uint8)
+  * 0 = OFF
+  * 1 = ON
+
 # Buckets
 
 Watch can store up to 15 of them, up to 255 bytes each.    

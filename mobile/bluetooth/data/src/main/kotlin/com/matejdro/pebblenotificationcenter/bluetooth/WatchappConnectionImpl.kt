@@ -1,6 +1,11 @@
 package com.matejdro.pebblenotificationcenter.bluetooth
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
 import com.matejdro.bucketsync.BucketSyncWatchLoop
+import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.pebble.bluetooth.common.PacketQueue
 import com.matejdro.pebble.bluetooth.common.WatchAppConnection
 import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionGraph
@@ -37,6 +42,7 @@ class WatchappConnectionImpl(
    private val submenuActionHandler: SubmenuActionHandler,
    private val notificationRepository: NotificationRepository,
    private val watch: WatchIdentifier,
+   private val preferenceStore: DataStore<Preferences>,
 ) : WatchAppConnection {
    private var watchBufferSize: Int = 0
 
@@ -73,6 +79,10 @@ class WatchappConnectionImpl(
          8u -> {
             watchappOpenController.closeWatchappToTheLastApp(watch)
             ReceiveResult.Ack
+         }
+
+         10u -> {
+            processSettingSetPacket(data)
          }
 
          else -> {
@@ -136,6 +146,25 @@ class WatchappConnectionImpl(
       logcat { "Action handling success: $success" }
 
       return if (success) ReceiveResult.Ack else ReceiveResult.Nack
+   }
+
+   private suspend fun processSettingSetPacket(data: PebbleDictionary): ReceiveResult {
+      val preference = when (val settingId = data.requireUint(1u)) {
+         0u -> GlobalPreferenceKeys.muteWatch
+         1u -> GlobalPreferenceKeys.mutePhone
+         else -> {
+            logcat { "Unknown setting $settingId" }
+            return ReceiveResult.Nack
+         }
+      }
+
+      val value = data.requireUint(2u) != 0u
+
+      preferenceStore.edit {
+         it[preference] = value
+      }
+
+      return ReceiveResult.Ack
    }
 
    // Magic numbers are a whole point of this function (protocol constants).
