@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,18 +29,24 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.matejdro.notificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
 import com.matejdro.notificationcenter.rules.RuleMetadata
@@ -56,9 +63,13 @@ import com.matejdro.pebblenotificationcenter.ui.components.ProgressErrorSuccessS
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
 import com.matejdro.pebblenotificationcenter.ui.lists.ReorderableListContainer
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import si.inova.kotlinova.compose.components.itemsWithDivider
 import si.inova.kotlinova.compose.flow.collectAsStateWithLifecycleAndBlinkingPrevention
+import si.inova.kotlinova.core.activity.requireActivity
 import si.inova.kotlinova.navigation.navigator.Navigator
+import si.inova.kotlinova.navigation.screenkeys.ScreenKey
 import si.inova.kotlinova.navigation.screens.InjectNavigationScreen
 import si.inova.kotlinova.navigation.screens.Screen
 import com.matejdro.pebblenotificationcenter.sharedresources.R as sharedR
@@ -67,7 +78,9 @@ import com.matejdro.pebblenotificationcenter.sharedresources.R as sharedR
 class RuleListScreen(
    private val viewModel: RuleListViewModel,
    private val navigator: Navigator,
+   private val backstack: StateFlow<List<ScreenKey>>,
 ) : Screen<RuleListScreenKey>() {
+   @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
    @Composable
    override fun Content(key: RuleListScreenKey) {
       val stateOutcome = viewModel.uiState.collectAsStateWithLifecycleAndBlinkingPrevention()
@@ -97,12 +110,25 @@ class RuleListScreen(
          },
       )
 
+      val lastDetailsFlow = remember {
+         backstack
+            .map { list -> list.filterIsInstance<RuleDetailsScreenKey>().lastOrNull() }
+      }
+
+      val selectedDetailsKey = lastDetailsFlow.collectAsStateWithLifecycle(null).value
+      val windowSizeClass = calculateWindowSizeClass(LocalContext.current.requireActivity())
+      // Do not highlight selected item in the phone mode
+      val selectedRuleId = selectedDetailsKey?.id.takeIf {
+         windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact
+      }
+
       ProgressErrorSuccessScaffold(
          stateOutcome::value,
          errorProgressModifier = Modifier.safeDrawingPadding()
       ) { state ->
          RuleListScreenContent(
             state,
+            selectedRuleId,
             addEmptyRule = { addDialog.trigger() },
             addHideRule = {
                isNextQuickAddMute = false
@@ -127,11 +153,12 @@ class RuleListScreen(
 @Composable
 private fun RuleListScreenContent(
    state: RuleListState,
+   selectedRuleId: Int?,
    addMuteRule: () -> Unit,
    addHideRule: () -> Unit,
    addEmptyRule: () -> Unit,
-   setOrder: (id: Int, toIndex: Int) -> Unit,
-   openDetails: (id: Int) -> Unit,
+   setOrder: (Int, Int) -> Unit,
+   openDetails: (Int) -> Unit,
    addButtonsShown: Boolean = false,
 ) = with(LocalSharedTransitionScope.current) {
    Scaffold(
@@ -164,6 +191,13 @@ private fun RuleListScreenContent(
                      rule.name,
                      modifier
                         .clickable(onClick = { openDetails(rule.id) })
+                        .run {
+                           if (rule.id == selectedRuleId) {
+                              background(MaterialTheme.colorScheme.primary)
+                           } else {
+                              this
+                           }
+                        }
                         .padding(32.dp)
                         .fillMaxWidth()
                         .animateItem()
@@ -176,8 +210,12 @@ private fun RuleListScreenContent(
                            } else {
                               this
                            }
-                        }
-
+                        },
+                     color = if (rule.id == selectedRuleId) {
+                        MaterialTheme.colorScheme.onPrimary
+                     } else {
+                        MaterialTheme.colorScheme.onSurface
+                     },
                   )
                }
             }
@@ -291,6 +329,7 @@ private fun RuleListScreenPreview() {
                RuleMetadata(2, "Rule B"),
             )
          ),
+         null,
          {},
          {},
          {},
@@ -311,12 +350,34 @@ private fun RuleListScreenWithFabExpandedPreview() {
                RuleMetadata(2, "Rule B"),
             )
          ),
+         null,
          {},
          {},
          {},
          { _, _ -> },
          {},
          addButtonsShown = true,
+      )
+   }
+}
+
+@Preview
+@Composable
+private fun RuleListScreenWithSelectionPreview() {
+   PreviewTheme {
+      RuleListScreenContent(
+         RuleListState(
+            listOf(
+               RuleMetadata(1, "Rule A"),
+               RuleMetadata(2, "Rule B"),
+            )
+         ),
+         2,
+         {},
+         {},
+         {},
+         { _, _ -> },
+         {},
       )
    }
 }
