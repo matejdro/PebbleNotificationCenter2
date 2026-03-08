@@ -3,6 +3,7 @@
 #include "action_list.h"
 #include "data_loading.h"
 #include "connection/packets.h"
+#include "ui/window_preferences.h"
 
 const int32_t SINGLE_SCROLL_HEIGHT = 32;
 
@@ -71,6 +72,13 @@ static void button_back_single(ClickRecognizerRef recognizer, void* context)
     }
 }
 
+static void button_back_double(ClickRecognizerRef recognizer, void* context)
+{
+    window_notification_data.user_interacted = true;
+
+    window_preferences_show();
+}
+
 static void button_up_repeating(const ClickRecognizerRef recognizer, void* context)
 {
     if (click_recognizer_is_repeating(recognizer))
@@ -136,4 +144,5 @@ void window_notification_buttons_config()
 
     window_single_click_subscribe(BUTTON_ID_SELECT, button_select_single);
     window_single_click_subscribe(BUTTON_ID_BACK, button_back_single);
+    window_multi_click_subscribe(BUTTON_ID_BACK, 2, 2, 150, true, button_back_double);
 }

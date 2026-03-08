@@ -125,8 +125,11 @@ Every bucket is stored in the `2001` - `2015` storage keys.
 
 ## Bucket 1
 
-User's preferences
-TBD
+Bucket data:
+
+* Flags (uint8)
+  * 0x01 - Watch mute on or off
+  * 0x02 - Phone mute on or off
 
 ## Buckets 2-15
 

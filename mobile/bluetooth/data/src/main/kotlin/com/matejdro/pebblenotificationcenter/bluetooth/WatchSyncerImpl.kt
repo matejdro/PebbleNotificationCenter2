@@ -1,7 +1,12 @@
 package com.matejdro.pebblenotificationcenter.bluetooth
 
+import androidx.annotation.VisibleForTesting
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import com.matejdro.bucketsync.BucketSyncRepository
 import com.matejdro.bucketsync.BucketSyncRepository.Companion.MAX_BUCKET_ID
+import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebble.bluetooth.common.util.LimitingStringEncoder
 import com.matejdro.pebble.bluetooth.common.util.fixPebbleIndentation
 import com.matejdro.pebble.bluetooth.common.util.writeUByte
@@ -10,23 +15,39 @@ import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotific
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import dispatch.core.DefaultCoroutineScope
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.launch
 import logcat.logcat
 import okio.Buffer
+import kotlin.experimental.or
+import kotlin.time.Duration.Companion.milliseconds
 
 @Inject
 @ContributesBinding(AppScope::class)
 class WatchSyncerImpl(
    private val bucketSyncRepository: BucketSyncRepository,
+   private val preferenceStore: DataStore<Preferences>,
+   private val defaultScope: DefaultCoroutineScope,
 ) : WatchSyncer {
    private val utf8Encoder = LimitingStringEncoder()
 
    override suspend fun init() {
+      init(enablePreferences = true)
+   }
+
+   @VisibleForTesting
+   internal suspend fun init(enablePreferences: Boolean) {
       val reloadAllData = !bucketSyncRepository.init(
          BUCKET_DATA_VERSION.toInt(),
          dynamicPool = 2..MAX_BUCKET_ID
       )
       if (reloadAllData) {
          logcat { "Got different protocol version, resetting all data" }
+      }
+
+      if (enablePreferences) {
+         syncPreferences()
       }
    }
 
@@ -100,6 +121,27 @@ class WatchSyncerImpl(
          id = notification.bucketId.toUByte(),
          flags = getNotificationFlags(notification)
       )
+   }
+
+   // Magic numbers are a whole point of this function (protocol constants).
+   @Suppress("MagicNumber")
+   private fun syncPreferences() {
+      defaultScope.launch {
+         preferenceStore.data.debounce(50.milliseconds).collect { preferences ->
+            var flags: Byte = 0
+            if (preferences[GlobalPreferenceKeys.muteWatch]) {
+               flags = flags or 0x01
+            }
+            if (preferences[GlobalPreferenceKeys.mutePhone]) {
+               flags = flags or 0x02
+            }
+
+            bucketSyncRepository.updateBucket(
+               1u,
+               byteArrayOf(flags)
+            )
+         }
+      }
    }
 }
 

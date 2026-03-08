@@ -43,6 +43,7 @@ If an indicator is filled with black color, it indicates the currently selected 
 * Double click UP - Switch to previous notification (wraps around)
 * Double click DOWN - Switch to next notification (wraps around)
 * Click SELECT - Open actions menu
+* Double click BACK - Open settings
 * Click BACK - Exit
 
 ### Why is the app buzzing at me?

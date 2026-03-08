@@ -1,11 +1,17 @@
 package com.matejdro.pebblenotificationcenter.bluetooth
 
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import com.matejdro.bucketsync.BucketSyncRepository
 import com.matejdro.bucketsync.FakeBucketSyncRepository
+import com.matejdro.bucketsync.InMemoryDataStore
 import com.matejdro.bucketsync.api.Bucket
 import com.matejdro.bucketsync.api.BucketUpdate
+import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
+import dispatch.core.DefaultCoroutineScope
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldBeNull
@@ -13,18 +19,23 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
+import si.inova.kotlinova.core.test.TestScopeWithDispatcherProvider
 import java.time.Instant
 import kotlin.time.Duration.Companion.seconds
 
 class WatchSyncerImplTest {
+   private val scope = TestScopeWithDispatcherProvider()
    val bucketSyncRepository = FakeBucketSyncRepository(PROTOCOL_VERSION.toInt())
+   val preferences = InMemoryDataStore(emptyPreferences())
 
    val watchSyncer = WatchSyncerImpl(
       bucketSyncRepository,
+      preferences,
+      DefaultCoroutineScope(scope.backgroundScope.coroutineContext),
    )
 
    @Test
-   fun `Sync a notification`() = runTest {
+   fun `Sync a notification`() = scope.runTest {
       init()
       watchSyncer.syncNotification(
          ParsedNotification(
@@ -80,7 +91,7 @@ class WatchSyncerImplTest {
    }
 
    @Test
-   fun `Trim notification texts`() = runTest {
+   fun `Trim notification texts`() = scope.runTest {
       init()
       watchSyncer.syncNotification(
          ParsedNotification(
@@ -122,7 +133,7 @@ class WatchSyncerImplTest {
    }
 
    @Test
-   fun `Body should eat all available space`() = runTest {
+   fun `Body should eat all available space`() = scope.runTest {
       init()
       watchSyncer.syncNotification(
          ParsedNotification(
@@ -166,7 +177,7 @@ class WatchSyncerImplTest {
    }
 
    @Test
-   fun `Sort later notifications first`() = runTest {
+   fun `Sort later notifications first`() = scope.runTest {
       init()
       watchSyncer.syncNotification(
          ParsedNotification(
@@ -196,7 +207,7 @@ class WatchSyncerImplTest {
    }
 
    @Test
-   fun `Delete should delete individual notifications`() = runTest {
+   fun `Delete should delete individual notifications`() = scope.runTest {
       init()
       watchSyncer.syncNotification(
          ParsedNotification(
@@ -231,7 +242,7 @@ class WatchSyncerImplTest {
    }
 
    @Test
-   fun `Delete all delete all notifications`() = runTest {
+   fun `Delete all delete all notifications`() = scope.runTest {
       init()
       watchSyncer.syncNotification(
          ParsedNotification(
@@ -266,7 +277,7 @@ class WatchSyncerImplTest {
    }
 
    @Test
-   fun `Set unread flag when the notification is unread`() = runTest {
+   fun `Set unread flag when the notification is unread`() = scope.runTest {
       init()
       watchSyncer.syncNotification(
          ProcessedNotification(
@@ -326,7 +337,7 @@ class WatchSyncerImplTest {
    }
 
    @Test
-   fun `Update notification flags`() = runTest {
+   fun `Update notification flags`() = scope.runTest {
       init()
       watchSyncer.syncNotification(
          ParsedNotification(
@@ -360,7 +371,7 @@ class WatchSyncerImplTest {
    }
 
    @Test
-   fun `Do not trigger sync when just preparing flags`() = runTest {
+   fun `Do not trigger sync when just preparing flags`() = scope.runTest {
       init()
       watchSyncer.syncNotification(
          ParsedNotification(
@@ -396,7 +407,7 @@ class WatchSyncerImplTest {
    }
 
    @Test
-   fun `Fix indentation of the body`() = runTest {
+   fun `Fix indentation of the body`() = scope.runTest {
       init()
       watchSyncer.syncNotification(
          ParsedNotification(
@@ -441,8 +452,75 @@ class WatchSyncerImplTest {
       )
    }
 
-   private suspend fun init() {
+   @Test
+   fun `Send default preferences`() = scope.runTest {
+      init(enablePreferences = true)
+
+      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+         1u,
+         listOf(1u),
+         listOf(
+            Bucket(
+               1u,
+               byteArrayOf(
+                  0b00000000, // Both mutes by default
+               )
+            )
+         )
+      )
+   }
+
+   @Test
+   fun `Send updated mute watch preference`() = scope.runTest {
+      init(enablePreferences = true)
+      delay(2.seconds)
+
+      preferences.edit {
+         it[GlobalPreferenceKeys.muteWatch] = true
+      }
+      delay(2.seconds)
+
+      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+         2u,
+         listOf(1u),
+         listOf(
+            Bucket(
+               1u,
+               byteArrayOf(
+                  0b00000001, // Only mute watch enabled
+               )
+            )
+         )
+      )
+   }
+
+   @Test
+   fun `Send updated mute phone preference`() = scope.runTest {
+      init(enablePreferences = true)
+      delay(2.seconds)
+
+      preferences.edit {
+         it[GlobalPreferenceKeys.mutePhone] = true
+      }
+      delay(2.seconds)
+
+      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+         2u,
+         listOf(1u),
+         listOf(
+            Bucket(
+               1u,
+               byteArrayOf(
+                  0b00000010, // Only mute phone enabled
+               )
+            )
+         )
+      )
+   }
+
+   private suspend fun init(enablePreferences: Boolean = false) {
       bucketSyncRepository.init(1, 2..BucketSyncRepository.MAX_BUCKET_ID)
+      watchSyncer.init(enablePreferences)
    }
 }
 

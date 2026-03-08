@@ -1,5 +1,6 @@
 #include "window_status.h"
 #include "pebble.h"
+#include "window_preferences.h"
 #include "layers/status_bar.h"
 #include "commons/connection/bucket_sync.h"
 #include "window_notification/window_notification.h"
@@ -53,6 +54,11 @@ static void window_load(Window* window)
     layer_add_child(window_layer, text_layer_get_layer(main_text));
     layer_add_child(window_layer, status_bar->layer);
     layer_add_child(window_layer, text_layer_get_layer(app_name_text));
+}
+
+static void window_show(Window* window)
+{
+    custom_status_bar_set_active(status_bar, true);
 
     if (auto_switch)
     {
@@ -60,22 +66,27 @@ static void window_load(Window* window)
     }
 }
 
-static void window_show(Window* window)
-{
-    custom_status_bar_set_active(status_bar, true);
-}
-
 static void window_hide(Window* window)
 {
     custom_status_bar_set_active(status_bar, false);
+    bucket_sync_clear_bucket_data_change_callback(on_bucket_data_update, NULL);
 }
 
 static void window_unload(Window* window)
 {
     text_layer_destroy(main_text);
     text_layer_destroy(app_name_text);
-    bucket_sync_clear_bucket_data_change_callback(on_bucket_data_update, NULL);
     window_destroy(window);
+}
+
+static void button_back_double(ClickRecognizerRef recognizer, void* context)
+{
+    window_preferences_show();
+}
+
+static void window_status_buttons_config()
+{
+    window_multi_click_subscribe(BUTTON_ID_BACK, 2, 2, 150, true, button_back_double);
 }
 
 static void window_status_show(const char* text, bool switch_on_load)
@@ -85,18 +96,14 @@ static void window_status_show(const char* text, bool switch_on_load)
 
     Window* window = window_create();
     window_set_window_handlers(window, (WindowHandlers)
-    {
-        .
-        load = window_load,
-        .
-        unload = window_unload,
-        .
-        appear = window_show,
-        .
-        disappear = window_hide
-    }
-    )
-    ;
+                               {
+                                   .load = window_load,
+                                   .unload = window_unload,
+                                   .appear = window_show,
+                                   .disappear = window_hide
+                               }
+    );
+    window_set_click_config_provider(window, window_status_buttons_config);
     window_stack_pop_all(false);
     window_stack_push(window, false);
 }

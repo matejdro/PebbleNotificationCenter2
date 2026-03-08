@@ -11,12 +11,15 @@ dependencies {
    api(projects.notification.api)
    api(libs.pebblekit.api)
 
+   implementation(projects.rules.api)
+   implementation(libs.androidx.datastore.preferences)
    implementation(libs.kotlinova.core)
    implementation(libs.kotlin.coroutines)
    implementation(libs.logcat)
    implementation(libs.okio)
    implementation(libs.pebblekit.common)
 
+   testImplementation(testFixtures(projects.common))
    testImplementation(testFixtures(projects.bluetooth.api))
    testImplementation(projects.bucketsync.test)
    testImplementation(projects.bucketsync.data)

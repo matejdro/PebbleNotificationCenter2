@@ -125,14 +125,12 @@ static void window_load(Window* window)
 
     window_notification_data.active = true;
     window_notification_action_list_init(window);
-    window_notification_data_init();
 }
 
 static void window_unload(Window* window)
 {
     window_notification_data.active = false;
 
-    window_notification_data_deinit();
     window_notification_action_list_deinit();
     custom_status_bar_set_active(status_bar_layer, false);
     custom_status_bar_layer_destroy(status_bar_layer);
@@ -141,6 +139,17 @@ static void window_unload(Window* window)
     dots_layer_destroy(dots_layer);
     window_destroy(window);
 }
+
+static void window_appear(Window* window)
+{
+    window_notification_data_init();
+}
+
+static void window_disappear(Window* window)
+{
+    window_notification_data_deinit();
+}
+
 
 void window_notification_show()
 {
@@ -152,6 +161,10 @@ void window_notification_show()
         load = window_load,
         .
         unload = window_unload,
+        .
+        appear = window_appear,
+        .
+        disappear = window_disappear,
     }
     )
     ;
