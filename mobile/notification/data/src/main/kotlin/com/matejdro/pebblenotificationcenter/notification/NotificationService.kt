@@ -155,9 +155,9 @@ class NotificationService : NotificationListenerService() {
             flowOf(0)
          }
       }
-         .collect {
+         .collect { listenerHints ->
             try {
-               requestListenerHints(it)
+               requestListenerHints(listenerHints)
             } catch (e: SecurityException) {
                errorReporter.report(e)
             }
