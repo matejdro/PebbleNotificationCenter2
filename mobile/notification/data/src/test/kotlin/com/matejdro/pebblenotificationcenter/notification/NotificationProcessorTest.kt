@@ -1,9 +1,9 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import android.app.createPendingIntent
-import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import com.matejdro.notificationcenter.common.test.InMemoryDataStore
 import com.matejdro.notificationcenter.rules.FakeRulesRepository
 import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
 import com.matejdro.notificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
@@ -23,8 +23,6 @@ import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -853,17 +851,5 @@ class NotificationProcessorTest {
 
       openController.watchappOpened shouldBe false
       processor.pollNextVibration().shouldBeNull()
-   }
-}
-
-private class InMemoryDataStore<T>(defaultValue: T) : DataStore<T> {
-   override val data = MutableStateFlow(defaultValue)
-
-   override suspend fun updateData(transform: suspend (t: T) -> T): T {
-      data.update {
-         transform(it)
-      }
-
-      return data.value
    }
 }

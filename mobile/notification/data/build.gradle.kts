@@ -28,6 +28,7 @@ dependencies {
    implementation(libs.kotlinova.core)
    implementation(libs.pebblekit.api)
 
+   testImplementation(testFixtures(projects.common))
    testImplementation(testFixtures(projects.bluetooth.api))
    testImplementation(testFixtures(projects.notification.api))
    testImplementation(testFixtures(projects.rules.api))
