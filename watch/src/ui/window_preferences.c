@@ -1,5 +1,6 @@
 #include "window_preferences.h"
 
+#include "commons/connection/bluetooth.h"
 #include "commons/connection/bucket_sync.h"
 #include "connection/packets.h"
 #include "layers/status_bar.h"
@@ -12,8 +13,17 @@ static SimpleMenuLayer* menu_layer = NULL;
 
 static uint8_t preferences[1];
 
-static void set_preference(uint8_t id, bool value)
+static void sending_finish(const bool success)
 {
+    if (!success)
+    {
+        vibes_double_pulse();
+    }
+}
+
+static void set_preference(const uint8_t id, const bool value)
+{
+    bluetooth_register_sending_finish(sending_finish);
     const bool result = send_setting(id, value ? 1 : 0);
     if (!result)
     {
@@ -78,7 +88,7 @@ static void window_load(Window* window)
     status_bar = custom_status_bar_layer_create(screen_bounds);
     const GRect status_bar_bounds = layer_get_bounds(status_bar->layer);
 
-    GRect main_content_bounds = GRect(
+    const GRect main_content_bounds = GRect(
         0,
         status_bar_bounds.size.h,
         screen_bounds.size.w,
