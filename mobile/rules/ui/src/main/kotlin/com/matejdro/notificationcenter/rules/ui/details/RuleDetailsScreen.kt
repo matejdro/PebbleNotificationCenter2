@@ -75,7 +75,9 @@ class RuleDetailsScreen(
             stateOutcome = stateOutcome.value,
             dismiss = { showDeleteConfirmation = false },
             delete = {
-               viewModel.deleteRule()
+               viewModel.deleteRule(
+                  largeScreen = windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact
+               )
             }
          )
       }

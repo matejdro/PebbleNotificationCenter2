@@ -67,11 +67,11 @@ class RuleDetailsViewModel(
 
          emitAll(
             combine(ruleFlow, preferencesFlow) { ruleOutcome, preferences ->
-               ruleOutcome.mapDataSuspend { rule ->
-                  if (rule == null) {
-                     throw RuleMissingException()
-                  }
+               if (ruleOutcome.data == null) {
+                  return@combine Outcome.Error(RuleMissingException())
+               }
 
+               ruleOutcome.mapDataSuspend { rule ->
                   val targetAppPackage = preferences[RuleOption.conditionAppPackage]
                   val targetAppName = withDefault { targetAppPackage?.let(appNameProvider::getAppName) }
 
@@ -87,7 +87,7 @@ class RuleDetailsViewModel(
                   }.orEmpty()
 
                   RuleDetailsScreenState(
-                     ruleMetadata = rule,
+                     ruleMetadata = requireNotNull(rule) { "Rule should not be null here, it was checked above" },
                      preferences = preferences,
                      targetAppName = targetAppName,
                      targetChannelNames = targetChannelNames,
@@ -100,11 +100,13 @@ class RuleDetailsViewModel(
       }
    }
 
-   fun deleteRule() = resources.launchWithExceptionReporting {
+   fun deleteRule(largeScreen: Boolean) = resources.launchWithExceptionReporting {
       actionLogger.logAction { "RuleDetailsViewModel.deleteRule()" }
 
       rulesRepository.delete(key.id)
-      navigator.goBack()
+      if (!largeScreen) {
+         navigator.goBack()
+      }
    }
 
    fun renameRule(newName: String) = resources.launchWithExceptionReporting {
