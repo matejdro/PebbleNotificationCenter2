@@ -79,7 +79,7 @@ class RuleDetailsViewModelTest {
       insertDefaultRules()
 
       viewModel.onServiceRegistered()
-      viewModel.deleteRule()
+      viewModel.deleteRule(largeScreen = false)
       runCurrent()
 
       rulesRepository.getAll().first().data.shouldContainExactly(listOf(RuleMetadata(1, "Default Rule")))
@@ -398,10 +398,22 @@ class RuleDetailsViewModelTest {
       insertDefaultRules()
 
       viewModel.onServiceRegistered()
-      viewModel.deleteRule()
+      viewModel.deleteRule(largeScreen = false)
       runCurrent()
 
       navigator.backstack.shouldContainExactly(defaultScreenKey)
+   }
+
+   @Test
+   fun `Do not navigate back after deleting on large screens`() = scope.runTest {
+      navigator.navigateTo(RuleDetailsScreenKey(3))
+      insertDefaultRules()
+
+      viewModel.onServiceRegistered()
+      viewModel.deleteRule(largeScreen = true)
+      runCurrent()
+
+      navigator.backstack.shouldContainExactly(RuleDetailsScreenKey(3))
    }
 
    private suspend fun insertDefaultRules() {
