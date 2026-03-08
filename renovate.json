@@ -1,0 +1,30 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommitTypeAll(chore)",
+    ":semanticCommitScopeDisabled",
+    "helpers:pinGitHubActionDigestsToSemver"
+  ],
+  "minimumReleaseAge": "7 days",
+  "minimumReleaseAgeBehaviour": "timestamp-optional",
+  "gradle": {
+    "managerFilePatterns": [
+      "config/libs.toml"
+    ]
+  },
+  "schedule": [
+    "* 17-23 * * 2"
+  ],
+  "updateNotScheduled": true,
+  "timezone": "Europe/Ljubljana",
+  "packageRules": [
+    {
+        "matchPackageNames": [
+        // This packate is pretty annoying as most git commits do not contain the release files. Just do not update it.
+        "dawidd6/action-download-artifact"
+      ],
+      "enabled": false
+    }
+  ]
+}
