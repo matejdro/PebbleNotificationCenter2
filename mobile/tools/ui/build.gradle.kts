@@ -16,13 +16,14 @@ android {
 dependencies {
    api(projects.common)
    api(projects.logging.api)
+   api(projects.rules.api)
    api(libs.kotlin.coroutines)
    api(libs.kotlinova.core)
    api(libs.kotlinova.navigation)
 
    implementation(projects.commonCompose)
-   implementation(projects.rules.api)
    implementation(libs.androidx.core)
+   implementation(libs.androidx.datastore.preferences)
    implementation(libs.composePreference)
    implementation(libs.dispatch)
 }

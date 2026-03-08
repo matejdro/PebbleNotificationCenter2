@@ -26,6 +26,7 @@ dependencies {
    implementation(libs.logcat)
    implementation(libs.kotlin.coroutines)
    implementation(libs.kotlinova.core)
+   implementation(libs.pebblekit.api)
 
    testImplementation(testFixtures(projects.bluetooth.api))
    testImplementation(testFixtures(projects.notification.api))
