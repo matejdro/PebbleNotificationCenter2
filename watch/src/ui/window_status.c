@@ -79,6 +79,11 @@ static void window_unload(Window* window)
     window_destroy(window);
 }
 
+static void button_back_single(ClickRecognizerRef recognizer, void* context)
+{
+    window_stack_pop(true);
+}
+
 static void button_back_double(ClickRecognizerRef recognizer, void* context)
 {
     window_preferences_show();
@@ -86,6 +91,7 @@ static void button_back_double(ClickRecognizerRef recognizer, void* context)
 
 static void window_status_buttons_config()
 {
+    window_single_click_subscribe(BUTTON_ID_BACK, button_back_single);
     window_multi_click_subscribe(BUTTON_ID_BACK, 2, 2, 150, true, button_back_double);
 }
 
