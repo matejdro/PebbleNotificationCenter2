@@ -13,6 +13,7 @@ import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import com.matejdro.pebblenotificationcenter.submenus.ReplySubmenuPayload
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
@@ -31,12 +32,15 @@ class ActionHandlerImplTest {
 
    private val rulesRepository = FakeRulesRepository()
 
+   private val pauseController = FakePauseController()
+
    private val handler = ActionHandlerImpl(
       repo,
       servicecontroller,
       submenuController,
       RuleResolver(rulesRepository),
       resources,
+      pauseController,
    )
 
    @BeforeEach
@@ -351,6 +355,35 @@ class ActionHandlerImplTest {
       )
 
       servicecontroller.lastTriggeredIntent shouldBe null
+   }
+
+   @Test
+   fun `Toggle app pause action`() = runTest {
+      insertDefaultRules()
+
+      val notification = ParsedNotification(
+         "keyNotification",
+         "",
+         "",
+         "",
+         "Hello",
+         Instant.MIN,
+      )
+      repo.putNotification(
+         2,
+         ProcessedNotification(
+            notification,
+            actions = listOf(
+               Action.PauseApp("Toggle app pause")
+            )
+         ),
+      )
+
+      servicecontroller.returnValue = true
+
+      handler.handleAction(2, 0) shouldBe true
+
+      pauseController.toggledNotifications.shouldContainExactly(notification)
    }
 
    private suspend fun insertDefaultRules() {

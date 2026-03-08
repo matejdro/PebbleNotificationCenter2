@@ -29,6 +29,7 @@ class NotificationProcessor(
    private val openController: WatchappOpenController,
    private val ruleResolver: RuleResolver,
    private val globalPreferenceStore: DataStore<Preferences>,
+   private val pauseController: PauseController,
 ) : NotificationRepository {
    private val notifications = HashMap<Int, ProcessedNotification>()
    private val notificationsByKey = HashMap<String, ProcessedNotification>()
@@ -55,8 +56,6 @@ class NotificationProcessor(
       val processedNotification = initialProcessedNotification.copy(bucketId = bucketId)
 
       val previousNotification = notificationsByKey[parsedNotification.key]
-      notifications[bucketId] = processedNotification
-      notificationsByKey[parsedNotification.key] = processedNotification
 
       logcat {
          "Notification flags: " +
@@ -76,6 +75,11 @@ class NotificationProcessor(
          nextVibration.set(vibrationPattern)
          openController.openWatchapp()
       }
+
+      pauseController.onNewNotification(parsedNotification, settings)
+
+      notifications[bucketId] = processedNotification
+      notificationsByKey[parsedNotification.key] = processedNotification
    }
 
    private fun shouldHide(
@@ -145,6 +149,11 @@ class NotificationProcessor(
          return null
       }
 
+      if (pauseController.isNotificationPaused(notification)) {
+         logcat { "Not vibrating: paused" }
+         return null
+      }
+
       if (preferences[RuleOption.masterSwitch] == RuleOption.MasterSwitch.MUTE) {
          logcat { "Not vibrating: master switch" }
          return null
@@ -174,7 +183,7 @@ class NotificationProcessor(
    }
 
    private fun processActions(parsedNotification: ParsedNotification): List<Action> {
-      val defaultActions = listOf<Action>(
+      val defaultActionsPre = listOf<Action>(
          Action.Dismiss(context.getString(R.string.dismiss)),
       )
 
@@ -193,13 +202,21 @@ class NotificationProcessor(
          }
       }
 
-      return defaultActions + nativeActions
+      val defaultActionsPost = listOf<Action>(
+         Action.PauseApp(context.getString(R.string.pause_app)),
+      )
+
+      return defaultActionsPre + nativeActions + defaultActionsPost
+   }
+
+   override fun notifyPackagePauseStatusChanged(pkg: String) {
    }
 
    suspend fun onNotificationDismissed(key: String) {
       val processedNotification = notificationsByKey.remove(key)
       if (processedNotification != null) {
          notifications.remove(processedNotification.bucketId)
+         pauseController.onNotificationDismissed(processedNotification.systemData)
       }
 
       watchSyncer.clearNotification(key)
@@ -214,6 +231,10 @@ class NotificationProcessor(
 
    override fun getNotification(bucketId: Int): ProcessedNotification? {
       return notifications[bucketId]
+   }
+
+   override fun getAllActiveNotifications(): Collection<ProcessedNotification> {
+      return notifications.values.toList()
    }
 
    fun getNotificationByKey(key: String): ProcessedNotification? {

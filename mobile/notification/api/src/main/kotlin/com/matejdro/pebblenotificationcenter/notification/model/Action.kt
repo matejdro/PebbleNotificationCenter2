@@ -56,7 +56,6 @@ sealed class Action {
       override fun hashCode(): Int {
          var result = allowFreeFormInput.hashCode()
          result = 31 * result + title.hashCode()
-         result = 31 * result + intent.hashCode()
          result = 31 * result + remoteInputResultKey.hashCode()
          result = 31 * result + cannedTexts.hashCode()
          return result
@@ -69,4 +68,6 @@ sealed class Action {
             " cannedTexts=$cannedTexts)"
       }
    }
+
+   data class PauseApp(override val title: String) : Action()
 }

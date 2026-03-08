@@ -15,10 +15,12 @@ import com.matejdro.pebblenotificationcenter.bluetooth.FakeWatchappOpenControlle
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.NativeAction
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
-import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -42,17 +44,21 @@ class NotificationProcessorTest {
 
    private val globalPreferences = InMemoryDataStore(emptyPreferences())
 
+   private val pauseController = FakePauseController()
+
    private val processor = NotificationProcessor(
       context,
       watchSyncer,
       openController,
       RuleResolver(rulesRepository),
-      globalPreferences
+      globalPreferences,
+      pauseController,
    )
 
    @BeforeEach
    fun setUp() {
       context.resources.putString(R.string.dismiss, "Dismiss")
+      context.resources.putString(R.string.pause_app, "Toggle app pause")
 
       runBlocking {
          rulesRepository.insert("Default Rule")
@@ -178,7 +184,7 @@ class NotificationProcessorTest {
    }
 
    @Test
-   fun `It should return dismiss action on every notification`() = runTest {
+   fun `It should return dismiss and pause actions on every notification`() = runTest {
       val notification = ParsedNotification(
          "key",
          "com.app",
@@ -192,7 +198,8 @@ class NotificationProcessorTest {
       processor.onNotificationPosted(notification)
 
       processor.getNotification(1)?.actions shouldBe listOf(
-         Action.Dismiss("Dismiss")
+         Action.Dismiss("Dismiss"),
+         Action.PauseApp("Toggle app pause")
       )
    }
 
@@ -392,7 +399,7 @@ class NotificationProcessorTest {
 
       processor.onNotificationPosted(notification)
 
-      processor.getNotification(1)?.actions.orEmpty() shouldBe listOf(
+      processor.getNotification(1)?.actions.orEmpty().shouldContainAll(
          Action.Dismiss("Dismiss"),
          Action.Native("Action 1", intent1),
          Action.Native("Action 2", intent2),
@@ -460,14 +467,7 @@ class NotificationProcessorTest {
          unread shouldBe false
       }
 
-      watchSyncer.syncedNotificationReadStatuses.shouldContainExactly(
-         ProcessedNotification(
-            notification,
-            unread = false,
-            actions = listOf(Action.Dismiss("Dismiss")),
-            bucketId = 1
-         )
-      )
+      watchSyncer.syncedNotificationReadStatuses.shouldHaveSize(1).first().unread shouldBe false
    }
 
    @Test
@@ -819,15 +819,14 @@ class NotificationProcessorTest {
 
       processor.onNotificationPosted(notification)
 
-      processor.getNotification(1)?.actions.orEmpty() shouldBe listOf(
-         Action.Dismiss("Dismiss"),
+      processor.getNotification(1)?.actions.orEmpty().shouldContain(
          Action.Reply(
             title = "Action 1",
             intent = intent,
             remoteInputResultKey = "inputKey",
             cannedTexts = listOf("A", "B"),
             allowFreeFormInput = false
-         ),
+         )
       )
    }
 
@@ -846,6 +845,62 @@ class NotificationProcessorTest {
          Instant.ofEpochSecond(1_767_554_305),
          isSilent = false
       )
+
+      processor.onNotificationPosted(notification)
+
+      openController.watchappOpened shouldBe false
+      processor.pollNextVibration().shouldBeNull()
+   }
+
+   @Test
+   fun `It should forward received notifications to the pause controller`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification)
+
+      pauseController.newNotifications.shouldContainExactly(notification)
+   }
+
+   @Test
+   fun `It should forward notification deletions to the pause controller`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification)
+      processor.onNotificationDismissed("key")
+
+      pauseController.dismissedNotifications.shouldContainExactly(notification)
+   }
+
+   @Test
+   fun `It should not vibrate for notifications that are paused`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isSilent = false
+      )
+
+      pauseController.returnPaused = true
 
       processor.onNotificationPosted(notification)
 

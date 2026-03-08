@@ -23,6 +23,7 @@ class ActionHandlerImpl(
    private val submenuController: SubmenuController,
    private val ruleResolver: RuleResolver,
    private val resources: Resources,
+   private val pauseController: PauseController,
 ) : ActionHandler {
    override suspend fun handleAction(notificationId: Int, actionIndex: Int): Boolean {
       val notification = notificationRepository.getNotification(notificationId)
@@ -85,6 +86,11 @@ class ActionHandlerImpl(
                listItems
             )
 
+            true
+         }
+
+         is Action.PauseApp -> {
+            pauseController.toggleAppPause(notification.systemData)
             true
          }
       }
