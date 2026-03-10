@@ -51,8 +51,11 @@ class NotificationProcessor(
          return
       }
 
+      val isUpdate = notificationsByKey.containsKey(parsedNotification.key)
       val pauseStatusBeforeInsert = pauseController.computePauseStatus(parsedNotification)
-      pauseController.onNewNotification(parsedNotification, settings)
+      if (!isUpdate) {
+         pauseController.onNewNotification(parsedNotification, settings)
+      }
       val pauseStatus = pauseController.computePauseStatus(parsedNotification)
 
       val actions = processActions(parsedNotification, pauseStatus)

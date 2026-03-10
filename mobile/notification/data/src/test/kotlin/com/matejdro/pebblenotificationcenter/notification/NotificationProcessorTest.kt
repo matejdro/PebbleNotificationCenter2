@@ -859,7 +859,7 @@ class NotificationProcessorTest {
    }
 
    @Test
-   fun `It should forward received notifications to the pause controller`() = runTest {
+   fun `It should forward received new notifications to the pause controller`() = runTest {
       val notification = ParsedNotification(
          "key",
          "com.app",
@@ -873,6 +873,25 @@ class NotificationProcessorTest {
       processor.onNotificationPosted(notification)
 
       pauseController.newNotifications.shouldContainExactly(notification)
+   }
+
+   @Test
+   fun `It should not forward updated notifications to the pause controller`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification)
+      pauseController.newNotifications.clear()
+
+      processor.onNotificationPosted(notification)
+      pauseController.newNotifications.shouldBeEmpty()
    }
 
    @Test
