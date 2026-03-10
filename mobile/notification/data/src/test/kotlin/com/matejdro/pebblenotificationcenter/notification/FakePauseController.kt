@@ -7,13 +7,18 @@ class FakePauseController : PauseController {
    val newNotifications = ArrayList<ParsedNotification>()
    val dismissedNotifications = ArrayList<ParsedNotification>()
    val toggledNotifications = ArrayList<ParsedNotification>()
-   var returnPaused: Boolean = false
+   val pausedNotifications = ArrayList<ParsedNotification>()
+
+   var becomePausedOnNewCall: Boolean = false
 
    override fun onNewNotification(
       notification: ParsedNotification,
       preferences: Preferences,
    ) {
       newNotifications += notification
+      if (becomePausedOnNewCall) {
+         pausedNotifications += notification
+      }
    }
 
    override suspend fun onNotificationDismissed(notification: ParsedNotification) {
@@ -21,7 +26,7 @@ class FakePauseController : PauseController {
    }
 
    override fun isNotificationPaused(notification: ParsedNotification): Boolean {
-      return returnPaused
+      return pausedNotifications.contains(notification)
    }
 
    override suspend fun toggleAppPause(notification: ParsedNotification) {

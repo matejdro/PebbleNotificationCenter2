@@ -1,6 +1,8 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import androidx.datastore.preferences.core.mutablePreferencesOf
+import com.matejdro.notificationcenter.rules.RuleOption
+import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -130,5 +132,25 @@ class PauseControllerImplTest {
       pauseController.onNotificationDismissed(notificationB)
       pauseController.isNotificationPaused(notificationA) shouldBe false
       fakeRepo.notifiedPackageStatusesChanged.shouldContainExactly("com.app")
+   }
+
+   @Test
+   fun `A notification should be muted by default when auto app mute setting is enabled`() = runTest {
+      preferences[RuleOption.autoAppPause] = true
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      fakeRepo.putNotification(1, ProcessedNotification(notification, 1))
+      pauseController.onNewNotification(notification, preferences)
+
+      pauseController.isNotificationPaused(notification) shouldBe true
    }
 }

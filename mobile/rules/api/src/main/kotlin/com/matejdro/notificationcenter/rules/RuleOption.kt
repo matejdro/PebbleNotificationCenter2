@@ -23,6 +23,8 @@ object RuleOption {
       setOf("Yes", "No", "Okay")
    )
 
+   val autoAppPause = BooleanPreferenceKeyWithDefault("auto_app_pause", false)
+
    val muteSilentNotifications = BooleanPreferenceKeyWithDefault("mute_silent_notifications", true)
    val muteDndNotifications = BooleanPreferenceKeyWithDefault("mute_dnd_notifications", true)
    val muteIdenticalNotifications = BooleanPreferenceKeyWithDefault("mute_identical_notifications", true)

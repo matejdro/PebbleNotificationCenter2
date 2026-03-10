@@ -1,6 +1,8 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import androidx.datastore.preferences.core.Preferences
+import com.matejdro.notificationcenter.rules.RuleOption
+import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -21,6 +23,9 @@ class PauseControllerImpl(
       notification: ParsedNotification,
       preferences: Preferences,
    ) {
+      if (preferences[RuleOption.autoAppPause]) {
+         mutedApps[notification.pkg] = Unit
+      }
    }
 
    override suspend fun onNotificationDismissed(notification: ParsedNotification) {

@@ -902,12 +902,33 @@ class NotificationProcessorTest {
          isSilent = false
       )
 
-      pauseController.returnPaused = true
+      pauseController.pausedNotifications.add(notification)
 
       processor.onNotificationPosted(notification)
 
       openController.watchappOpened shouldBe false
       processor.pollNextVibration().shouldBeNull()
+   }
+
+   @Test
+   fun `It should vibrate for notifications that get paused on insert`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isSilent = false
+      )
+
+      pauseController.becomePausedOnNewCall = true
+
+      processor.onNotificationPosted(notification)
+
+      openController.watchappOpened shouldBe true
+      processor.pollNextVibration().shouldNotBeNull()
    }
 
    @Test
@@ -923,7 +944,7 @@ class NotificationProcessorTest {
          isSilent = false
       )
 
-      pauseController.returnPaused = true
+      pauseController.becomePausedOnNewCall = true
 
       processor.onNotificationPosted(notification)
 
@@ -937,7 +958,7 @@ class NotificationProcessorTest {
    }
 
    @Test
-   fun `Refresh paused status of all notifications of a specific package when notify mute change is called`() = runTest {
+   fun `Refresh paused status of all notifications of a specific package when notify pause change is called`() = runTest {
       val notificationA = ParsedNotification(
          "keyA",
          "com.app",
@@ -973,7 +994,8 @@ class NotificationProcessorTest {
       processor.onNotificationPosted(notificationC)
       runCurrent()
 
-      pauseController.returnPaused = true
+      pauseController.pausedNotifications.add(notificationA)
+      pauseController.pausedNotifications.add(notificationB)
       processor.notifyPackagePauseStatusChanged("com.app")
       runCurrent()
 
@@ -1001,7 +1023,7 @@ class NotificationProcessorTest {
    }
 
    @Test
-   fun `Re-sync notifications with changed mute status`() = runTest {
+   fun `Re-sync notifications with changed pause status`() = runTest {
       val notificationA = ParsedNotification(
          "keyA",
          "com.app",
@@ -1032,16 +1054,16 @@ class NotificationProcessorTest {
          Instant.ofEpochSecond(1_767_554_305)
       )
 
-      pauseController.returnPaused = true
+      pauseController.becomePausedOnNewCall = true
       processor.onNotificationPosted(notificationA)
-      pauseController.returnPaused = false
+      pauseController.becomePausedOnNewCall = false
       processor.onNotificationPosted(notificationB)
       processor.onNotificationPosted(notificationC)
       runCurrent()
 
       watchSyncer.syncedNotifications.clear()
 
-      pauseController.returnPaused = true
+      pauseController.pausedNotifications.add(notificationB)
       processor.notifyPackagePauseStatusChanged("com.app")
       runCurrent()
 

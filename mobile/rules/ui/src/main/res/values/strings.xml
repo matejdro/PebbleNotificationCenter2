@@ -88,4 +88,10 @@
     <string name="setting_mute_silent_description">A list of options that show up on Reply action, in addition to the options
         already provided by the application.
     </string>
+    <string name="setting_auto_app_pause">Apply app pause automatically</string>
+    <string name="setting_auto_app_pause_description">Automatically apply app pause on all notifications matched by this
+        rule:\n\nAfter the first notification is received, the watch will not vibrate for any new notifications from this app
+        until it is manually unpaused or until all notifications from this app are dismissed.
+    </string>
+    <string name="pausing">Pausing</string>
 </resources>

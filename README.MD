@@ -68,7 +68,7 @@ If an indicator is filled with black color, it indicates the currently selected 
 
 When enabled, all vibrations from the app that created this notifications will be temporarily paused.
 
-The watch will not vibrate for any new notifications from this app until it is manually unmuted or until 
+The watch will not vibrate for any new notifications from this app until it is manually unpaused or until 
 all notifications from this app are dismissed.
 
 ## On the phone

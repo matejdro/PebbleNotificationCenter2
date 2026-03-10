@@ -49,14 +49,18 @@ class NotificationProcessor(
          return
       }
 
-      val actions = processActions(parsedNotification, pauseController.isNotificationPaused(parsedNotification))
+      val pausedBeforeInsert = pauseController.isNotificationPaused(parsedNotification)
+      pauseController.onNewNotification(parsedNotification, settings)
+      val paused = pauseController.isNotificationPaused(parsedNotification)
+
+      val actions = processActions(parsedNotification, paused)
 
       val initialProcessedNotification = ProcessedNotification(
          parsedNotification,
          0,
          actions,
          unread = !suppressVibration,
-         paused = pauseController.isNotificationPaused(parsedNotification)
+         paused = paused
       )
       val bucketId = watchSyncer.syncNotification(initialProcessedNotification)
 
@@ -75,15 +79,14 @@ class NotificationProcessor(
          previousNotification,
          parsedNotification,
          suppressVibration,
-         settings
+         settings,
+         pausedBeforeInsert
       )
       if (vibrationPattern != null) {
          logcat { "Vibrating with ${vibrationPattern.contentToString()}" }
          nextVibration.set(vibrationPattern)
          openController.openWatchapp()
       }
-
-      pauseController.onNewNotification(parsedNotification, settings)
 
       notifications[bucketId] = processedNotification
       notificationsByKey[parsedNotification.key] = processedNotification
@@ -132,6 +135,7 @@ class NotificationProcessor(
       notification: ParsedNotification,
       suppressVibration: Boolean,
       preferences: Preferences,
+      pausedBeforeInsert: Boolean,
    ): IntArray? {
       val pattern = (
          notification.overrideVibrationPattern
@@ -156,7 +160,7 @@ class NotificationProcessor(
          return null
       }
 
-      if (pauseController.isNotificationPaused(notification)) {
+      if (pausedBeforeInsert) {
          logcat { "Not vibrating: paused" }
          return null
       }
@@ -234,7 +238,7 @@ class NotificationProcessor(
             if (newPaused != oldNotification.paused) {
                oldNotification.copy(
                   paused = newPaused,
-                  actions = oldNotification.actions.changePauseActions(newPaused)
+                  actions = oldNotification.actions.renamePauseActions(newPaused)
                )
             } else {
                oldNotification
@@ -293,7 +297,7 @@ class NotificationProcessor(
       watchSyncer.prepareNotificationReadStatus(notification)
    }
 
-   private fun List<Action>.changePauseActions(newPaused: Boolean): List<Action> = map { action ->
+   private fun List<Action>.renamePauseActions(newPaused: Boolean): List<Action> = map { action ->
       if (action is Action.PauseApp) {
          action.copy(
             title = if (newPaused) {
