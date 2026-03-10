@@ -159,9 +159,13 @@ void notification_window_ingest_bucket_metadata()
         uint8_t on_watch_flags[] = {0};
         persist_read_data(STORAGE_BUCKET_FLAGS_ID_MIN + id, on_watch_flags, 1);
 
-        if (flags == 1 && on_watch_flags[0] != 1)
+        if ((flags & 0x01) != 0 && on_watch_flags[0] != 1)
         {
             window_notification_data.dot_states[count_without_settings] = UNREAD;
+        }
+        else if ((flags & 0x02) != 0)
+        {
+            window_notification_data.dot_states[count_without_settings] = PAUSED;
         }
         else
         {
@@ -224,7 +228,13 @@ static void on_bucket_updated(const BucketMetadata bucket_metadata, void* contex
     {
         if (buckets[i].data->id == new_notification_id)
         {
-            if (bucket_metadata.flags == 1)
+            const uint8_t flags = bucket_metadata.flags;
+
+            if ((flags & 0x01) != 0)
+            {
+                window_notification_data.dot_states[count_without_settings] = UNREAD;
+            }
+            else if ((flags & 0x02) != 0)
             {
                 window_notification_data.dot_states[count_without_settings] = UNREAD;
             }

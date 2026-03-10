@@ -6,6 +6,7 @@ import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotific
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import java.time.Instant
 
@@ -16,7 +17,7 @@ class PauseControllerImplTest {
    private val pauseController = PauseControllerImpl({ fakeRepo })
 
    @Test
-   fun `A notification should not be muted by default`() {
+   fun `A notification should not be muted by default`() = runTest {
       val notification = ParsedNotification(
          "key",
          "com.app",
@@ -34,7 +35,7 @@ class PauseControllerImplTest {
    }
 
    @Test
-   fun `A notification should be muted after toggling mute`() {
+   fun `A notification should be muted after toggling mute`() = runTest {
       val notification = ParsedNotification(
          "key",
          "com.app",
@@ -56,7 +57,7 @@ class PauseControllerImplTest {
    }
 
    @Test
-   fun `A notification should be unmuted after toggling mute twice`() {
+   fun `A notification should be unmuted after toggling mute twice`() = runTest {
       val notification = ParsedNotification(
          "key",
          "com.app",
@@ -78,7 +79,7 @@ class PauseControllerImplTest {
    }
 
    @Test
-   fun `Notifications from a specific app should remain paused until all notifications from that app are gone`() {
+   fun `Notifications from a specific app should remain paused until all notifications from that app are gone`() = runTest {
       val notificationA = ParsedNotification(
          "keyA",
          "com.app",

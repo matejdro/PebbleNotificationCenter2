@@ -907,4 +907,118 @@ class NotificationProcessorTest {
       openController.watchappOpened shouldBe false
       processor.pollNextVibration().shouldBeNull()
    }
+
+   @Test
+   fun `It should mark paused notifications as paused`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isSilent = false
+      )
+
+      pauseController.returnPaused = true
+
+      processor.onNotificationPosted(notification)
+
+      processor.getNotification(1).shouldNotBeNull().paused shouldBe true
+   }
+
+   @Test
+   fun `Refresh mute status of all notifications of a specific package when notify mute change is called`() = runTest {
+      val notificationA = ParsedNotification(
+         "keyA",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      val notificationB = ParsedNotification(
+         "keyB",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      val notificationC = ParsedNotification(
+         "keyC",
+         "another.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notificationA)
+      processor.onNotificationPosted(notificationB)
+      processor.onNotificationPosted(notificationC)
+      runCurrent()
+
+      pauseController.returnPaused = true
+      processor.notifyPackagePauseStatusChanged("com.app")
+      runCurrent()
+
+      processor.getNotification(1).shouldNotBeNull().paused shouldBe true
+      processor.getNotification(2).shouldNotBeNull().paused shouldBe true
+      processor.getNotification(3).shouldNotBeNull().paused shouldBe false
+   }
+
+   @Test
+   fun `Re-sync notifications with changed mute status`() = runTest {
+      val notificationA = ParsedNotification(
+         "keyA",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      val notificationB = ParsedNotification(
+         "keyB",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      val notificationC = ParsedNotification(
+         "keyC",
+         "another.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      pauseController.returnPaused = true
+      processor.onNotificationPosted(notificationA)
+      pauseController.returnPaused = false
+      processor.onNotificationPosted(notificationB)
+      processor.onNotificationPosted(notificationC)
+      runCurrent()
+
+      watchSyncer.syncedNotifications.clear()
+
+      pauseController.returnPaused = true
+      processor.notifyPackagePauseStatusChanged("com.app")
+      runCurrent()
+
+      watchSyncer.syncedNotifications.map { it.bucketId }.shouldContainExactly(2)
+   }
 }

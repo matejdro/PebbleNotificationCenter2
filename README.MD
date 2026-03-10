@@ -29,10 +29,11 @@ A WIP improved notifications app for the PebbleOS watches
 
 ### Notification list indicators
 
-If an indicator is filled with black color, it indicates the currently selected notification.
+If an indicator is filled with black color, it indicates the currently selected notification. 
 
-* Diamond (◆) - Unread noitifcation
-* Circle (●) - Read notification
+* Diamond (◆) - Unread notification
+* Square (■) - Paused notification (see [Special Actions](#special-actions) below)
+* Circle (●) - Read, unpaused notification
 * Right arrow (>) - There are more notifications that way
 * Left arrow (<) - There are more notifications that way
 

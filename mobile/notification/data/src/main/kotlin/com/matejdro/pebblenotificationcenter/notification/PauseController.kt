@@ -23,7 +23,7 @@ class PauseControllerImpl(
    ) {
    }
 
-   override fun onNotificationDismissed(notification: ParsedNotification) {
+   override suspend fun onNotificationDismissed(notification: ParsedNotification) {
       val existingNotificationsFromThisPkg = repo().getAllActiveNotifications().filter { it.systemData.pkg == notification.pkg }
       if (existingNotificationsFromThisPkg.isEmpty()) {
          mutedApps.remove(notification.pkg)
@@ -35,7 +35,7 @@ class PauseControllerImpl(
       return mutedApps.containsKey(notification.pkg)
    }
 
-   override fun toggleAppPause(notification: ParsedNotification) {
+   override suspend fun toggleAppPause(notification: ParsedNotification) {
       if (mutedApps.containsKey(notification.pkg)) {
          logcat { "Package ${notification.pkg} is not paused anymore" }
          mutedApps.remove(notification.pkg)
@@ -51,9 +51,9 @@ class PauseControllerImpl(
 interface PauseController {
    fun onNewNotification(notification: ParsedNotification, preferences: Preferences)
 
-   fun onNotificationDismissed(notification: ParsedNotification)
+   suspend fun onNotificationDismissed(notification: ParsedNotification)
 
    fun isNotificationPaused(notification: ParsedNotification): Boolean
 
-   fun toggleAppPause(notification: ParsedNotification)
+   suspend fun toggleAppPause(notification: ParsedNotification)
 }

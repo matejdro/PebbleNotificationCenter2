@@ -518,6 +518,66 @@ class WatchSyncerImplTest {
       )
    }
 
+   @Test
+   fun `Set paused flag when the notification is paused`() = scope.runTest {
+      init()
+      watchSyncer.syncNotification(
+         ProcessedNotification(
+            ParsedNotification(
+               "key",
+               "com.app",
+               "Title",
+               "sTitle",
+               "Body",
+               // 19:18:25 GMT | Sunday, January 4, 2026
+               Instant.ofEpochSecond(1_767_554_305)
+            ),
+            paused = true
+         )
+      )
+
+      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+         toVersion = 1u,
+         activeBuckets = listOf(2u),
+         activeBucketFlags = listOf(2u),
+         bucketsToUpdate = listOf(
+            Bucket(
+               2u,
+               byteArrayOf(
+                  // Timestamp, in 4 bytes
+                  0x69,
+                  0x5a,
+                  0xbd.toByte(),
+                  0x01,
+
+                  // UTF8 Bytes for the title, followed by null terminator
+                  84,
+                  105,
+                  116,
+                  108,
+                  101,
+                  0,
+
+                  // UTF8 Bytes for the subtitle, followed by null terminator
+                  115,
+                  84,
+                  105,
+                  116,
+                  108,
+                  101,
+                  0,
+
+                  // UTF8 Bytes for the body, NOT followed by null terminator
+                  66,
+                  111,
+                  100,
+                  121,
+               )
+            )
+         )
+      )
+   }
+
    private suspend fun init(enablePreferences: Boolean = false) {
       bucketSyncRepository.init(1, 2..BucketSyncRepository.MAX_BUCKET_ID)
       watchSyncer.init(enablePreferences)

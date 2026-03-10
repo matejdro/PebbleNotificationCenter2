@@ -16,7 +16,7 @@ class FakePauseController : PauseController {
       newNotifications += notification
    }
 
-   override fun onNotificationDismissed(notification: ParsedNotification) {
+   override suspend fun onNotificationDismissed(notification: ParsedNotification) {
       dismissedNotifications += notification
    }
 
@@ -24,7 +24,7 @@ class FakePauseController : PauseController {
       return returnPaused
    }
 
-   override fun toggleAppPause(notification: ParsedNotification) {
+   override suspend fun toggleAppPause(notification: ParsedNotification) {
       toggledNotifications += notification
    }
 }

@@ -18,6 +18,7 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.first
 import logcat.logcat
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 
 @Inject
@@ -31,7 +32,7 @@ class NotificationProcessor(
    private val globalPreferenceStore: DataStore<Preferences>,
    private val pauseController: PauseController,
 ) : NotificationRepository {
-   private val notifications = HashMap<Int, ProcessedNotification>()
+   private val notifications = ConcurrentHashMap<Int, ProcessedNotification>()
    private val notificationsByKey = HashMap<String, ProcessedNotification>()
 
    private var nextVibration: AtomicReference<IntArray?> = AtomicReference(null)
@@ -50,7 +51,13 @@ class NotificationProcessor(
 
       val actions = processActions(parsedNotification)
 
-      val initialProcessedNotification = ProcessedNotification(parsedNotification, 0, actions, unread = !suppressVibration)
+      val initialProcessedNotification = ProcessedNotification(
+         parsedNotification,
+         0,
+         actions,
+         unread = !suppressVibration,
+         paused = pauseController.isNotificationPaused(parsedNotification)
+      )
       val bucketId = watchSyncer.syncNotification(initialProcessedNotification)
 
       val processedNotification = initialProcessedNotification.copy(bucketId = bucketId)
@@ -209,7 +216,29 @@ class NotificationProcessor(
       return defaultActionsPre + nativeActions + defaultActionsPost
    }
 
-   override fun notifyPackagePauseStatusChanged(pkg: String) {
+   override suspend fun notifyPackagePauseStatusChanged(pkg: String) {
+      val activeMatchingNotifications = getAllActiveNotifications().filter { it.systemData.pkg == pkg }
+      for (notificationIterator in activeMatchingNotifications) {
+         val newNotification = notificationsByKey.compute(notificationIterator.systemData.key) { _, oldNotification ->
+            if (oldNotification == null) {
+               return@compute null
+            }
+            val newPaused = pauseController.isNotificationPaused(oldNotification.systemData)
+
+            if (newPaused != oldNotification.paused) {
+               oldNotification.copy(paused = newPaused)
+            } else {
+               oldNotification
+            }
+         }
+         if (newNotification != null) {
+            notifications[newNotification.bucketId] = newNotification
+
+            if (newNotification != notificationIterator) {
+               watchSyncer.syncNotification(newNotification)
+            }
+         }
+      }
    }
 
    suspend fun onNotificationDismissed(key: String) {

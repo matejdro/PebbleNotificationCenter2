@@ -9,5 +9,5 @@ interface NotificationRepository {
 
    suspend fun markAsRead(bucketId: Int)
 
-   fun notifyPackagePauseStatusChanged(pkg: String)
+   suspend fun notifyPackagePauseStatusChanged(pkg: String)
 }

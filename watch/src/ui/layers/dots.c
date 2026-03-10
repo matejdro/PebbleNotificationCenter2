@@ -93,13 +93,17 @@ static void dots_layer_paint(Layer* layer, GContext* ctx)
         const enum DotState state = dots_layer->dot_states[i];
 
 #ifdef  PBL_COLOR
-        if (state == UNREAD)
+        switch (state)
         {
+        case UNREAD:
+            circlesColor = GColorRajah;
+            break;
+        case PAUSED:
+            circlesColor = GColorVeryLightBlue;
+            break;
+        default:
             circlesColor = GColorWhite;
-        }
-        else
-        {
-            circlesColor = GColorWhite;
+            break;
         }
 # else
         circlesColor = GColorWhite;
@@ -139,6 +143,13 @@ static void dots_layer_paint(Layer* layer, GContext* ctx)
 
                 graphics_draw_bitmap_in_rect(ctx, indicator, GRect(x - radius, 8 - radius, diameter, diameter));
             }
+        }
+        else if (state == PAUSED)
+        {
+            if (selected_dot == i)
+                graphics_draw_rect(ctx, GRect(x - radius, 8 - radius, diameter, diameter));
+            else
+                graphics_fill_rect(ctx, GRect(x - radius, 8 - radius, diameter, diameter), 0, GCornerNone);
         }
         else
         {

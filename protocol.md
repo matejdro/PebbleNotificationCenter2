@@ -144,6 +144,7 @@ Bucket data:
 
 Bucket flags:
 
+* 0x02 - When set, notification has a pause enabled
 * 0x01 - When set, notification was not seen by the user yet
 
 Bucket data:

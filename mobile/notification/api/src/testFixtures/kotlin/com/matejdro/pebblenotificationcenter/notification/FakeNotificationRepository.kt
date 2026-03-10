@@ -35,7 +35,7 @@ class FakeNotificationRepository : NotificationRepository {
       notificationsMarkedAsRead.add(bucketId)
    }
 
-   override fun notifyPackagePauseStatusChanged(pkg: String) {
+   override suspend fun notifyPackagePauseStatusChanged(pkg: String) {
       notifiedPackageStatusesChanged.add(pkg)
    }
 }

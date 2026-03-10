@@ -5,4 +5,5 @@ data class ProcessedNotification(
    val bucketId: Int = 0,
    val actions: List<Action> = emptyList(),
    val unread: Boolean = false,
+   val paused: Boolean = false,
 )

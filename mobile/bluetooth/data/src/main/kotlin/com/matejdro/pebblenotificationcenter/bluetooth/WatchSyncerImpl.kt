@@ -101,10 +101,17 @@ class WatchSyncerImpl(
       return id
    }
 
-   private fun getNotificationFlags(notification: ProcessedNotification): UByte = if (notification.unread) {
-      1u
-   } else {
-      0u
+   private fun getNotificationFlags(notification: ProcessedNotification): UByte {
+      var flags: UByte = 0u
+
+      if (notification.unread) {
+         flags = flags or 0x01u
+      }
+      if (notification.paused) {
+         flags = flags or 0x02u
+      }
+
+      return flags
    }
 
    override suspend fun clearAllNotifications() {

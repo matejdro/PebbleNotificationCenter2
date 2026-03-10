@@ -4,7 +4,8 @@
 enum DotState
 {
     NORMAL,
-    UNREAD
+    UNREAD,
+    PAUSED
 };
 
 ;
