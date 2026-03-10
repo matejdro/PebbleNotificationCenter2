@@ -22,6 +22,7 @@ import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -58,7 +59,8 @@ class NotificationProcessorTest {
    @BeforeEach
    fun setUp() {
       context.resources.putString(R.string.dismiss, "Dismiss")
-      context.resources.putString(R.string.pause_app, "Toggle app pause")
+      context.resources.putString(R.string.pause_app, "Pause app")
+      context.resources.putString(R.string.unpause_app, "Unpause app")
 
       runBlocking {
          rulesRepository.insert("Default Rule")
@@ -199,7 +201,7 @@ class NotificationProcessorTest {
 
       processor.getNotification(1)?.actions shouldBe listOf(
          Action.Dismiss("Dismiss"),
-         Action.PauseApp("Toggle app pause")
+         Action.PauseApp("Pause app")
       )
    }
 
@@ -925,11 +927,17 @@ class NotificationProcessorTest {
 
       processor.onNotificationPosted(notification)
 
-      processor.getNotification(1).shouldNotBeNull().paused shouldBe true
+      processor.getNotification(1).shouldNotBeNull().apply {
+         paused shouldBe true
+
+         actions
+            .shouldContain(Action.PauseApp("Unpause app"))
+            .shouldNotContain(Action.PauseApp("Pause app"))
+      }
    }
 
    @Test
-   fun `Refresh mute status of all notifications of a specific package when notify mute change is called`() = runTest {
+   fun `Refresh paused status of all notifications of a specific package when notify mute change is called`() = runTest {
       val notificationA = ParsedNotification(
          "keyA",
          "com.app",
@@ -972,6 +980,24 @@ class NotificationProcessorTest {
       processor.getNotification(1).shouldNotBeNull().paused shouldBe true
       processor.getNotification(2).shouldNotBeNull().paused shouldBe true
       processor.getNotification(3).shouldNotBeNull().paused shouldBe false
+
+      processor.getNotification(1)
+         .shouldNotBeNull()
+         .actions
+         .shouldContain(Action.PauseApp("Unpause app"))
+         .shouldNotContain(Action.PauseApp("Pause app"))
+
+      processor.getNotification(2)
+         .shouldNotBeNull()
+         .actions
+         .shouldContain(Action.PauseApp("Unpause app"))
+         .shouldNotContain(Action.PauseApp("Pause app"))
+
+      processor.getNotification(3)
+         .shouldNotBeNull()
+         .actions
+         .shouldContain(Action.PauseApp("Pause app"))
+         .shouldNotContain(Action.PauseApp("Unpause app"))
    }
 
    @Test

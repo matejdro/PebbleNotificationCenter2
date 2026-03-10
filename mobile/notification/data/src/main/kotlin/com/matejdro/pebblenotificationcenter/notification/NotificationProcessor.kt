@@ -49,7 +49,7 @@ class NotificationProcessor(
          return
       }
 
-      val actions = processActions(parsedNotification)
+      val actions = processActions(parsedNotification, pauseController.isNotificationPaused(parsedNotification))
 
       val initialProcessedNotification = ProcessedNotification(
          parsedNotification,
@@ -189,7 +189,7 @@ class NotificationProcessor(
       return pattern
    }
 
-   private fun processActions(parsedNotification: ParsedNotification): List<Action> {
+   private fun processActions(parsedNotification: ParsedNotification, notificationPaused: Boolean): List<Action> {
       val defaultActionsPre = listOf<Action>(
          Action.Dismiss(context.getString(R.string.dismiss)),
       )
@@ -210,7 +210,13 @@ class NotificationProcessor(
       }
 
       val defaultActionsPost = listOf<Action>(
-         Action.PauseApp(context.getString(R.string.pause_app)),
+         Action.PauseApp(
+            if (notificationPaused) {
+               context.getString(R.string.unpause_app)
+            } else {
+               context.getString(R.string.pause_app)
+            }
+         ),
       )
 
       return defaultActionsPre + nativeActions + defaultActionsPost
@@ -226,7 +232,10 @@ class NotificationProcessor(
             val newPaused = pauseController.isNotificationPaused(oldNotification.systemData)
 
             if (newPaused != oldNotification.paused) {
-               oldNotification.copy(paused = newPaused)
+               oldNotification.copy(
+                  paused = newPaused,
+                  actions = oldNotification.actions.changePauseActions(newPaused)
+               )
             } else {
                oldNotification
             }
@@ -282,5 +291,19 @@ class NotificationProcessor(
 
       notificationsByKey[notification.systemData.key] = notification
       watchSyncer.prepareNotificationReadStatus(notification)
+   }
+
+   private fun List<Action>.changePauseActions(newPaused: Boolean): List<Action> = map { action ->
+      if (action is Action.PauseApp) {
+         action.copy(
+            title = if (newPaused) {
+               context.getString(R.string.unpause_app)
+            } else {
+               context.getString(R.string.pause_app)
+            },
+         )
+      } else {
+         action
+      }
    }
 }

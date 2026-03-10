@@ -64,7 +64,7 @@ If an indicator is filled with black color, it indicates the currently selected 
 
 ### Special actions
 
-### Toggle app pause
+### Pause/Unpause app
 
 When enabled, all vibrations from the app that created this notifications will be temporarily paused.
 

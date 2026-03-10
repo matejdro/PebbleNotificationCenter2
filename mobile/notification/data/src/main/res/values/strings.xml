@@ -2,5 +2,6 @@
 <resources>
     <string name="dismiss">Dismiss</string>
     <string name="voice">- Voice -</string>
-    <string name="pause_app">Toggle app pause</string>
+    <string name="pause_app">Pause app</string>
+    <string name="unpause_app">Unpause app</string>
 </resources>
