@@ -85,6 +85,19 @@ static void reload_data_for_current_bucket()
     window_notification_ui_redraw_scroller_content();
 }
 
+static uint8_t get_bucket_flags(const uint8_t id)
+{
+    for (int i = 0; i < buckets->count; i++)
+    {
+        if (buckets->data[i].id == id)
+        {
+            return buckets->data[i].flags;
+        }
+    }
+
+    return 0;
+}
+
 void window_notification_data_select_bucket_on_index(const uint8_t target_index)
 {
     if (window_notification_data.currently_selected_bucket != 0)
@@ -94,8 +107,17 @@ void window_notification_data_select_bucket_on_index(const uint8_t target_index)
 
         if (window_notification_data.dot_states[previously_selected_bucket_index] == UNREAD)
         {
-            // After user switches away from "unread" notification, it should change to read
-            window_notification_data.dot_states[previously_selected_bucket_index] = NORMAL;
+            const uint8_t flags = get_bucket_flags(window_notification_data.currently_selected_bucket);
+
+            // After user switches away from "unread" notification, it should change back to read or paused
+            if ((flags & 0x02) != 0)
+            {
+                window_notification_data.dot_states[previously_selected_bucket_index] = PAUSED;
+            }
+            else
+            {
+                window_notification_data.dot_states[previously_selected_bucket_index] = NORMAL;
+            }
             window_notification_ui_on_bucket_list_updated();
         }
     }
@@ -226,7 +248,9 @@ static void on_bucket_updated(const BucketMetadata bucket_metadata, void* contex
     uint8_t count_without_settings = 0;
     for (int i = 0; i < buckets->count; i++)
     {
-        if (buckets[i].data->id == new_notification_id)
+        const uint8_t id = buckets->data[i].id;
+
+        if (id == new_notification_id)
         {
             const uint8_t flags = bucket_metadata.flags;
 
@@ -236,7 +260,7 @@ static void on_bucket_updated(const BucketMetadata bucket_metadata, void* contex
             }
             else if ((flags & 0x02) != 0)
             {
-                window_notification_data.dot_states[count_without_settings] = UNREAD;
+                window_notification_data.dot_states[count_without_settings] = PAUSED;
             }
             else
             {
@@ -245,7 +269,8 @@ static void on_bucket_updated(const BucketMetadata bucket_metadata, void* contex
             window_notification_ui_on_bucket_list_updated();
             break;
         }
-        if (new_notification_id != 1)
+
+        if (id != 1)
         {
             count_without_settings++;
         }
