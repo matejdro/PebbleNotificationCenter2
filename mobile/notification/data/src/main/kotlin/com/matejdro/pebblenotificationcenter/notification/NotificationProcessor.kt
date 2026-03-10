@@ -10,7 +10,9 @@ import com.matejdro.pebblenotificationcenter.bluetooth.WatchSyncer
 import com.matejdro.pebblenotificationcenter.bluetooth.WatchappOpenController
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.notification.model.PauseStatus
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
+import com.matejdro.pebblenotificationcenter.notification.model.any
 import com.matejdro.pebblenotificationcenter.notification.utils.parseVibrationPattern
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -49,18 +51,18 @@ class NotificationProcessor(
          return
       }
 
-      val pausedBeforeInsert = pauseController.isNotificationPaused(parsedNotification)
+      val pauseStatusBeforeInsert = pauseController.computePauseStatus(parsedNotification)
       pauseController.onNewNotification(parsedNotification, settings)
-      val paused = pauseController.isNotificationPaused(parsedNotification)
+      val pauseStatus = pauseController.computePauseStatus(parsedNotification)
 
-      val actions = processActions(parsedNotification, paused)
+      val actions = processActions(parsedNotification, pauseStatus)
 
       val initialProcessedNotification = ProcessedNotification(
          parsedNotification,
          0,
          actions,
          unread = !suppressVibration,
-         paused = paused
+         paused = pauseStatus
       )
       val bucketId = watchSyncer.syncNotification(initialProcessedNotification)
 
@@ -80,7 +82,7 @@ class NotificationProcessor(
          parsedNotification,
          suppressVibration,
          settings,
-         pausedBeforeInsert
+         pauseStatusBeforeInsert
       )
       if (vibrationPattern != null) {
          logcat { "Vibrating with ${vibrationPattern.contentToString()}" }
@@ -135,7 +137,7 @@ class NotificationProcessor(
       notification: ParsedNotification,
       suppressVibration: Boolean,
       preferences: Preferences,
-      pausedBeforeInsert: Boolean,
+      pausedBeforeInsert: PauseStatus,
    ): IntArray? {
       val pattern = (
          notification.overrideVibrationPattern
@@ -160,7 +162,7 @@ class NotificationProcessor(
          return null
       }
 
-      if (pausedBeforeInsert) {
+      if (pausedBeforeInsert.any) {
          logcat { "Not vibrating: paused" }
          return null
       }
@@ -193,7 +195,7 @@ class NotificationProcessor(
       return pattern
    }
 
-   private fun processActions(parsedNotification: ParsedNotification, notificationPaused: Boolean): List<Action> {
+   private fun processActions(parsedNotification: ParsedNotification, pauseStatus: PauseStatus): List<Action> {
       val defaultActionsPre = listOf<Action>(
          Action.Dismiss(context.getString(R.string.dismiss)),
       )
@@ -215,10 +217,17 @@ class NotificationProcessor(
 
       val defaultActionsPost = listOf<Action>(
          Action.PauseApp(
-            if (notificationPaused) {
+            if (pauseStatus.app) {
                context.getString(R.string.unpause_app)
             } else {
                context.getString(R.string.pause_app)
+            }
+         ),
+         Action.PauseConversation(
+            if (pauseStatus.conversation) {
+               context.getString(R.string.unpause_conversation)
+            } else {
+               context.getString(R.string.pause_conversation)
             }
          ),
       )
@@ -233,7 +242,7 @@ class NotificationProcessor(
             if (oldNotification == null) {
                return@compute null
             }
-            val newPaused = pauseController.isNotificationPaused(oldNotification.systemData)
+            val newPaused = pauseController.computePauseStatus(oldNotification.systemData)
 
             if (newPaused != oldNotification.paused) {
                oldNotification.copy(
@@ -297,17 +306,31 @@ class NotificationProcessor(
       watchSyncer.prepareNotificationReadStatus(notification)
    }
 
-   private fun List<Action>.renamePauseActions(newPaused: Boolean): List<Action> = map { action ->
-      if (action is Action.PauseApp) {
-         action.copy(
-            title = if (newPaused) {
-               context.getString(R.string.unpause_app)
-            } else {
-               context.getString(R.string.pause_app)
-            },
-         )
-      } else {
-         action
+   private fun List<Action>.renamePauseActions(newPausedStatus: PauseStatus): List<Action> = map { action ->
+      when (action) {
+         is Action.PauseApp -> {
+            action.copy(
+               title = if (newPausedStatus.app) {
+                  context.getString(R.string.unpause_app)
+               } else {
+                  context.getString(R.string.pause_app)
+               },
+            )
+         }
+
+         is Action.PauseConversation -> {
+            action.copy(
+               title = if (newPausedStatus.conversation) {
+                  context.getString(R.string.unpause_conversation)
+               } else {
+                  context.getString(R.string.pause_conversation)
+               },
+            )
+         }
+
+         else -> {
+            action
+         }
       }
    }
 }

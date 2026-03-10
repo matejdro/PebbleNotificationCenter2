@@ -56,7 +56,6 @@ data class NativeAction(
    override fun hashCode(): Int {
       var result = allowFreeFormInput.hashCode()
       result = 31 * result + text.hashCode()
-      result = 31 * result + pendingIntent.hashCode()
       result = 31 * result + (remoteInputResultKey?.hashCode() ?: 0)
       result = 31 * result + cannedTexts.hashCode()
       return result

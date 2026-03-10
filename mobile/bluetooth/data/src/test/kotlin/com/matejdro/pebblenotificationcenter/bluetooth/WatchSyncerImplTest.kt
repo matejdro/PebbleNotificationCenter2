@@ -10,6 +10,7 @@ import com.matejdro.notificationcenter.common.test.InMemoryDataStore
 import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
 import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.notification.model.PauseStatus
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import dispatch.core.DefaultCoroutineScope
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -519,7 +520,7 @@ class WatchSyncerImplTest {
    }
 
    @Test
-   fun `Set paused flag when the notification is paused`() = scope.runTest {
+   fun `Set paused flag when the notification is app paused`() = scope.runTest {
       init()
       watchSyncer.syncNotification(
          ProcessedNotification(
@@ -532,7 +533,67 @@ class WatchSyncerImplTest {
                // 19:18:25 GMT | Sunday, January 4, 2026
                Instant.ofEpochSecond(1_767_554_305)
             ),
-            paused = true
+            paused = PauseStatus(app = true, conversation = false)
+         )
+      )
+
+      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+         toVersion = 1u,
+         activeBuckets = listOf(2u),
+         activeBucketFlags = listOf(2u),
+         bucketsToUpdate = listOf(
+            Bucket(
+               2u,
+               byteArrayOf(
+                  // Timestamp, in 4 bytes
+                  0x69,
+                  0x5a,
+                  0xbd.toByte(),
+                  0x01,
+
+                  // UTF8 Bytes for the title, followed by null terminator
+                  84,
+                  105,
+                  116,
+                  108,
+                  101,
+                  0,
+
+                  // UTF8 Bytes for the subtitle, followed by null terminator
+                  115,
+                  84,
+                  105,
+                  116,
+                  108,
+                  101,
+                  0,
+
+                  // UTF8 Bytes for the body, NOT followed by null terminator
+                  66,
+                  111,
+                  100,
+                  121,
+               )
+            )
+         )
+      )
+   }
+
+   @Test
+   fun `Set paused flag when the notification is conversation paused`() = scope.runTest {
+      init()
+      watchSyncer.syncNotification(
+         ProcessedNotification(
+            ParsedNotification(
+               "key",
+               "com.app",
+               "Title",
+               "sTitle",
+               "Body",
+               // 19:18:25 GMT | Sunday, January 4, 2026
+               Instant.ofEpochSecond(1_767_554_305)
+            ),
+            paused = PauseStatus(app = false, conversation = true)
          )
       )
 

@@ -70,4 +70,5 @@ sealed class Action {
    }
 
    data class PauseApp(override val title: String) : Action()
+   data class PauseConversation(override val title: String) : Action()
 }

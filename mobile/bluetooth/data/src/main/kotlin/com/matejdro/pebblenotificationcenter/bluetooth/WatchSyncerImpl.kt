@@ -12,6 +12,7 @@ import com.matejdro.pebble.bluetooth.common.util.fixPebbleIndentation
 import com.matejdro.pebble.bluetooth.common.util.writeUByte
 import com.matejdro.pebble.bluetooth.common.util.writeUInt
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
+import com.matejdro.pebblenotificationcenter.notification.model.any
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -107,7 +108,8 @@ class WatchSyncerImpl(
       if (notification.unread) {
          flags = flags or 0x01u
       }
-      if (notification.paused) {
+
+      if (notification.paused.any) {
          flags = flags or 0x02u
       }
 

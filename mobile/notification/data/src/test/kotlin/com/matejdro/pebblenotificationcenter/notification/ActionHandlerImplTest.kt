@@ -383,7 +383,36 @@ class ActionHandlerImplTest {
 
       handler.handleAction(2, 0) shouldBe true
 
-      pauseController.toggledNotifications.shouldContainExactly(notification)
+      pauseController.toggledAppNotifications.shouldContainExactly(notification)
+   }
+
+   @Test
+   fun `Toggle conversation pause action`() = runTest {
+      insertDefaultRules()
+
+      val notification = ParsedNotification(
+         "keyNotification",
+         "",
+         "",
+         "",
+         "Hello",
+         Instant.MIN,
+      )
+      repo.putNotification(
+         2,
+         ProcessedNotification(
+            notification,
+            actions = listOf(
+               Action.PauseConversation("Toggle conversation pause")
+            )
+         ),
+      )
+
+      servicecontroller.returnValue = true
+
+      handler.handleAction(2, 0) shouldBe true
+
+      pauseController.toggledConversationNotifications.shouldContainExactly(notification)
    }
 
    private suspend fun insertDefaultRules() {

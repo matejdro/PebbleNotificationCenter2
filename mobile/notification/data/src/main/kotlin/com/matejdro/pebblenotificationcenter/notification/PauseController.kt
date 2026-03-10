@@ -4,6 +4,7 @@ import androidx.datastore.preferences.core.Preferences
 import com.matejdro.notificationcenter.rules.RuleOption
 import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.notification.model.PauseStatus
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Provider
@@ -18,6 +19,7 @@ class PauseControllerImpl(
 ) : PauseController {
    // Use Map because Java has no ConcurrentHashSet
    private val mutedApps = ConcurrentHashMap<String, Unit>()
+   private val mutedNotifications = ConcurrentHashMap<String, Unit>()
 
    override fun onNewNotification(
       notification: ParsedNotification,
@@ -34,10 +36,15 @@ class PauseControllerImpl(
          mutedApps.remove(notification.pkg)
          repo().notifyPackagePauseStatusChanged(notification.pkg)
       }
+
+      mutedNotifications.remove(notification.key)
    }
 
-   override fun isNotificationPaused(notification: ParsedNotification): Boolean {
-      return mutedApps.containsKey(notification.pkg)
+   override fun computePauseStatus(notification: ParsedNotification): PauseStatus {
+      return PauseStatus(
+         app = mutedApps.containsKey(notification.pkg),
+         conversation = mutedNotifications.containsKey(notification.key),
+      )
    }
 
    override suspend fun toggleAppPause(notification: ParsedNotification) {
@@ -51,6 +58,18 @@ class PauseControllerImpl(
 
       repo().notifyPackagePauseStatusChanged(notification.pkg)
    }
+
+   override suspend fun toggleConversationPause(notification: ParsedNotification) {
+      if (mutedNotifications.containsKey(notification.key)) {
+         logcat { "Notification ${notification.key} is not paused anymore" }
+         mutedNotifications.remove(notification.key)
+      } else {
+         logcat { "Notification ${notification.key} is now paused" }
+         mutedNotifications[notification.key] = Unit
+      }
+
+      repo().notifyPackagePauseStatusChanged(notification.pkg)
+   }
 }
 
 interface PauseController {
@@ -58,7 +77,8 @@ interface PauseController {
 
    suspend fun onNotificationDismissed(notification: ParsedNotification)
 
-   fun isNotificationPaused(notification: ParsedNotification): Boolean
+   fun computePauseStatus(notification: ParsedNotification): PauseStatus
 
    suspend fun toggleAppPause(notification: ParsedNotification)
+   suspend fun toggleConversationPause(notification: ParsedNotification)
 }

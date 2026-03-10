@@ -4,4 +4,6 @@
     <string name="voice">- Voice -</string>
     <string name="pause_app">Pause app</string>
     <string name="unpause_app">Unpause app</string>
+    <string name="pause_conversation">Pause convo</string>
+    <string name="unpause_conversation">Unpause convo</string>
 </resources>

@@ -93,6 +93,11 @@ class ActionHandlerImpl(
             pauseController.toggleAppPause(notification.systemData)
             true
          }
+
+         is Action.PauseConversation -> {
+            pauseController.toggleConversationPause(notification.systemData)
+            true
+         }
       }
    }
 }

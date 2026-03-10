@@ -15,6 +15,7 @@ import com.matejdro.pebblenotificationcenter.bluetooth.FakeWatchappOpenControlle
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.NativeAction
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.notification.model.PauseStatus
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
@@ -61,6 +62,8 @@ class NotificationProcessorTest {
       context.resources.putString(R.string.dismiss, "Dismiss")
       context.resources.putString(R.string.pause_app, "Pause app")
       context.resources.putString(R.string.unpause_app, "Unpause app")
+      context.resources.putString(R.string.pause_conversation, "Pause conversation")
+      context.resources.putString(R.string.unpause_conversation, "Unpause conversation")
 
       runBlocking {
          rulesRepository.insert("Default Rule")
@@ -201,7 +204,8 @@ class NotificationProcessorTest {
 
       processor.getNotification(1)?.actions shouldBe listOf(
          Action.Dismiss("Dismiss"),
-         Action.PauseApp("Pause app")
+         Action.PauseApp("Pause app"),
+         Action.PauseConversation("Pause conversation"),
       )
    }
 
@@ -890,7 +894,7 @@ class NotificationProcessorTest {
    }
 
    @Test
-   fun `It should not vibrate for notifications that are paused`() = runTest {
+   fun `It should not vibrate for notifications that are app paused`() = runTest {
       val notification = ParsedNotification(
          "key",
          "com.app",
@@ -902,7 +906,7 @@ class NotificationProcessorTest {
          isSilent = false
       )
 
-      pauseController.pausedNotifications.add(notification)
+      pauseController.pauseStatuses[notification] = PauseStatus(app = true)
 
       processor.onNotificationPosted(notification)
 
@@ -911,7 +915,7 @@ class NotificationProcessorTest {
    }
 
    @Test
-   fun `It should vibrate for notifications that get paused on insert`() = runTest {
+   fun `It should vibrate for notifications that get app paused on insert`() = runTest {
       val notification = ParsedNotification(
          "key",
          "com.app",
@@ -923,7 +927,7 @@ class NotificationProcessorTest {
          isSilent = false
       )
 
-      pauseController.becomePausedOnNewCall = true
+      pauseController.becomeAppPausedOnNewCall = true
 
       processor.onNotificationPosted(notification)
 
@@ -932,7 +936,7 @@ class NotificationProcessorTest {
    }
 
    @Test
-   fun `It should mark paused notifications as paused`() = runTest {
+   fun `It should mark app paused notifications as app paused`() = runTest {
       val notification = ParsedNotification(
          "key",
          "com.app",
@@ -944,12 +948,12 @@ class NotificationProcessorTest {
          isSilent = false
       )
 
-      pauseController.becomePausedOnNewCall = true
+      pauseController.becomeAppPausedOnNewCall = true
 
       processor.onNotificationPosted(notification)
 
       processor.getNotification(1).shouldNotBeNull().apply {
-         paused shouldBe true
+         paused.app shouldBe true
 
          actions
             .shouldContain(Action.PauseApp("Unpause app"))
@@ -958,7 +962,7 @@ class NotificationProcessorTest {
    }
 
    @Test
-   fun `Refresh paused status of all notifications of a specific package when notify pause change is called`() = runTest {
+   fun `Refresh app paused status of all notifications of a specific package when notify pause change is called`() = runTest {
       val notificationA = ParsedNotification(
          "keyA",
          "com.app",
@@ -994,14 +998,14 @@ class NotificationProcessorTest {
       processor.onNotificationPosted(notificationC)
       runCurrent()
 
-      pauseController.pausedNotifications.add(notificationA)
-      pauseController.pausedNotifications.add(notificationB)
+      pauseController.pauseStatuses[notificationA] = PauseStatus(app = true)
+      pauseController.pauseStatuses[notificationB] = PauseStatus(app = true)
       processor.notifyPackagePauseStatusChanged("com.app")
       runCurrent()
 
-      processor.getNotification(1).shouldNotBeNull().paused shouldBe true
-      processor.getNotification(2).shouldNotBeNull().paused shouldBe true
-      processor.getNotification(3).shouldNotBeNull().paused shouldBe false
+      processor.getNotification(1).shouldNotBeNull().paused.app shouldBe true
+      processor.getNotification(2).shouldNotBeNull().paused.app shouldBe true
+      processor.getNotification(3).shouldNotBeNull().paused.app shouldBe false
 
       processor.getNotification(1)
          .shouldNotBeNull()
@@ -1023,7 +1027,7 @@ class NotificationProcessorTest {
    }
 
    @Test
-   fun `Re-sync notifications with changed pause status`() = runTest {
+   fun `Re-sync notifications with changed app pause status`() = runTest {
       val notificationA = ParsedNotification(
          "keyA",
          "com.app",
@@ -1054,16 +1058,197 @@ class NotificationProcessorTest {
          Instant.ofEpochSecond(1_767_554_305)
       )
 
-      pauseController.becomePausedOnNewCall = true
+      pauseController.becomeAppPausedOnNewCall = true
       processor.onNotificationPosted(notificationA)
-      pauseController.becomePausedOnNewCall = false
+      pauseController.becomeAppPausedOnNewCall = false
       processor.onNotificationPosted(notificationB)
       processor.onNotificationPosted(notificationC)
       runCurrent()
 
       watchSyncer.syncedNotifications.clear()
 
-      pauseController.pausedNotifications.add(notificationB)
+      pauseController.pauseStatuses[notificationB] = PauseStatus(app = true)
+      processor.notifyPackagePauseStatusChanged("com.app")
+      runCurrent()
+
+      watchSyncer.syncedNotifications.map { it.bucketId }.shouldContainExactly(2)
+   }
+
+   @Test
+   fun `It should not vibrate for notifications that are conversation paused`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isSilent = false
+      )
+
+      pauseController.pauseStatuses[notification] = PauseStatus(conversation = true)
+
+      processor.onNotificationPosted(notification)
+
+      openController.watchappOpened shouldBe false
+      processor.pollNextVibration().shouldBeNull()
+   }
+
+   @Test
+   fun `It should vibrate for notifications that get conversation paused on insert`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isSilent = false
+      )
+
+      pauseController.becomeConversationPausedOnNewCall = true
+
+      processor.onNotificationPosted(notification)
+
+      openController.watchappOpened shouldBe true
+      processor.pollNextVibration().shouldNotBeNull()
+   }
+
+   @Test
+   fun `It should mark conversation paused notifications as conversation paused`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isSilent = false
+      )
+
+      pauseController.becomeConversationPausedOnNewCall = true
+
+      processor.onNotificationPosted(notification)
+
+      processor.getNotification(1).shouldNotBeNull().apply {
+         paused.conversation shouldBe true
+
+         actions
+            .shouldContain(Action.PauseConversation("Unpause conversation"))
+            .shouldNotContain(Action.PauseConversation("Pause conversation"))
+      }
+   }
+
+   @Test
+   fun `Refresh conversation paused status of a specific notification when notify pause change is called`() = runTest {
+      val notificationA = ParsedNotification(
+         "keyA",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      val notificationB = ParsedNotification(
+         "keyB",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      val notificationC = ParsedNotification(
+         "keyC",
+         "another.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notificationA)
+      processor.onNotificationPosted(notificationB)
+      processor.onNotificationPosted(notificationC)
+      runCurrent()
+
+      pauseController.pauseStatuses[notificationA] = PauseStatus(conversation = true)
+      pauseController.pauseStatuses[notificationB] = PauseStatus(conversation = true)
+      processor.notifyPackagePauseStatusChanged("com.app")
+      runCurrent()
+
+      processor.getNotification(1).shouldNotBeNull().paused.conversation shouldBe true
+      processor.getNotification(2).shouldNotBeNull().paused.conversation shouldBe true
+      processor.getNotification(3).shouldNotBeNull().paused.conversation shouldBe false
+
+      processor.getNotification(1)
+         .shouldNotBeNull()
+         .actions
+         .shouldContain(Action.PauseConversation("Unpause conversation"))
+         .shouldNotContain(Action.PauseConversation("Pause conversation"))
+
+      processor.getNotification(2)
+         .shouldNotBeNull()
+         .actions
+         .shouldContain(Action.PauseConversation("Unpause conversation"))
+         .shouldNotContain(Action.PauseConversation("Pause conversation"))
+
+      processor.getNotification(3)
+         .shouldNotBeNull()
+         .actions
+         .shouldContain(Action.PauseConversation("Pause conversation"))
+         .shouldNotContain(Action.PauseConversation("Unpause conversation"))
+   }
+
+   @Test
+   fun `Re-sync notifications with changed conversation pause status`() = runTest {
+      val notificationA = ParsedNotification(
+         "keyA",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      val notificationB = ParsedNotification(
+         "keyB",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      val notificationC = ParsedNotification(
+         "keyC",
+         "another.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      pauseController.becomeConversationPausedOnNewCall = true
+      processor.onNotificationPosted(notificationA)
+      pauseController.becomeConversationPausedOnNewCall = false
+      processor.onNotificationPosted(notificationB)
+      processor.onNotificationPosted(notificationC)
+      runCurrent()
+
+      watchSyncer.syncedNotifications.clear()
+
+      pauseController.pauseStatuses[notificationB] = PauseStatus(conversation = true)
       processor.notifyPackagePauseStatusChanged("com.app")
       runCurrent()
 
