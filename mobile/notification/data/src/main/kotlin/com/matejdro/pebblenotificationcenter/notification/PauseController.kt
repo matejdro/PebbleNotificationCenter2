@@ -28,6 +28,9 @@ class PauseControllerImpl(
       if (preferences[RuleOption.autoAppPause]) {
          mutedApps[notification.pkg] = Unit
       }
+      if (preferences[RuleOption.autoConversationPause]) {
+         mutedNotifications[notification.key] = Unit
+      }
    }
 
    override suspend fun onNotificationDismissed(notification: ParsedNotification) {

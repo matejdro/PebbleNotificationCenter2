@@ -257,4 +257,27 @@ class PauseControllerImplTest {
          conversation = false
       )
    }
+
+   @Test
+   fun `A notification should be conversation paused by default when auto conversation pause setting is enabled`() = runTest {
+      preferences[RuleOption.autoConversationPause] = true
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      fakeRepo.putNotification(1, ProcessedNotification(notification, 1))
+      pauseController.onNewNotification(notification, preferences)
+
+      pauseController.computePauseStatus(notification) shouldBe PauseStatus(
+         app = false,
+         conversation = true
+      )
+   }
 }

@@ -82,6 +82,12 @@ internal fun ColumnScope.Settings(
          title = { Text(stringResource(R.string.setting_auto_app_pause)) },
          summary = { Text(stringResource(R.string.setting_auto_app_pause_description)) }
       )
+      SwitchPreference(
+         value = preferences[RuleOption.autoConversationPause],
+         onValueChange = { updatePreference(RuleOption.autoConversationPause, it) },
+         title = { Text(stringResource(R.string.setting_auto_conversation_pause)) },
+         summary = { Text(stringResource(R.string.setting_auto_conversation_pause_description)) }
+      )
 
       PreferenceCategory({ Text(stringResource(R.string.default_filter_overrides)) })
 
