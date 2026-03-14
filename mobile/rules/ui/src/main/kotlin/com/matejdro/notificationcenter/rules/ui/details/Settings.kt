@@ -7,6 +7,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -19,7 +21,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.notificationcenter.rules.RuleOption
 import com.matejdro.notificationcenter.rules.keys.SetPreference
-import com.matejdro.notificationcenter.rules.keys.StringSetPreferenceKeyWithDefault
+import com.matejdro.notificationcenter.rules.keys.StringListPreferenceKeyWithDefault
 import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.notificationcenter.rules.ui.R
 import com.matejdro.notificationcenter.rules.ui.dialogs.StringListScreenKey
@@ -65,7 +67,7 @@ internal fun ColumnScope.Settings(
       )
       VibrationPatternPreference(navigator, updatePreference, preferences)
 
-      StringSetPreference(
+      StringListPreference(
          navigator,
          stringResource(R.string.setting_mute_silent),
          updatePreference,
@@ -137,20 +139,22 @@ internal fun ColumnScope.Settings(
 }
 
 @Composable
-private fun StringSetPreference(
+private fun StringListPreference(
    navigator: Navigator,
    title: String,
    updatePreference: SetPreference,
-   preference: StringSetPreferenceKeyWithDefault,
+   preference: StringListPreferenceKeyWithDefault,
    description: String,
    preferences: Preferences,
 ) {
+   val updatedPreferences by rememberUpdatedState(preferences)
+
    val dialog = navigator.rememberNavigationPopup(
       navigationKey = { initialList: List<String>, resultKey: ResultKey<List<String>> ->
          StringListScreenKey(title, initialList, resultKey)
       },
       onResult = {
-         updatePreference(preference, it.toSet())
+         updatePreference(preference, it)
       }
    )
 
@@ -160,7 +164,7 @@ private fun StringSetPreference(
          Text(description)
       },
       onClick = {
-         dialog.trigger(preferences[preference].toList())
+         dialog.trigger(updatedPreferences[preference].toList())
       }
    )
 }

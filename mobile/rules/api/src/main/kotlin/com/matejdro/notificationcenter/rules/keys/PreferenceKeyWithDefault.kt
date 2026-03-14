@@ -52,6 +52,22 @@ class EnumPreferenceKeyWithDefault<T : Enum<T>>(name: String, default: T, privat
 }
 
 @Stable
+class StringListPreferenceKeyWithDefault(name: String, default: List<String>) :
+   ProxyPreferenceKeyWithDefault<List<String>, String>(name, default) {
+   override val key: Preferences.Key<String>
+      get() = stringPreferencesKey(name)
+
+   override fun serialize(value: List<String>): String {
+      return value.joinToString(STRING_SEPARATOR)
+   }
+
+   override fun deserialize(value: String): List<String> {
+      if (value.isEmpty()) return emptyList()
+      return value.split(STRING_SEPARATOR)
+   }
+}
+
+@Stable
 abstract class ProxyPreferenceKeyWithDefault<T, P>(protected val name: String, protected val default: T) :
    PreferenceKeyWithDefault<T> {
    abstract override val key: Preferences.Key<P>
@@ -110,3 +126,6 @@ fun SetPreference(method: (key: PreferenceKeyWithDefault<*>, value: Any?) -> Uni
       method(key, value)
    }
 }
+
+// Hopefully this will not occur in any string
+private const val STRING_SEPARATOR = "||||xxxx||||"

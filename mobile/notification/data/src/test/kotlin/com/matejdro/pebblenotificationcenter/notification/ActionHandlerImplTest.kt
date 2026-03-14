@@ -167,7 +167,7 @@ class ActionHandlerImplTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.replyCannedTexts setTo emptySet()
+         RuleOption.replyCannedTexts setTo emptyList()
       )
 
       val intent = createPendingIntent()
@@ -232,7 +232,7 @@ class ActionHandlerImplTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.replyCannedTexts setTo setOf("Custom A", "Custom B")
+         RuleOption.replyCannedTexts setTo listOf("Custom A", "Custom B")
       )
 
       val intent = createPendingIntent()
@@ -304,7 +304,7 @@ class ActionHandlerImplTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.replyCannedTexts setTo setOf("Custom A", "Custom B")
+         RuleOption.replyCannedTexts setTo listOf("Custom A", "Custom B")
       )
 
       val intent = createPendingIntent()

@@ -3,6 +3,7 @@ package com.matejdro.notificationcenter.rules
 import com.matejdro.notificationcenter.rules.keys.BooleanPreferenceKeyWithDefault
 import com.matejdro.notificationcenter.rules.keys.EnumPreferenceKeyWithDefault
 import com.matejdro.notificationcenter.rules.keys.NullableStringPreferenceKeyWithDefault
+import com.matejdro.notificationcenter.rules.keys.StringListPreferenceKeyWithDefault
 import com.matejdro.notificationcenter.rules.keys.StringPreferenceKeyWithDefault
 import com.matejdro.notificationcenter.rules.keys.StringSetPreferenceKeyWithDefault
 
@@ -18,9 +19,9 @@ object RuleOption {
       "50, 50, 50, 50, 50, 50, 50, 50, 50, 50"
    )
 
-   val replyCannedTexts = StringSetPreferenceKeyWithDefault(
-      "reply_canned_texts",
-      setOf("Yes", "No", "Okay")
+   val replyCannedTexts = StringListPreferenceKeyWithDefault(
+      "reply_canned_texts_list",
+      listOf("Yes", "No", "Okay")
    )
 
    val autoAppPause = BooleanPreferenceKeyWithDefault("auto_app_pause", false)
