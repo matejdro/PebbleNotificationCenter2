@@ -1,16 +1,16 @@
 package com.matejdro.notificationcenter.rules.ui.dialogs
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -36,6 +36,7 @@ import com.matejdro.notificationcenter.rules.ui.R
 import com.matejdro.pebblenotificationcenter.ui.components.AlertDialogInnerContent
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
+import com.matejdro.pebblenotificationcenter.ui.lists.ReorderableListContainer
 import kotlinx.serialization.Serializable
 import si.inova.kotlinova.compose.result.LocalResultPassingStore
 import si.inova.kotlinova.compose.result.ResultKey
@@ -51,17 +52,26 @@ class StringListScreen(private val navigator: Navigator) : Screen<StringListScre
    @Composable
    override fun Content(key: StringListScreenKey) {
       val resultPassingStore = LocalResultPassingStore.current
-      var list by remember { mutableStateOf(key.initialList) }
+      var list by remember { mutableStateOf(key.initialList.withIndex().toList()) }
 
       StringListScreenContent(
          key.title,
          list,
-         addNew = { list += it },
+         addNew = { list += IndexedValue(list.size, it) },
          delete = { removeIndex -> list = list.filterIndexed { index, _ -> index != removeIndex } },
          dismiss = { navigator.goBack() },
+         move = { from, to ->
+            val existing = list.first { it.index == from }
+            list = list.toMutableList().apply {
+               remove(existing)
+               add(to, existing)
+            }.mapIndexed { index, value ->
+               IndexedValue(index, value.value)
+            }
+         },
          accept = {
             navigator.goBack()
-            resultPassingStore.sendResult(key.result, list)
+            resultPassingStore.sendResult(key.result, list.map { it.value })
          },
       )
    }
@@ -70,11 +80,12 @@ class StringListScreen(private val navigator: Navigator) : Screen<StringListScre
 @Composable
 private fun StringListScreenContent(
    title: String,
-   list: List<String>,
+   list: List<IndexedValue<String>>,
    addNew: (String) -> Unit,
    delete: (Int) -> Unit,
    dismiss: () -> Unit,
    accept: () -> Unit,
+   move: (from: Int, to: Int) -> Unit,
    showTextField: Boolean = false,
 ) {
    val textFieldState = rememberTextFieldState("")
@@ -104,46 +115,56 @@ private fun StringListScreenContent(
          }
       },
       content = {
-         Column(
-            Modifier
-               .fillMaxWidth()
-               .verticalScroll(rememberScrollState())
-         ) {
-            list.forEachIndexed { index, entry ->
-               Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                  Text("•", Modifier.padding(end = 8.dp))
+         val listState = rememberLazyListState()
+         ReorderableListContainer(list, listState) { shownList ->
 
-                  Text(entry, modifier = Modifier.padding(end = 8.dp))
-                  Spacer(Modifier.weight(1f))
+            LazyColumn(
+               Modifier
+                  .fillMaxWidth(),
+               state = listState,
+            ) {
+               items(shownList, key = { it.index }) { entry ->
+                  ReorderableListItem(entry.index, entry, move) { modifier, _ ->
+                     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.fillMaxWidth()) {
+                        Text("•", Modifier.padding(end = 8.dp))
 
-                  Button(onClick = { delete(index) }) {
-                     Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.delete_rule))
+                        Text(entry.value, modifier = Modifier.padding(end = 8.dp))
+                        Spacer(Modifier.weight(1f))
+
+                        Button(onClick = { delete(entry.index) }) {
+                           Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.delete_rule))
+                        }
+                     }
                   }
                }
-            }
 
-            if (addTextFieldShown) {
-               val focusRequester = remember { FocusRequester() }
+               if (addTextFieldShown) {
+                  item {
+                     val focusRequester = remember { FocusRequester() }
 
-               TextField(
-                  textFieldState,
-                  Modifier
-                     .fillMaxWidth()
-                     .focusRequester(focusRequester),
-                  onKeyboardAction = {
-                     addNew(textFieldState.text.toString())
-                     addTextFieldShown = false
-                  },
-                  keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                  lineLimits = TextFieldLineLimits.SingleLine,
-               )
+                     TextField(
+                        textFieldState,
+                        Modifier
+                           .fillMaxWidth()
+                           .focusRequester(focusRequester),
+                        onKeyboardAction = {
+                           addNew(textFieldState.text.toString())
+                           addTextFieldShown = false
+                        },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        lineLimits = TextFieldLineLimits.SingleLine,
+                     )
 
-               LaunchedEffect(Unit) {
-                  focusRequester.requestFocus()
-               }
-            } else {
-               Button(onClick = { addTextFieldShown = true }) {
-                  Icon(painterResource(R.drawable.ic_add), contentDescription = stringResource(R.string.add))
+                     LaunchedEffect(Unit) {
+                        focusRequester.requestFocus()
+                     }
+                  }
+               } else {
+                  item {
+                     Button(onClick = { addTextFieldShown = true }) {
+                        Icon(painterResource(R.drawable.ic_add), contentDescription = stringResource(R.string.add))
+                     }
+                  }
                }
             }
          }
@@ -159,11 +180,14 @@ internal fun StringListScreenPreview() {
       Box {
          StringListScreenContent(
             "Options",
-            listOf("Option A", "Option B", "Option C"),
+            listOf("Option A", "Option B", "Option C").mapIndexed { index, value ->
+               IndexedValue(index, value)
+            },
             { },
             {},
             {},
             {},
+            { _, _ -> },
          )
       }
    }
@@ -177,11 +201,14 @@ internal fun StringListAddFieldPreview() {
       Box {
          StringListScreenContent(
             "Options",
-            listOf("Option A", "Option B", "Option C"),
+            listOf("Option A", "Option B", "Option C").mapIndexed { index, value ->
+               IndexedValue(index, value)
+            },
             { },
             {},
             {},
             {},
+            { _, _ -> },
             showTextField = true
          )
       }
