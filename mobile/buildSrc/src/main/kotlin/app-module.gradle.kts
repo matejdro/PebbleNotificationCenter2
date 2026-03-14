@@ -2,6 +2,7 @@ import com.android.build.api.variant.BuildConfigField
 import com.android.build.api.variant.VariantOutputConfiguration
 import org.gradle.accessors.dm.LibrariesForLibs
 import tasks.setupTooManyKotlinFilesTaskForApp
+import java.io.ByteArrayOutputStream
 
 val libs = the<LibrariesForLibs>()
 
@@ -37,21 +38,7 @@ android {
          val mainOutput =
             variant.outputs.single { it.outputType == VariantOutputConfiguration.OutputType.SINGLE }
 
-         val gitHashProvider = providers.exec {
-            commandLine("git", "rev-parse", "--short", "HEAD")
-            setIgnoreExitValue(true)
-         }.let { execOutput ->
-            execOutput.result.flatMap { result ->
-               if (result.exitValue == 0) {
-                  execOutput.standardOutput.asText.map { it.trim() }
-               } else {
-                  execOutput.standardError.asText.map {
-                     throw IllegalStateException("Git failed: $it")
-                  }
-               }
-            }
-         }
-
+         val gitHashProvider = providers.of(GitCommandValueSource::class.java) {}
          val baseVersionName = defaultConfig.versionName
          val buildNumberProvider = providers.environmentVariable("BUILD_NUMBER")
          val overrideVersionName = providers.environmentVariable("VERSION")
@@ -79,3 +66,28 @@ android {
 }
 
 setupTooManyKotlinFilesTaskForApp()
+
+abstract class GitCommandValueSource : ValueSource<String, ValueSourceParameters.None> {
+
+   @get:Inject
+   abstract val execOperations: ExecOperations
+
+   override fun obtain(): String {
+      val outputStream = ByteArrayOutputStream()
+      val errStream = ByteArrayOutputStream()
+
+      val result = execOperations.exec {
+         commandLine = listOf("git", "rev-parse", "--short", "HEAD")
+         standardOutput = outputStream
+         errorOutput = errStream
+         isIgnoreExitValue = true
+      }
+
+      if (result.exitValue != 0) {
+         val errorText = errStream.toByteArray().toString(Charsets.UTF_8)
+         throw ProcessExecutionException("Git failed: $errorText")
+      }
+
+      return outputStream.toByteArray().toString(Charsets.UTF_8)
+   }
+}
