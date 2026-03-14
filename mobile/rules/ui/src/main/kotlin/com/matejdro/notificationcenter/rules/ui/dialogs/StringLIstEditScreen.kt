@@ -14,6 +14,7 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -137,7 +138,12 @@ private fun StringListScreenContent(
                state = listState,
             ) {
                items(shownList, key = { it.index }) { entry ->
-                  ReorderableListItem(entry.index, entry, move) { modifier, _ ->
+                  ReorderableListItem(
+                     entry.index,
+                     entry,
+                     move,
+                     popupBackground = MaterialTheme.colorScheme.surfaceContainerHigh
+                  ) { modifier, _ ->
                      Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.fillMaxWidth()) {
                         Text("•", Modifier.padding(end = 8.dp))
 

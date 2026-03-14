@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -82,7 +83,12 @@ private fun ActionOrderListScreenContent(
                state = listState,
             ) {
                items(shownList, key = { it }) { entry ->
-                  ReorderableListItem(entry, entry, move) { modifier, _ ->
+                  ReorderableListItem(
+                     entry,
+                     entry,
+                     move,
+                     popupBackground = MaterialTheme.colorScheme.surfaceContainerHigh
+                  ) { modifier, _ ->
                      Text(
                         entry,
                         modifier = modifier

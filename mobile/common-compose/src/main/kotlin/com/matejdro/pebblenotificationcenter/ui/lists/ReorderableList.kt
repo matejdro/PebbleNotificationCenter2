@@ -16,6 +16,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.shadow.Shadow
@@ -59,6 +60,7 @@ fun <T> ReorderableListContainer(
          modifier: Modifier,
          minReorderableIndex: Int,
          enabled: Boolean,
+         popupBackground: Any,
          content: @Composable ((Modifier, isDragging: () -> Boolean) -> Unit),
       ) {
          ReorderableItem(
@@ -133,7 +135,7 @@ fun <T> ReorderableListContainer(
                            offset = DpOffset(x = 2.dp, 2.dp),
                         )
                      )
-                     .background(MaterialTheme.colorScheme.surface),
+                     .background(popupBackground as Color),
                   { true }
                )
             },
@@ -168,6 +170,8 @@ interface ReorderableListScope<T> {
       modifier: Modifier = Modifier,
       minReorderableIndex: Int = 0,
       enabled: Boolean = true,
+      // Marking this as Any instead of Color as a workaround for the https://youtrack.jetbrains.com/issue/KT-61565
+      popupBackground: Any = MaterialTheme.colorScheme.surface,
       content: @Composable ((Modifier, isDragging: () -> Boolean) -> Unit),
    )
 }
