@@ -63,6 +63,7 @@ import si.inova.kotlinova.navigation.screenkeys.DialogKey
 import si.inova.kotlinova.navigation.screenkeys.ScreenKey
 import si.inova.kotlinova.navigation.screens.InjectNavigationScreen
 import si.inova.kotlinova.navigation.screens.Screen
+import com.matejdro.pebblenotificationcenter.sharedresources.R as sharedR
 
 @InjectNavigationScreen
 class VibrationPatternScreen(private val navigator: Navigator) : Screen<VibrationPatternScreenKey>() {
@@ -136,7 +137,7 @@ private fun VibrationPatternScreenContent(
                dismiss()
             }
          ) {
-            Text(stringResource(R.string.cancel))
+            Text(stringResource(sharedR.string.cancel))
          }
       },
       confirmButton = {
@@ -146,7 +147,7 @@ private fun VibrationPatternScreenContent(
             },
             enabled = parsedPattern != null
          ) {
-            Text(stringResource(R.string.ok))
+            Text(stringResource(sharedR.string.ok))
          }
       },
       content = {
@@ -293,4 +294,5 @@ data class VibrationPatternScreenKey(
    val existingPattern: String,
    val result: ResultKey<String>,
 ) : ScreenKey(), DialogKey
+
 private const val LONG_VIBRATION = 10_000L

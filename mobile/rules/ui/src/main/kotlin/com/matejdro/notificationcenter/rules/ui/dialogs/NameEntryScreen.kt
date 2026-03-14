@@ -20,7 +20,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
-import com.matejdro.notificationcenter.rules.ui.R
 import com.matejdro.pebblenotificationcenter.ui.components.AlertDialogInnerContent
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
@@ -33,6 +32,7 @@ import si.inova.kotlinova.navigation.screenkeys.DialogKey
 import si.inova.kotlinova.navigation.screenkeys.ScreenKey
 import si.inova.kotlinova.navigation.screens.InjectNavigationScreen
 import si.inova.kotlinova.navigation.screens.Screen
+import com.matejdro.pebblenotificationcenter.sharedresources.R as sharedR
 
 @InjectNavigationScreen
 class NameEntryScreen(private val navigator: Navigator) : Screen<NameEntryScreenKey>() {
@@ -74,7 +74,7 @@ private fun NameEntryScreenContent(
                dismiss()
             }
          ) {
-            Text(stringResource(R.string.cancel))
+            Text(stringResource(sharedR.string.cancel))
          }
       },
       confirmButton = {
@@ -84,7 +84,7 @@ private fun NameEntryScreenContent(
             },
             enabled = textFieldState.text.isNotBlank()
          ) {
-            Text(stringResource(R.string.ok))
+            Text(stringResource(sharedR.string.ok))
          }
       },
       neutralButton = {

@@ -19,6 +19,7 @@ import com.matejdro.pebblenotificationcenter.navigation.util.PopupTrigger
 import com.matejdro.pebblenotificationcenter.navigation.util.rememberNavigationPopup
 import si.inova.kotlinova.core.outcome.Outcome
 import si.inova.kotlinova.navigation.navigator.Navigator
+import com.matejdro.pebblenotificationcenter.sharedresources.R as sharedR
 
 @Composable
 internal fun DeleteDialog(
@@ -48,7 +49,7 @@ internal fun DeleteDialog(
       },
       dismissButton = {
          TextButton(onClick = { dismiss() }) {
-            Text(stringResource(R.string.cancel))
+            Text(stringResource(sharedR.string.cancel))
          }
       }
    )

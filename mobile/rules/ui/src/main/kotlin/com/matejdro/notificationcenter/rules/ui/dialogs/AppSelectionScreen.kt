@@ -52,6 +52,7 @@ import si.inova.kotlinova.navigation.screenkeys.DialogKey
 import si.inova.kotlinova.navigation.screenkeys.ScreenKey
 import si.inova.kotlinova.navigation.screens.InjectNavigationScreen
 import si.inova.kotlinova.navigation.screens.Screen
+import com.matejdro.pebblenotificationcenter.sharedresources.R as sharedR
 
 @InjectNavigationScreen
 class AppSelectionScreen(private val navigator: Navigator) : Screen<AppSelectionScreenKey>() {
@@ -134,7 +135,7 @@ private fun AppSelectionScreenContent(
                dismiss()
             }
          ) {
-            Text(stringResource(R.string.cancel))
+            Text(stringResource(sharedR.string.cancel))
          }
       },
       content = {

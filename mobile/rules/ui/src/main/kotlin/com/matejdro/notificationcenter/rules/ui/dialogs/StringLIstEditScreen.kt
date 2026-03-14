@@ -47,6 +47,7 @@ import si.inova.kotlinova.navigation.screenkeys.DialogKey
 import si.inova.kotlinova.navigation.screenkeys.ScreenKey
 import si.inova.kotlinova.navigation.screens.InjectNavigationScreen
 import si.inova.kotlinova.navigation.screens.Screen
+import com.matejdro.pebblenotificationcenter.sharedresources.R as sharedR
 
 @InjectNavigationScreen
 class StringListScreen(private val navigator: Navigator) : Screen<StringListScreenKey>() {
@@ -107,7 +108,7 @@ private fun StringListScreenContent(
                }
             }
          ) {
-            Text(stringResource(R.string.cancel))
+            Text(stringResource(sharedR.string.cancel))
          }
       },
       confirmButton = {
@@ -123,7 +124,7 @@ private fun StringListScreenContent(
             },
             enabled = !addTextFieldShown.value || textFieldState.text.isNotBlank()
          ) {
-            Text(stringResource(R.string.ok))
+            Text(stringResource(sharedR.string.ok))
          }
       },
       content = {

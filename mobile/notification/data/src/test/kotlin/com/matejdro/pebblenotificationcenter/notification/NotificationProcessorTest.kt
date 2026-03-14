@@ -48,6 +48,8 @@ class NotificationProcessorTest {
 
    private val pauseController = FakePauseController()
 
+   private val actionOrderRepository = FakeActionOrderRepository()
+
    private val processor = NotificationProcessor(
       context,
       watchSyncer,
@@ -55,6 +57,7 @@ class NotificationProcessorTest {
       RuleResolver(rulesRepository),
       globalPreferences,
       pauseController,
+      actionOrderRepository,
    )
 
    @BeforeEach
@@ -1272,5 +1275,28 @@ class NotificationProcessorTest {
       runCurrent()
 
       watchSyncer.syncedNotifications.map { it.bucketId }.shouldContainExactly(2)
+   }
+
+   @Test
+   fun `It should respect action order from the action order repository`() = runTest {
+      actionOrderRepository.moveOrder("Dismiss", 3)
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification)
+
+      processor.getNotification(1)?.actions shouldBe listOf(
+         Action.PauseApp("Pause app"),
+         Action.PauseConversation("Pause conversation"),
+         Action.Dismiss("Dismiss"),
+      )
    }
 }

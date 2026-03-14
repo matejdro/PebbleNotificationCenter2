@@ -43,6 +43,7 @@ import si.inova.kotlinova.navigation.screenkeys.DialogKey
 import si.inova.kotlinova.navigation.screenkeys.ScreenKey
 import si.inova.kotlinova.navigation.screens.InjectNavigationScreen
 import si.inova.kotlinova.navigation.screens.Screen
+import com.matejdro.pebblenotificationcenter.sharedresources.R as sharedR
 
 @InjectNavigationScreen
 @Stable
@@ -114,7 +115,7 @@ private fun ChannelSelectionScreenContent(
             },
             enabled = selectedChannels.isNotEmpty()
          ) {
-            Text(stringResource(R.string.ok))
+            Text(stringResource(sharedR.string.ok))
          }
       },
       dismissButton = {
@@ -123,7 +124,7 @@ private fun ChannelSelectionScreenContent(
                dismiss()
             }
          ) {
-            Text(stringResource(R.string.cancel))
+            Text(stringResource(sharedR.string.cancel))
          }
       },
       content = {

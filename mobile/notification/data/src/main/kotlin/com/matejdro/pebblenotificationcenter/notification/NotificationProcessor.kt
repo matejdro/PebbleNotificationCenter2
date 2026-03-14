@@ -33,6 +33,7 @@ class NotificationProcessor(
    private val ruleResolver: RuleResolver,
    private val globalPreferenceStore: DataStore<Preferences>,
    private val pauseController: PauseController,
+   private val actionOrderRepository: ActionOrderRepository,
 ) : NotificationRepository {
    private val notifications = ConcurrentHashMap<Int, ProcessedNotification>()
    private val notificationsByKey = HashMap<String, ProcessedNotification>()
@@ -198,7 +199,7 @@ class NotificationProcessor(
       return pattern
    }
 
-   private fun processActions(parsedNotification: ParsedNotification, pauseStatus: PauseStatus): List<Action> {
+   private suspend fun processActions(parsedNotification: ParsedNotification, pauseStatus: PauseStatus): List<Action> {
       val defaultActionsPre = listOf<Action>(
          Action.Dismiss(context.getString(R.string.dismiss)),
       )
@@ -235,7 +236,8 @@ class NotificationProcessor(
          ),
       )
 
-      return defaultActionsPre + nativeActions + defaultActionsPost
+      val unsortedActions = (defaultActionsPre + nativeActions + defaultActionsPost)
+      return actionOrderRepository.sort(unsortedActions)
    }
 
    override suspend fun notifyPackagePauseStatusChanged(pkg: String) {

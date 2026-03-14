@@ -6,4 +6,5 @@
     <string name="unpause_app">Unpause app</string>
     <string name="pause_conversation">Pause convo</string>
     <string name="unpause_conversation">Unpause convo</string>
+    <string name="other_actions">Other actions</string>
 </resources>

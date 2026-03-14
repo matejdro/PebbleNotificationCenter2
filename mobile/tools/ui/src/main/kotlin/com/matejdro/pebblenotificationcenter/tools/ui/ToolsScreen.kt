@@ -39,11 +39,13 @@ import com.matejdro.notificationcenter.rules.keys.PreferenceKeyWithDefault
 import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.navigation.keys.OnboardingKey
 import com.matejdro.pebblenotificationcenter.navigation.keys.ToolsScreenKey
+import com.matejdro.pebblenotificationcenter.tools.ui.dialogs.ActionOrderListScreenKey
 import com.matejdro.pebblenotificationcenter.ui.components.ErrorAlertDialog
 import com.matejdro.pebblenotificationcenter.ui.components.ProgressErrorSuccessScaffold
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
 import me.zhanghai.compose.preference.LocalPreferenceTheme
+import me.zhanghai.compose.preference.Preference
 import me.zhanghai.compose.preference.SwitchPreference
 import me.zhanghai.compose.preference.preferenceTheme
 import si.inova.kotlinova.compose.flow.collectAsStateWithLifecycleAndBlinkingPrevention
@@ -77,6 +79,9 @@ class ToolsScreen(
             openPermissions = { navigator.navigateTo(OnboardingKey) },
             startLogSaving = viewModel::getLogs,
             notifyLogIntentSent = viewModel::resetLog,
+            openActionOrderDialog = {
+               navigator.navigateTo(ActionOrderListScreenKey)
+            },
             updatePreference = { prefKey, value ->
                @Suppress("UNCHECKED_CAST")
                viewModel.updatePreference(prefKey as PreferenceKeyWithDefault<Any?>, value)
@@ -93,6 +98,7 @@ private fun ToolsScreenContent(
    openPermissions: () -> Unit,
    startLogSaving: () -> Unit,
    notifyLogIntentSent: () -> Unit,
+   openActionOrderDialog: () -> Unit,
    updatePreference: (PreferenceKeyWithDefault<*>, Any?) -> Unit,
 ) {
    CompositionLocalProvider(
@@ -166,6 +172,14 @@ private fun ToolsScreenContent(
          }
 
          item(span = { GridItemSpan(maxLineSpan) }) {
+            Preference(
+               title = { Text(stringResource(R.string.setting_action_order)) },
+               summary = { Text(stringResource(R.string.setting_action_order_description)) },
+               onClick = openActionOrderDialog
+            )
+         }
+
+         item(span = { GridItemSpan(maxLineSpan) }) {
             Text(
                stringResource(R.string.version, state.versionName),
                Modifier
@@ -203,6 +217,7 @@ internal fun ToolsScreenPreview() {
          openPermissions = {},
          startLogSaving = {},
          notifyLogIntentSent = {},
+         openActionOrderDialog = {},
          updatePreference = { _, _ -> },
       )
    }

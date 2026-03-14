@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="new_rule">New Rule</string>
-    <string name="ok">OK</string>
-    <string name="cancel">Cancel</string>
     <string name="this_rule_does_not_exist">This rule does not exist</string>
     <string name="delete_rule">Delete rule</string>
     <string name="delete_condition">Delete condition</string>

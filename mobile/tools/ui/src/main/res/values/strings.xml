@@ -9,4 +9,6 @@
     <string name="setting_mute_phone_description">When enabled and the watch is connected, phone will not vibrate or make sounds
         for any notifications
     </string>
+    <string name="setting_action_order">Action order</string>
+    <string name="setting_action_order_description">Change order of the actions</string>
 </resources>
