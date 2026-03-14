@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -89,7 +90,7 @@ private fun StringListScreenContent(
    showTextField: Boolean = false,
 ) {
    val textFieldState = rememberTextFieldState("")
-   var addTextFieldShown by remember { mutableStateOf(showTextField) }
+   val addTextFieldShown = remember { mutableStateOf(showTextField) }
 
    AlertDialogInnerContent(
       title = {
@@ -98,7 +99,12 @@ private fun StringListScreenContent(
       dismissButton = {
          TextButton(
             onClick = {
-               dismiss()
+               if (addTextFieldShown.value) {
+                  textFieldState.clearText()
+                  addTextFieldShown.value = false
+               } else {
+                  dismiss()
+               }
             }
          ) {
             Text(stringResource(R.string.cancel))
@@ -107,9 +113,15 @@ private fun StringListScreenContent(
       confirmButton = {
          TextButton(
             onClick = {
-               accept()
+               if (addTextFieldShown.value) {
+                  addNew(textFieldState.text.toString())
+                  textFieldState.clearText()
+                  addTextFieldShown.value = false
+               } else {
+                  accept()
+               }
             },
-            enabled = textFieldState.text.isNotBlank()
+            enabled = !addTextFieldShown.value || textFieldState.text.isNotBlank()
          ) {
             Text(stringResource(R.string.ok))
          }
@@ -138,7 +150,7 @@ private fun StringListScreenContent(
                   }
                }
 
-               if (addTextFieldShown) {
+               if (addTextFieldShown.value) {
                   item {
                      val focusRequester = remember { FocusRequester() }
 
@@ -149,7 +161,8 @@ private fun StringListScreenContent(
                            .focusRequester(focusRequester),
                         onKeyboardAction = {
                            addNew(textFieldState.text.toString())
-                           addTextFieldShown = false
+                           textFieldState.clearText()
+                           addTextFieldShown.value = false
                         },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         lineLimits = TextFieldLineLimits.SingleLine,
@@ -161,7 +174,7 @@ private fun StringListScreenContent(
                   }
                } else {
                   item {
-                     Button(onClick = { addTextFieldShown = true }) {
+                     Button(onClick = { addTextFieldShown.value = true }) {
                         Icon(painterResource(R.drawable.ic_add), contentDescription = stringResource(R.string.add))
                      }
                   }
