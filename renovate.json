@@ -14,15 +14,18 @@
     ]
   },
   "schedule": [
-    "* 17-23 * * 2"
+    "* 20-23 * * 2"
   ],
+  "prHourlyLimit": 5,
   "updateNotScheduled": true,
   "timezone": "Europe/Ljubljana",
   "packageRules": [
     {
-        "matchPackageNames": [
-        // This packate is pretty annoying as most git commits do not contain the release files. Just do not update it.
-        "dawidd6/action-download-artifact"
+      "matchDepTypes": [
+        "action"
+      ],
+      "matchUpdateTypes": [
+        "digest"
       ],
       "enabled": false
     }
