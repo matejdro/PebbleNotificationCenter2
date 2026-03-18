@@ -3,9 +3,6 @@ package com.matejdro.pebblenotificationcenter.notification
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
-import com.matejdro.notificationcenter.rules.RuleOption
-import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.bluetooth.WatchSyncer
 import com.matejdro.pebblenotificationcenter.bluetooth.WatchappOpenController
 import com.matejdro.pebblenotificationcenter.notification.model.Action
@@ -14,6 +11,9 @@ import com.matejdro.pebblenotificationcenter.notification.model.PauseStatus
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.any
 import com.matejdro.pebblenotificationcenter.notification.utils.parseVibrationPattern
+import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.pebblenotificationcenter.rules.RuleOption
+import com.matejdro.pebblenotificationcenter.rules.keys.get
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject

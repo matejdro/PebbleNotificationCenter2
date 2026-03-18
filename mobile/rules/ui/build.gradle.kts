@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-   namespace = "com.matejdro.notificationcenter.rules.ui"
+   namespace = "com.matejdro.pebblenotificationcenter.rules.ui"
 
    androidResources.enable = true
 }

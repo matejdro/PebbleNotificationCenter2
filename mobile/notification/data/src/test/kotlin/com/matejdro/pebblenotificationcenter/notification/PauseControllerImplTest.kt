@@ -1,11 +1,11 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import androidx.datastore.preferences.core.mutablePreferencesOf
-import com.matejdro.notificationcenter.rules.RuleOption
-import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.PauseStatus
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
+import com.matejdro.pebblenotificationcenter.rules.RuleOption
+import com.matejdro.pebblenotificationcenter.rules.keys.set
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe

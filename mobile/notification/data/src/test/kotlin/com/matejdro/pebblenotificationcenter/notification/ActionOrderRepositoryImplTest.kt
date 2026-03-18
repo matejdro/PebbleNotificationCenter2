@@ -3,10 +3,10 @@ package com.matejdro.pebblenotificationcenter.notification
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import app.cash.turbine.test
-import com.matejdro.notificationcenter.common.test.InMemoryDataStore
-import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
-import com.matejdro.notificationcenter.rules.keys.set
+import com.matejdro.pebblenotificationcenter.common.test.InMemoryDataStore
 import com.matejdro.pebblenotificationcenter.notification.model.Action
+import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.pebblenotificationcenter.rules.keys.set
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest

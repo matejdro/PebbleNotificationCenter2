@@ -10,7 +10,7 @@ import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.work.WorkManager
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
-import com.matejdro.notificationcenter.Database
+import com.matejdro.pebblenotificationcenter.Database
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides

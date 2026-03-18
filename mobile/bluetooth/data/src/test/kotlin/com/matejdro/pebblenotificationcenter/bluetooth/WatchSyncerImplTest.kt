@@ -6,12 +6,12 @@ import com.matejdro.bucketsync.BucketSyncRepository
 import com.matejdro.bucketsync.FakeBucketSyncRepository
 import com.matejdro.bucketsync.api.Bucket
 import com.matejdro.bucketsync.api.BucketUpdate
-import com.matejdro.notificationcenter.common.test.InMemoryDataStore
-import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
-import com.matejdro.notificationcenter.rules.keys.set
+import com.matejdro.pebblenotificationcenter.common.test.InMemoryDataStore
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.PauseStatus
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
+import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.pebblenotificationcenter.rules.keys.set
 import dispatch.core.DefaultCoroutineScope
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly

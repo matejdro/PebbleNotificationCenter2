@@ -4,10 +4,10 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
-import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
-import com.matejdro.notificationcenter.rules.keys.get
-import com.matejdro.notificationcenter.rules.keys.set
 import com.matejdro.pebblenotificationcenter.notification.model.Action
+import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.pebblenotificationcenter.rules.keys.get
+import com.matejdro.pebblenotificationcenter.rules.keys.set
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.SingleIn

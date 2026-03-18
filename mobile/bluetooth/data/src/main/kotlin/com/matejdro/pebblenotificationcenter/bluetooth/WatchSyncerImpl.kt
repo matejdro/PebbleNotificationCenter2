@@ -5,14 +5,14 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.matejdro.bucketsync.BucketSyncRepository
 import com.matejdro.bucketsync.BucketSyncRepository.Companion.MAX_BUCKET_ID
-import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
-import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebble.bluetooth.common.util.LimitingStringEncoder
 import com.matejdro.pebble.bluetooth.common.util.fixPebbleIndentation
 import com.matejdro.pebble.bluetooth.common.util.writeUByte
 import com.matejdro.pebble.bluetooth.common.util.writeUInt
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.any
+import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.pebblenotificationcenter.rules.keys.get
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject

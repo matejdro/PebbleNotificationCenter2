@@ -1,11 +1,11 @@
 package com.matejdro.pebblenotificationcenter.notification
 
-import com.matejdro.notificationcenter.rules.FakeRulesRepository
-import com.matejdro.notificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
-import com.matejdro.notificationcenter.rules.RuleOption
-import com.matejdro.notificationcenter.rules.keys.get
-import com.matejdro.notificationcenter.rules.keys.setTo
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.rules.FakeRulesRepository
+import com.matejdro.pebblenotificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
+import com.matejdro.pebblenotificationcenter.rules.RuleOption
+import com.matejdro.pebblenotificationcenter.rules.keys.get
+import com.matejdro.pebblenotificationcenter.rules.keys.setTo
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe

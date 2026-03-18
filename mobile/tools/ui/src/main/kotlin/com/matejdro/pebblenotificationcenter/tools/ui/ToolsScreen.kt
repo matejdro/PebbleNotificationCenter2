@@ -34,11 +34,11 @@ import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
-import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
-import com.matejdro.notificationcenter.rules.keys.PreferenceKeyWithDefault
-import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.navigation.keys.OnboardingKey
 import com.matejdro.pebblenotificationcenter.navigation.keys.ToolsScreenKey
+import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.pebblenotificationcenter.rules.keys.PreferenceKeyWithDefault
+import com.matejdro.pebblenotificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.tools.ui.dialogs.ActionOrderListScreenKey
 import com.matejdro.pebblenotificationcenter.ui.components.ErrorAlertDialog
 import com.matejdro.pebblenotificationcenter.ui.components.ProgressErrorSuccessScaffold

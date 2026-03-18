@@ -1,0 +1,377 @@
+package com.matejdro.pebblenotificationcenter.rules
+
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import app.cash.turbine.test
+import com.matejdro.pebblenotificationcenter.rules.keys.get
+import com.matejdro.pebblenotificationcenter.rules.keys.setTo
+import com.matejdro.pebblenotificationcenter.rules.sqldelight.generated.Database
+import com.matejdro.pebblenotificationcenter.rules.sqldelight.generated.DbRuleQueries
+import com.matejdro.pebblenotificationcenter.rules.util.FakeDatastoreFactory
+import dispatch.core.IOCoroutineScope
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.maps.shouldBeEmpty
+import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import si.inova.kotlinova.core.test.TestScopeWithDispatcherProvider
+import si.inova.kotlinova.core.test.outcomes.shouldBeSuccessWithData
+
+class RulesRepositoryImplTest {
+   private val scope = TestScopeWithDispatcherProvider()
+   private val repo = RulesRepositoryImpl(
+      IOCoroutineScope(scope.backgroundScope.coroutineContext),
+      createTestRuleQueries(),
+      FakeDatastoreFactory()
+   )
+
+   @Test
+   fun `Return starting rule by default`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+         expectMostRecentItem() shouldBeSuccessWithData listOf(RuleMetadata(1, "Default Settings"))
+      }
+   }
+
+   @Test
+   fun `Return added rules`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         runCurrent()
+
+         expectMostRecentItem() shouldBeSuccessWithData listOf(
+            RuleMetadata(1, "Default Settings"),
+            RuleMetadata(2, "Rule A")
+         )
+      }
+   }
+
+   @Test
+   fun `Insert should return the ID of the just added rule`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A") shouldBe 2
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
+
+   @Test
+   fun `Allow editing rules`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         runCurrent()
+
+         repo.edit(RuleMetadata(2, "Rule B"))
+         runCurrent()
+
+         expectMostRecentItem() shouldBeSuccessWithData listOf(
+            RuleMetadata(1, "Default Settings"),
+            RuleMetadata(2, "Rule B")
+         )
+      }
+   }
+
+   @Test
+   fun `Allow deleting rules`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         runCurrent()
+
+         repo.delete(2)
+         runCurrent()
+
+         expectMostRecentItem() shouldBeSuccessWithData listOf(
+            RuleMetadata(1, "Default Settings"),
+         )
+      }
+   }
+
+   @Test
+   fun `Disallow deleting default rule`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+         cancelAndIgnoreRemainingEvents()
+      }
+
+      assertThrows<IllegalArgumentException>() {
+         repo.delete(1)
+         runCurrent()
+      }
+   }
+
+   @Test
+   fun `Move rule downwards`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         repo.insert("Rule B")
+         repo.insert("Rule C")
+         repo.insert("Rule D")
+         runCurrent()
+
+         repo.reorder(3, 5)
+         runCurrent()
+
+         expectMostRecentItem() shouldBeSuccessWithData listOf(
+            RuleMetadata(1, "Default Settings"),
+            RuleMetadata(2, "Rule A"),
+            RuleMetadata(4, "Rule C"),
+            RuleMetadata(5, "Rule D"),
+            RuleMetadata(3, "Rule B"),
+         )
+      }
+   }
+
+   @Test
+   fun `Move rule upwards`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         repo.insert("Rule B")
+         repo.insert("Rule C")
+         repo.insert("Rule D")
+         runCurrent()
+
+         repo.reorder(5, 1)
+         runCurrent()
+
+         expectMostRecentItem() shouldBeSuccessWithData listOf(
+            RuleMetadata(1, "Default Settings"),
+            RuleMetadata(2, "Rule A"),
+            RuleMetadata(5, "Rule D"),
+            RuleMetadata(3, "Rule B"),
+            RuleMetadata(4, "Rule C"),
+         )
+      }
+   }
+
+   @Test
+   fun `Disallow moving to the first place`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         repo.insert("Rule B")
+         repo.insert("Rule C")
+         repo.insert("Rule D")
+         runCurrent()
+
+         shouldThrow<IllegalArgumentException> {
+            repo.reorder(5, 0)
+            runCurrent()
+         }
+
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
+
+   @Test
+   fun `Handle reordering after delete`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         repo.insert("Rule B")
+         repo.insert("Rule C")
+         repo.insert("Rule D")
+         runCurrent()
+
+         repo.delete(3)
+         runCurrent()
+
+         repo.reorder(2, 3)
+         runCurrent()
+
+         expectMostRecentItem() shouldBeSuccessWithData listOf(
+            RuleMetadata(1, "Default Settings"),
+            RuleMetadata(4, "Rule C"),
+            RuleMetadata(2, "Rule A"),
+            RuleMetadata(5, "Rule D"),
+         )
+      }
+   }
+
+   @Test
+   fun `Get a single rule`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+         cancelAndIgnoreRemainingEvents()
+      }
+
+      repo.insert("Rule A")
+      repo.insert("Rule B")
+      runCurrent()
+
+      repo.getSingle(2).test {
+         runCurrent()
+         expectMostRecentItem() shouldBeSuccessWithData RuleMetadata(2, "Rule A")
+      }
+   }
+
+   @Test
+   fun `Return empty preferences for added rules`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         runCurrent()
+
+         repo.getRulePreferences(2).first().asMap().shouldBeEmpty()
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
+
+   @Test
+   fun `Store preferences`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         runCurrent()
+
+         repo.updateRulePreferences(
+            1,
+            RuleOption.conditionAppPackage setTo "package.default",
+         )
+         repo.updateRulePreferences(
+            2,
+            RuleOption.conditionAppPackage setTo "package.A",
+         )
+         runCurrent()
+
+         repo.getRulePreferences(1).first()[RuleOption.conditionAppPackage] shouldBe "package.default"
+         repo.getRulePreferences(2).first()[RuleOption.conditionAppPackage] shouldBe "package.A"
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
+
+   @Test
+   fun `Clear preferences after deleting`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         runCurrent()
+
+         repo.updateRulePreferences(
+            2,
+            RuleOption.conditionAppPackage setTo "package.default",
+         )
+
+         repo.delete(2)
+         runCurrent()
+         repo.insert("Rule A")
+         runCurrent()
+
+         repo.getRulePreferences(2).first().asMap().shouldBeEmpty()
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
+
+   @Test
+   fun `Do not clear preference if it is identical to the default settings`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         runCurrent()
+         repo.updateRulePreferences(
+            1,
+            RuleOption.conditionAppPackage setTo "package.default",
+         )
+         repo.updateRulePreferences(
+            2,
+            RuleOption.conditionAppPackage setTo "package.A",
+         )
+         runCurrent()
+
+         repo.getRulePreferences(2).first().contains(RuleOption.conditionAppPackage.key) shouldBe true
+
+         repo.updateRulePreferences(
+            2,
+            RuleOption.conditionAppPackage setTo "package.default",
+         )
+         runCurrent()
+
+         repo.getRulePreferences(2).first().contains(RuleOption.conditionAppPackage.key) shouldBe true
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
+
+   @Test
+   fun `Do not check for default settings identity when setting default settings`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         runCurrent()
+         repo.updateRulePreferences(
+            1,
+            RuleOption.conditionAppPackage setTo "package.default",
+         )
+         runCurrent()
+
+         repo.updateRulePreferences(
+            1,
+            RuleOption.conditionAppPackage setTo "package.default",
+         )
+         runCurrent()
+
+         repo.getRulePreferences(1).first().contains(RuleOption.conditionAppPackage.key) shouldBe true
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
+
+   @Test
+   fun `Copy rule and its preferences`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         runCurrent()
+
+         repo.updateRulePreferences(
+            1,
+            RuleOption.conditionAppPackage setTo "package.default",
+         )
+         repo.updateRulePreferences(
+            2,
+            RuleOption.conditionAppPackage setTo "package.A",
+         )
+         runCurrent()
+
+         repo.copyRule(2, "Copy of A") shouldBe 3
+         runCurrent()
+
+         expectMostRecentItem() shouldBeSuccessWithData listOf(
+            RuleMetadata(1, "Default Settings"),
+            RuleMetadata(2, "Rule A"),
+            RuleMetadata(3, "Copy of A"),
+         )
+
+         repo.getRulePreferences(3).first()[RuleOption.conditionAppPackage] shouldBe "package.A"
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
+}
+
+internal fun createTestRuleQueries(
+   driver: SqlDriver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY).apply {
+      Database.Schema.create(
+         this
+      )
+   },
+): DbRuleQueries {
+   return Database(driver).dbRuleQueries
+}

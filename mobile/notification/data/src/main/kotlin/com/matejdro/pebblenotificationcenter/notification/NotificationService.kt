@@ -6,12 +6,12 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import com.matejdro.notificationcenter.rules.GlobalPreferenceKeys
-import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.common.di.NavigationInjectingApplication
 import com.matejdro.pebblenotificationcenter.notification.di.NotificationInject
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.parsing.NotificationParser
+import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.pebblenotificationcenter.rules.keys.get
 import dev.zacsweers.metro.Inject
 import dispatch.core.DefaultCoroutineScope
 import io.rebble.pebblekit2.client.PebbleInfoRetriever

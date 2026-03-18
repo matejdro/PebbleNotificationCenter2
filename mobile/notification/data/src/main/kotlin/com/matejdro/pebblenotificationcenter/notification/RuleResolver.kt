@@ -1,12 +1,12 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import androidx.datastore.preferences.core.Preferences
-import com.matejdro.notificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
-import com.matejdro.notificationcenter.rules.RuleOption
-import com.matejdro.notificationcenter.rules.RulesRepository
-import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.common.preferences.plus
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
+import com.matejdro.pebblenotificationcenter.rules.RuleOption
+import com.matejdro.pebblenotificationcenter.rules.RulesRepository
+import com.matejdro.pebblenotificationcenter.rules.keys.get
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first

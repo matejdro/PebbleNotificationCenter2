@@ -1,10 +1,10 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import androidx.datastore.preferences.core.Preferences
-import com.matejdro.notificationcenter.rules.RuleOption
-import com.matejdro.notificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.PauseStatus
+import com.matejdro.pebblenotificationcenter.rules.RuleOption
+import com.matejdro.pebblenotificationcenter.rules.keys.get
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Provider

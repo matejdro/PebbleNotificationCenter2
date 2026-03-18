@@ -7,7 +7,7 @@ plugins {
 sqldelight {
    databases {
       create("Database") {
-         packageName.set("com.matejdro.notificationcenter.rules.sqldelight.generated")
+         packageName.set("com.matejdro.pebblenotificationcenter.rules.sqldelight.generated")
          schemaOutputDirectory.set(file("src/main/sqldelight/databases"))
       }
    }

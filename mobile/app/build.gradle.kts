@@ -92,7 +92,7 @@ dependencyAnalysis {
 sqldelight {
    databases {
       create("Database") {
-         packageName.set("com.matejdro.notificationcenter")
+         packageName.set("com.matejdro.pebblenotificationcenter")
          schemaOutputDirectory.set(file("src/main/sqldelight/databases"))
 
          dependency(project(projects.rules.data.path))

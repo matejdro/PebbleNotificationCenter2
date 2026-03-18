@@ -804,8 +804,8 @@ potential-bugs:
       - androidx.compose.ui.unit.Constraints.Companion.fixed
       - androidx.compose.ui.text.TextRange.<init>
       - androidx.compose.ui.text.TextRange
-      - com.matejdro.notificationcenter.rules.keys.StringPreferenceKeyWithDefault.<init>
-      - com.matejdro.notificationcenter.rules.keys.NullableStringPreferenceKeyWithDefault.<init>
+      - com.matejdro.pebblenotificationcenter.rules.keys.StringPreferenceKeyWithDefault.<init>
+      - com.matejdro.pebblenotificationcenter.rules.keys.NullableStringPreferenceKeyWithDefault.<init>
       - com.matejdro.pebblenotificationcenter.bluetooth.images.SeparatedColor.<init>
     excludes: *testFolders
     ignoreAnnotated:
