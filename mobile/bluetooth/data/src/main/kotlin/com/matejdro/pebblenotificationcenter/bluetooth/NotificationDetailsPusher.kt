@@ -6,6 +6,7 @@ import com.matejdro.pebble.bluetooth.common.util.LimitingStringEncoder
 import com.matejdro.pebble.bluetooth.common.util.fixPebbleIndentation
 import com.matejdro.pebble.bluetooth.common.util.writeUByte
 import com.matejdro.pebble.bluetooth.common.util.writeUShort
+import com.matejdro.pebblenotificationcenter.notification.ActionOrderRepository
 import com.matejdro.pebblenotificationcenter.notification.NotificationRepository
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -22,6 +23,7 @@ import okio.Buffer
 class NotificationDetailsPusherImpl(
    private val queue: PacketQueue,
    private val notificationRepository: NotificationRepository,
+   private val actionOrderRepository: ActionOrderRepository,
    private val scope: DefaultCoroutineScope,
 ) : NotificationDetailsPusher {
    private val stringEncoder = LimitingStringEncoder()
@@ -43,9 +45,11 @@ class NotificationDetailsPusherImpl(
          buffer.writeUByte(bucketId.toUByte())
 
          val actionsToSend = notification?.actions.orEmpty().take(MAX_ACTIONS_TO_SEND)
-         buffer.writeUByte(actionsToSend.size.toUByte())
+         val sortedActions = actionOrderRepository.sort(actionsToSend)
 
-         for (action in actionsToSend) {
+         buffer.writeUByte(sortedActions.size.toUByte())
+
+         for (action in sortedActions) {
             buffer.write(stringEncoder.encodeSizeLimited(action.title, MAX_ACTIONS_TEXT_BYTES).encodedString)
             buffer.writeUByte(0u)
          }
@@ -66,7 +70,7 @@ class NotificationDetailsPusherImpl(
             1u to PebbleDictionaryItem.Bytes(buffer.readByteArray())
          )
 
-         logcat { "Sending notification details for $bucketId: ${packet.sizeInBytes()} (${actionsToSend.size} actions)" }
+         logcat { "Sending notification details for $bucketId: ${packet.sizeInBytes()} (${sortedActions.size} actions)" }
 
          launch {
             queue.sendPacket(packet, priority = PRIORITY_WATCH_TEXT)

@@ -5,6 +5,7 @@ import com.matejdro.pebble.bluetooth.common.test.FakePebbleSender
 import com.matejdro.pebble.bluetooth.common.test.sentData
 import com.matejdro.pebble.bluetooth.common.util.requireBytes
 import com.matejdro.pebblenotificationcenter.bluetooth.api.WATCHAPP_UUID
+import com.matejdro.pebblenotificationcenter.notification.FakeActionOrderRepository
 import com.matejdro.pebblenotificationcenter.notification.FakeNotificationRepository
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
@@ -31,10 +32,13 @@ class NotificationDetailsPusherImplTest {
    private val packetQueue = PacketQueue(sender, WatchIdentifier("watch"), WATCHAPP_UUID)
    private val notificationRepository = FakeNotificationRepository()
 
+   private val actionOrderRepository = FakeActionOrderRepository()
+
    private val notificationDetailsPusher = NotificationDetailsPusherImpl(
       packetQueue,
       notificationRepository,
-      DefaultCoroutineScope(scope.backgroundScope.coroutineContext)
+      actionOrderRepository,
+      DefaultCoroutineScope(scope.backgroundScope.coroutineContext),
    )
 
    @Test
@@ -515,6 +519,58 @@ class NotificationDetailsPusherImplTest {
                   194.toByte(), // UTF8 marker
                   160.toByte(), // Non-breaking space, not the input regular space
                   99, // c
+               )
+            )
+         )
+      )
+   }
+
+   @Test
+   fun `It should respect action order from the action order repository`() = scope.runTest {
+      actionOrderRepository.moveOrder("A1", 2)
+
+      setup()
+
+      notificationRepository.putNotification(
+         12,
+         ProcessedNotification(
+            ParsedNotification(
+               "",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+            ),
+            actions = listOf(
+               Action.Dismiss("A1"),
+               Action.Dismiss("A2"),
+               Action.Dismiss("A3"),
+            )
+         ),
+      )
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+
+      runCurrent()
+
+      sender.sentData.shouldContainExactly(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt8(5),
+            1u to PebbleDictionaryItem.Bytes(
+               byteArrayOf(
+                  12, // Notification id
+
+                  3, // 3 actions
+                  65, 50, 0, // A2 & null
+                  65, 51, 0, // A3 & null
+                  65, 49, 0, // A1 & null
+
+                  // Hello in UTf-8
+                  72,
+                  101,
+                  108,
+                  108,
+                  111
                )
             )
          )
