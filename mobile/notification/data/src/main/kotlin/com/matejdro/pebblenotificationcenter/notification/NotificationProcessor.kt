@@ -199,26 +199,8 @@ class NotificationProcessor(
    }
 
    private fun processActions(parsedNotification: ParsedNotification, pauseStatus: PauseStatus): List<Action> {
-      val defaultActionsPre = listOf<Action>(
+      val ncActions = listOf<Action>(
          Action.Dismiss(context.getString(R.string.dismiss)),
-      )
-
-      val nativeActions = parsedNotification.nativeActions.map { action ->
-         val remoteInputResultKey = action.remoteInputResultKey
-         if (remoteInputResultKey == null) {
-            Action.Native(title = action.text, intent = action.pendingIntent)
-         } else {
-            Action.Reply(
-               title = action.text,
-               intent = action.pendingIntent,
-               remoteInputResultKey = remoteInputResultKey,
-               cannedTexts = action.cannedTexts,
-               allowFreeFormInput = action.allowFreeFormInput
-            )
-         }
-      }
-
-      val defaultActionsPost = listOf<Action>(
          Action.PauseApp(
             if (pauseStatus.app) {
                context.getString(R.string.unpause_app)
@@ -235,7 +217,28 @@ class NotificationProcessor(
          ),
       )
 
-      return (defaultActionsPre + nativeActions + defaultActionsPost)
+      val appActions = parsedNotification.nativeActions.map { action ->
+         val text = if (ncActions.any { it.title == action.text }) {
+            context.getString(R.string.app_suffix, action.text)
+         } else {
+            action.text
+         }
+
+         val remoteInputResultKey = action.remoteInputResultKey
+         if (remoteInputResultKey == null) {
+            Action.Native(title = text, intent = action.pendingIntent)
+         } else {
+            Action.Reply(
+               title = text,
+               intent = action.pendingIntent,
+               remoteInputResultKey = remoteInputResultKey,
+               cannedTexts = action.cannedTexts,
+               allowFreeFormInput = action.allowFreeFormInput
+            )
+         }
+      }
+
+      return ncActions + appActions
    }
 
    override suspend fun notifyPackagePauseStatusChanged(pkg: String) {

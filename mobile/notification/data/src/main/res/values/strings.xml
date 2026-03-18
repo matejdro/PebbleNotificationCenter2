@@ -7,4 +7,5 @@
     <string name="pause_conversation">Pause convo</string>
     <string name="unpause_conversation">Unpause convo</string>
     <string name="other_actions">Other actions</string>
+    <string name="app_suffix">%1$s (App)</string>
 </resources>

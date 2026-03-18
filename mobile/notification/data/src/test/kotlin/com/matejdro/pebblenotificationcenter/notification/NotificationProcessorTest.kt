@@ -64,6 +64,7 @@ class NotificationProcessorTest {
       context.resources.putString(R.string.unpause_app, "Unpause app")
       context.resources.putString(R.string.pause_conversation, "Pause conversation")
       context.resources.putString(R.string.unpause_conversation, "Unpause conversation")
+      context.resources.putString(R.string.app_suffix) { "${it.elementAt(0)} (App)" }
 
       runBlocking {
          rulesRepository.insert("Default Rule")
@@ -1272,5 +1273,37 @@ class NotificationProcessorTest {
       runCurrent()
 
       watchSyncer.syncedNotifications.map { it.bucketId }.shouldContainExactly(2)
+   }
+
+   @Test
+   fun `It should add App prefix to native actions that clash with the NC actions`() = runTest {
+      val intent1 = "intent1"
+      val intent2 = "intent2"
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         nativeActions = listOf(
+            NativeAction("Action 1", intent1),
+            NativeAction("Dismiss", intent2),
+         )
+      )
+
+      processor.onNotificationPosted(notification)
+
+      processor.getNotification(1)?.actions.orEmpty()
+         .shouldContainAll(
+            Action.Dismiss("Dismiss"),
+            Action.Native("Action 1", intent1),
+            Action.Native("Dismiss (App)", intent2),
+         )
+         .shouldNotContain(
+            Action.Native("Dismiss", intent2)
+         )
    }
 }
