@@ -92,6 +92,10 @@ static void on_close_me_finished(const bool success)
 
 void send_close_me()
 {
+    // Even if close clashes with other packets, we don't really care,
+    // we don't want to show errors to the user
+    ignore_bluetooth_busy_errors = true;
+
     window_status_show_error("Closing...");
 
     bluetooth_register_sending_finish(on_close_me_finished);
