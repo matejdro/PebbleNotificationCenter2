@@ -28,10 +28,11 @@ class DrawableExtractorImpl : DrawableExtractor {
 
       val finalImage = ImagePixels(bitmap)
          .useAlphaAsValues()
-         .dither(toColorScreen = colorWatch)
 
       return if (colorWatch) {
-         finalImage.encodeColorImageIntoBytes()
+         finalImage
+            .dither(toColorScreen = true)
+            .encodeColorImageIntoBytes()
       } else {
          finalImage.encodeMonochromeImageIntoBytes()
       }

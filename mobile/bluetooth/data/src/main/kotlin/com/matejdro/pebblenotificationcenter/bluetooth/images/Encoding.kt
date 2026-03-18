@@ -29,7 +29,7 @@ fun ImagePixels.encodeMonochromeImageIntoBytes(): ByteArray {
          val pixel: Int = this[x, y]
          val color = Color.red(pixel)
 
-         imageLine.getScanline()[x] = (if (color > 0) 1 else 0).toByte()
+         imageLine.getScanline()[x] = (if (color > BLACK_THRESHOLD) 1 else 0).toByte()
       }
 
       pngWriter.writeRow(imageLine, y)
@@ -95,3 +95,5 @@ private val PEBBLE_TIME_PALETTE_MAP = HashMap<Int, Byte>().apply {
       }
    }
 }
+
+private val BLACK_THRESHOLD = UByte.MAX_VALUE.toInt() / 2
