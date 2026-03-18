@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -137,6 +138,19 @@ private fun StringListScreenContent(
                   .fillMaxWidth(),
                state = listState,
             ) {
+               item(key = "dummy") {
+                  // If user attempts to drag the first item, Lazy List will attempt to scroll down to keep
+                  // the list scroll position the same (first item at the same position on the screen)
+                  // To counteract that, we add a dummy first item to the start of the list, so the list
+                  // hooks on that item instead of on the ordered item
+
+                  Spacer(
+                     Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                  )
+               }
+
                items(shownList, key = { it.index }) { entry ->
                   ReorderableListItem(
                      entry.index,
