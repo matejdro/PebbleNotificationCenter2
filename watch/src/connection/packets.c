@@ -32,6 +32,7 @@ void send_watch_welcome()
     dict_write_uint16(iterator, 1, PROTOCOL_VERSION);
     dict_write_uint16(iterator, 2, bucket_sync_current_version);
     dict_write_uint16(iterator, 3, appmessage_max_size);
+    dict_write_uint16(iterator, 4, PBL_IF_COLOR_ELSE(1, 0));
     bluetooth_app_message_outbox_send();
 }
 

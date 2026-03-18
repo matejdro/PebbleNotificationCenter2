@@ -60,7 +60,8 @@ class NotificationParser(
          media = notification.extras.containsKey(NotificationCompat.EXTRA_MEDIA_SESSION),
          forceVibrate = sbn.packageName == context.packageName &&
             notification.extras.getBoolean(NotificationConstants.KEY_FORCE_VIBRATE, false),
-         overrideVibrationPattern = parseVibrationPattern(notification)
+         overrideVibrationPattern = parseVibrationPattern(notification),
+         iconDrawable = notification.smallIcon?.loadDrawable(context)
       )
    }
 

@@ -56,6 +56,12 @@ static void reload_data_for_current_bucket()
 {
     uint8_t bucket_data[256];
 
+    if (window_notification_data.icon != NULL)
+    {
+        gbitmap_destroy(window_notification_data.icon);
+        window_notification_data.icon = NULL;
+    }
+
     if (!bucket_sync_load_bucket(window_notification_data.currently_selected_bucket, bucket_data))
     {
         // Bucket is not on the device yet. Show blank for now and wait for the buckets to load.
@@ -298,6 +304,20 @@ void window_notification_data_receive_more_text(const uint8_t bucket_id, const u
         const char* action_title = strcpy(window_notification_data.actions[i].text, (char*)&data[position]);
         window_notification_data.actions[i].voice = false;
         position += strlen(action_title) + 1;
+    }
+
+    const size_t icon_bytes_length = read_uint16_from_byte_array(data, position);
+    position += 2;
+
+    if (window_notification_data.icon != NULL)
+    {
+        gbitmap_destroy(window_notification_data.icon);
+        window_notification_data.icon = NULL;
+    }
+    if (icon_bytes_length != 0)
+    {
+        window_notification_data.icon = gbitmap_create_from_png_data(&data[position], icon_bytes_length);
+        position += icon_bytes_length;
     }
 
     const size_t max_text_size = MIN(MAX_BODY_TEXT_SIZE, data_size - position);

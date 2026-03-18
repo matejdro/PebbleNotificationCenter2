@@ -32,6 +32,7 @@ typedef struct
     char subtitle_text[21];
     // Include + 40 for the date and the null character
     char body_text[MAX_BODY_TEXT_SIZE + 40];
+    GBitmap* icon;
 
     time_t receive_time;
 

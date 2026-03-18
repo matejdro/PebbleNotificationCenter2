@@ -194,6 +194,7 @@ class WatchappConnectionImplTest {
 
       notificationDetailsPusher.lastPushRequestId shouldBe 12
       notificationDetailsPusher.lastMaxPacketSize shouldBe 123
+      notificationDetailsPusher.lastColorWatch shouldBe false
    }
 
    @Test
@@ -414,13 +415,33 @@ class WatchappConnectionImplTest {
       result shouldBe ReceiveResult.Ack
    }
 
-   private suspend fun receiveStandardHelloPacket(version: UInt = 0u, bufferSize: UInt = 1000u): ReceiveResult =
+   @Test
+   fun `Push notification details with color watch when color flag is set`() = scope.runTest {
+      receiveStandardHelloPacket(bufferSize = 123u, flags = 1u)
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(4u),
+            1u to PebbleDictionaryItem.UInt32(12u),
+         )
+      )
+      runCurrent()
+
+      result shouldBe ReceiveResult.Ack
+
+      notificationDetailsPusher.lastPushRequestId shouldBe 12
+      notificationDetailsPusher.lastMaxPacketSize shouldBe 123
+      notificationDetailsPusher.lastColorWatch shouldBe true
+   }
+
+   private suspend fun receiveStandardHelloPacket(version: UInt = 0u, bufferSize: UInt = 1000u, flags: UInt = 0u): ReceiveResult =
       connection.onPacketReceived(
          mapOf(
             0u to PebbleDictionaryItem.UInt32(0u),
             1u to PebbleDictionaryItem.UInt32(PROTOCOL_VERSION.toUInt()),
             2u to PebbleDictionaryItem.UInt32(version),
             3u to PebbleDictionaryItem.UInt32(bufferSize),
+            4u to PebbleDictionaryItem.UInt32(flags),
          )
       )
 }

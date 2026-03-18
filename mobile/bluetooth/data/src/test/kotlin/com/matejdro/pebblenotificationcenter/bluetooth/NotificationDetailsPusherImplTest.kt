@@ -1,10 +1,14 @@
 package com.matejdro.pebblenotificationcenter.bluetooth
 
+import android.graphics.Canvas
+import android.graphics.ColorFilter
+import android.graphics.drawable.Drawable
 import com.matejdro.pebble.bluetooth.common.PacketQueue
 import com.matejdro.pebble.bluetooth.common.test.FakePebbleSender
 import com.matejdro.pebble.bluetooth.common.test.sentData
 import com.matejdro.pebble.bluetooth.common.util.requireBytes
 import com.matejdro.pebblenotificationcenter.bluetooth.api.WATCHAPP_UUID
+import com.matejdro.pebblenotificationcenter.bluetooth.images.FakeDrawableExtractor
 import com.matejdro.pebblenotificationcenter.notification.FakeActionOrderRepository
 import com.matejdro.pebblenotificationcenter.notification.FakeNotificationRepository
 import com.matejdro.pebblenotificationcenter.notification.model.Action
@@ -34,10 +38,13 @@ class NotificationDetailsPusherImplTest {
 
    private val actionOrderRepository = FakeActionOrderRepository()
 
+   private val drawableExtractor = FakeDrawableExtractor()
+
    private val notificationDetailsPusher = NotificationDetailsPusherImpl(
       packetQueue,
       notificationRepository,
       actionOrderRepository,
+      drawableExtractor,
       DefaultCoroutineScope(scope.backgroundScope.coroutineContext),
    )
 
@@ -58,7 +65,7 @@ class NotificationDetailsPusherImplTest {
             )
          )
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
 
       runCurrent()
 
@@ -70,6 +77,8 @@ class NotificationDetailsPusherImplTest {
                   12, // Notification id
 
                   0, // No actions in this test
+
+                  0, 0, // No image
 
                   // Hello in UTf-8
                   72,
@@ -100,7 +109,7 @@ class NotificationDetailsPusherImplTest {
             )
          )
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
 
       runCurrent()
 
@@ -112,9 +121,10 @@ class NotificationDetailsPusherImplTest {
                   12, // Notification id
 
                   0, // No actions in this test
+                  0, 0, // No image
                ) +
-                  // 79 'a' characters, followed by the ...
-                  ByteArray(79) { 'a'.code.toByte() } +
+                  // 77 'a' characters, followed by the ...
+                  ByteArray(77) { 'a'.code.toByte() } +
                   byteArrayOf(46, 46, 46)
             )
          )
@@ -143,13 +153,13 @@ class NotificationDetailsPusherImplTest {
 
       sender.pauseSending = true
 
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 0, maxPacketSize = 100)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 0, maxPacketSize = 100, colorWatch = false)
       runCurrent()
 
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 1, maxPacketSize = 100)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 1, maxPacketSize = 100, colorWatch = false)
       runCurrent()
 
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 2, maxPacketSize = 100)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 2, maxPacketSize = 100, colorWatch = false)
       runCurrent()
 
       sender.pauseSending = false
@@ -186,7 +196,7 @@ class NotificationDetailsPusherImplTest {
             )
          ),
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
 
       runCurrent()
 
@@ -201,6 +211,8 @@ class NotificationDetailsPusherImplTest {
                   65, 49, 0, // A1 & null
                   65, 50, 0, // A2 & null
                   65, 51, 0, // A2 & null
+
+                  0, 0, // No image
 
                   // Hello in UTf-8
                   72,
@@ -234,7 +246,7 @@ class NotificationDetailsPusherImplTest {
             )
          ),
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
 
       runCurrent()
 
@@ -254,6 +266,8 @@ class NotificationDetailsPusherImplTest {
                      // ...
                      46, 46, 46,
                      0, // Null terminator
+
+                     0, 0, // No image
 
                      // Notification body, Hello in UTf-8
                      72,
@@ -285,7 +299,7 @@ class NotificationDetailsPusherImplTest {
             actions = List(30) { Action.Dismiss(it.toString()) }
          ),
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
 
       runCurrent()
 
@@ -296,7 +310,7 @@ class NotificationDetailsPusherImplTest {
    fun `Send blank packet when the notification does not exist`() = scope.runTest {
       setup()
 
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
 
       runCurrent()
 
@@ -308,6 +322,7 @@ class NotificationDetailsPusherImplTest {
                   12, // Notification id
 
                   0, // No actions in this test
+                  0, 0, // No image
 
                   // No text
                )
@@ -335,7 +350,7 @@ class NotificationDetailsPusherImplTest {
             )
          )
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
 
       runCurrent()
 
@@ -372,7 +387,7 @@ class NotificationDetailsPusherImplTest {
             )
          )
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
       runCurrent()
 
       notificationRepository.nextVibration = null
@@ -389,7 +404,7 @@ class NotificationDetailsPusherImplTest {
             )
          )
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 13, maxPacketSize = 100)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 13, maxPacketSize = 100, colorWatch = false)
       runCurrent()
 
       sender.pauseSending = false
@@ -419,7 +434,7 @@ class NotificationDetailsPusherImplTest {
                )
             )
          )
-         notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+         notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
          runCurrent()
 
          notificationRepository.nextVibration = intArrayOf(20, 20, 20, 20)
@@ -436,7 +451,7 @@ class NotificationDetailsPusherImplTest {
                )
             )
          )
-         notificationDetailsPusher.pushNotificationDetails(bucketId = 13, maxPacketSize = 100)
+         notificationDetailsPusher.pushNotificationDetails(bucketId = 13, maxPacketSize = 100, colorWatch = false)
          runCurrent()
 
          sender.pauseSending = false
@@ -479,7 +494,7 @@ class NotificationDetailsPusherImplTest {
          )
       )
 
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
       runCurrent()
 
       notificationRepository.notificationsMarkedAsRead.shouldContainExactly(12)
@@ -502,7 +517,7 @@ class NotificationDetailsPusherImplTest {
             )
          )
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
 
       runCurrent()
 
@@ -514,6 +529,7 @@ class NotificationDetailsPusherImplTest {
                   12, // Notification id
 
                   0, // No actions in this test
+                  0, 0, // No image
 
                   // UTF8 Bytes for the text
                   194.toByte(), // UTF8 marker
@@ -549,7 +565,7 @@ class NotificationDetailsPusherImplTest {
             )
          ),
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
 
       runCurrent()
 
@@ -564,6 +580,160 @@ class NotificationDetailsPusherImplTest {
                   65, 50, 0, // A2 & null
                   65, 51, 0, // A3 & null
                   65, 49, 0, // A1 & null
+
+                  0, 0, // No image
+
+                  // Hello in UTf-8
+                  72,
+                  101,
+                  108,
+                  108,
+                  111
+               )
+            )
+         )
+      )
+   }
+
+   @Test
+   fun `Send a notification icon`() = scope.runTest {
+      val fakeDrawable = object : Drawable() {
+         override fun draw(canvas: Canvas) {
+            throw UnsupportedOperationException()
+         }
+
+         @Deprecated("Deprecated in Java")
+         override fun getOpacity(): Int {
+            throw UnsupportedOperationException()
+         }
+
+         override fun setAlpha(alpha: Int) {
+            throw UnsupportedOperationException()
+         }
+
+         override fun setColorFilter(colorFilter: ColorFilter?) {
+            throw UnsupportedOperationException()
+         }
+      }
+
+      drawableExtractor.registerOutput(
+         drawable = fakeDrawable,
+         width = 32,
+         height = 32,
+         colorWatch = false,
+         output = byteArrayOf(1, 2, 3)
+      )
+
+      setup()
+
+      notificationRepository.putNotification(
+         12,
+         ProcessedNotification(
+            ParsedNotification(
+               "",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+               iconDrawable = fakeDrawable,
+            )
+         )
+      )
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
+
+      runCurrent()
+
+      sender.sentData.shouldContainExactly(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt8(5),
+            1u to PebbleDictionaryItem.Bytes(
+               byteArrayOf(
+                  12, // Notification id
+
+                  0, // No actions in this test
+
+                  0, 3, // 3 Bytes for the image
+                  // Image data
+                  1,
+                  2,
+                  3,
+
+                  // Hello in UTf-8
+                  72,
+                  101,
+                  108,
+                  108,
+                  111
+               )
+            )
+         )
+      )
+   }
+
+   @Test
+   fun `Send a colorful notification icon`() = scope.runTest {
+      val fakeDrawable = object : Drawable() {
+         override fun draw(canvas: Canvas) {
+            throw UnsupportedOperationException()
+         }
+
+         @Deprecated("Deprecated in Java")
+         override fun getOpacity(): Int {
+            throw UnsupportedOperationException()
+         }
+
+         override fun setAlpha(alpha: Int) {
+            throw UnsupportedOperationException()
+         }
+
+         override fun setColorFilter(colorFilter: ColorFilter?) {
+            throw UnsupportedOperationException()
+         }
+      }
+
+      drawableExtractor.registerOutput(
+         drawable = fakeDrawable,
+         width = 32,
+         height = 32,
+         colorWatch = true,
+         output = byteArrayOf(1, 2, 3)
+      )
+
+      setup()
+
+      notificationRepository.putNotification(
+         12,
+         ProcessedNotification(
+            ParsedNotification(
+               "",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+               iconDrawable = fakeDrawable,
+            )
+         )
+      )
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = true)
+
+      runCurrent()
+
+      sender.sentData.shouldContainExactly(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt8(5),
+            1u to PebbleDictionaryItem.Bytes(
+               byteArrayOf(
+                  12, // Notification id
+
+                  0, // No actions in this test
+
+                  0, 3, // 3 Bytes for the image
+                  // Image data
+                  1,
+                  2,
+                  3,
 
                   // Hello in UTf-8
                   72,

@@ -52,7 +52,7 @@ Optionally sent to the watch after packets 1 or 2. Can be repeated until data fo
     * Bucket size in bytes (uint8)
     * Bucket data (bytes)
 
-### Larger notification text (packet 5)
+### Notification details (packet 5)
 
 Sent from the phone after the packet 4
 
@@ -61,6 +61,8 @@ Sent from the phone after the packet 4
   * Number of actions (uint8)
   * For every action:
     * Action text (cstring, up to 20 bytes + null terminator)
+  * Number of bytes of the notification icon (uint16) - 0 means no icon
+  * Icon data (bytes, encoded indexed png for color watches or grayscale png for black-and-white watches)
   * Text (cstring, up to the max size of the packet)
   
 ### Vibrate (packet 7)
@@ -98,6 +100,8 @@ Sent from the watch when the app is opened.
 * `1` - watch protocol version (uint16)
 * `2` - current bucketsync watch version (uint16)
 * `3` - Appmessage incoming buffer size in bytes (uint16)
+* `4` - Watch info flags
+  * 0x01 - 1 when the watch has a color screen, 0 otherwise
 
 ### Notification opened notification (packet 4)
 

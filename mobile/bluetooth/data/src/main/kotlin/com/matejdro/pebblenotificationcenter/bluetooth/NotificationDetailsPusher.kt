@@ -1,11 +1,13 @@
 package com.matejdro.pebblenotificationcenter.bluetooth
 
+import android.graphics.drawable.Drawable
 import com.matejdro.pebble.bluetooth.common.PacketQueue
 import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionScope
 import com.matejdro.pebble.bluetooth.common.util.LimitingStringEncoder
 import com.matejdro.pebble.bluetooth.common.util.fixPebbleIndentation
 import com.matejdro.pebble.bluetooth.common.util.writeUByte
 import com.matejdro.pebble.bluetooth.common.util.writeUShort
+import com.matejdro.pebblenotificationcenter.bluetooth.images.DrawableExtractor
 import com.matejdro.pebblenotificationcenter.notification.ActionOrderRepository
 import com.matejdro.pebblenotificationcenter.notification.NotificationRepository
 import dev.zacsweers.metro.ContributesBinding
@@ -24,6 +26,7 @@ class NotificationDetailsPusherImpl(
    private val queue: PacketQueue,
    private val notificationRepository: NotificationRepository,
    private val actionOrderRepository: ActionOrderRepository,
+   private val drawableExtractor: DrawableExtractor,
    private val scope: DefaultCoroutineScope,
 ) : NotificationDetailsPusher {
    private val stringEncoder = LimitingStringEncoder()
@@ -33,7 +36,7 @@ class NotificationDetailsPusherImpl(
    // Magic numbers are a whole point of this function (protocol constants).
    // Use is not required for memory-only Buffer
    @Suppress("MagicNumber", "MissingUseCall")
-   override fun pushNotificationDetails(bucketId: Int, maxPacketSize: Int) {
+   override fun pushNotificationDetails(bucketId: Int, maxPacketSize: Int, colorWatch: Boolean) {
       previousDetailsSendingJob?.cancel()
 
       val notification = notificationRepository.getNotification(bucketId)
@@ -52,6 +55,21 @@ class NotificationDetailsPusherImpl(
          for (action in sortedActions) {
             buffer.write(stringEncoder.encodeSizeLimited(action.title, MAX_ACTIONS_TEXT_BYTES).encodedString)
             buffer.writeUByte(0u)
+         }
+
+         val iconData = notification?.systemData?.iconDrawable?.let { icon ->
+            drawableExtractor.convertIconDrawableToBitmapBytes(
+               icon as Drawable,
+               ICON_SIZE_PIXELS,
+               ICON_SIZE_PIXELS,
+               colorWatch
+            )
+         }
+         if (iconData != null) {
+            buffer.writeUShort(iconData.size.toUShort())
+            buffer.write(iconData)
+         } else {
+            buffer.writeUShort(0u)
          }
 
          val packetBeforeText = mapOf(
@@ -108,7 +126,8 @@ class NotificationDetailsPusherImpl(
 
 private const val MAX_ACTIONS_TO_SEND = 20
 private const val MAX_ACTIONS_TEXT_BYTES = 20
+private const val ICON_SIZE_PIXELS = 32
 
 interface NotificationDetailsPusher {
-   fun pushNotificationDetails(bucketId: Int, maxPacketSize: Int)
+   fun pushNotificationDetails(bucketId: Int, maxPacketSize: Int, colorWatch: Boolean)
 }

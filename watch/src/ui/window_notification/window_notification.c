@@ -7,9 +7,13 @@
 #include "data_loading.h"
 #include "../layers/dots.h"
 #include "../layers/status_bar.h"
+#include "commons/math.h"
 
 const int16_t HORIZONTAL_TEXT_PADDING = 2;
 const int16_t MID_TEXT_VERTICAL_PADDING = 4;
+#define ICON_SIZE 32
+#define ICON_PADDING 4
+#define ICON_SIZE_AND_BOUNDS (ICON_SIZE + ICON_PADDING * 2)
 
 NotificationWindowData window_notification_data = {
     .active = false,
@@ -30,13 +34,14 @@ static TextParameters body;
 void window_notification_ui_redraw_scroller_content()
 {
     const int16_t scroller_width = scroll_layer_get_content_size(scroll_layer).w;
+    const int16_t max_title_width = scroller_width - ICON_SIZE_AND_BOUNDS;
 
     int16_t y = 0;
     title.bounds.origin = GPoint(0, 0);
     title.bounds.size = graphics_text_layout_get_content_size(
         title.text,
         title.font,
-        GRect(0, 0, scroller_width, 3000),
+        GRect(0, 0, max_title_width, 3000),
         GTextOverflowModeWordWrap,
         GTextAlignmentLeft
     );
@@ -46,7 +51,7 @@ void window_notification_ui_redraw_scroller_content()
     subtitle.bounds.size = graphics_text_layout_get_content_size(
         subtitle.text,
         subtitle.font,
-        GRect(0, 0, scroller_width, 3000),
+        GRect(0, 0, max_title_width, 3000),
         GTextOverflowModeWordWrap,
         GTextAlignmentLeft
     );
@@ -54,6 +59,9 @@ void window_notification_ui_redraw_scroller_content()
     {
         y += subtitle.bounds.size.h + MID_TEXT_VERTICAL_PADDING;
     }
+
+    // Even if the title and subtitle are very small, reserve at least ICON_SIZE_AND_BOUNDS height for the icon
+    y = MAX(y, ICON_SIZE_AND_BOUNDS);
 
     body.bounds.origin = GPoint(0, y);
     body.bounds.size = graphics_text_layout_get_content_size(
@@ -70,12 +78,23 @@ void window_notification_ui_redraw_scroller_content()
     layer_mark_dirty(scroll_content_layer);
 }
 
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
 static void scroll_content_paint(Layer* layer, GContext* ctx)
 {
     graphics_context_set_text_color(ctx, GColorBlack);
+    const GRect bounds = layer_get_bounds(layer);
+
     graphics_draw_text(ctx, title.text, title.font, title.bounds, GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
     graphics_draw_text(ctx, subtitle.text, subtitle.font, subtitle.bounds, GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
     graphics_draw_text(ctx, body.text, body.font, body.bounds, GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
+    if (window_notification_data.icon != NULL)
+    {
+        graphics_draw_bitmap_in_rect(
+            ctx,
+            window_notification_data.icon,
+            GRect(bounds.size.w - ICON_SIZE - ICON_PADDING, ICON_PADDING, ICON_SIZE, ICON_SIZE)
+        );
+    }
 }
 
 
@@ -86,6 +105,7 @@ static void window_load(Window* window)
     window_notification_data.currently_selected_bucket_index = 0;
     window_notification_data.bucket_count = 0;
     window_notification_data.open_menu_on_success = 0;
+    window_notification_data.icon = NULL;
 
     Layer* window_layer = window_get_root_layer(window);
     const GRect screen_bounds = layer_get_bounds(window_layer);
@@ -130,6 +150,11 @@ static void window_load(Window* window)
 static void window_unload(Window* window)
 {
     window_notification_data.active = false;
+    if (window_notification_data.icon != NULL)
+    {
+        gbitmap_destroy(window_notification_data.icon);
+        window_notification_data.icon = NULL;
+    }
 
     window_notification_action_list_deinit();
     custom_status_bar_set_active(status_bar_layer, false);
@@ -155,19 +180,15 @@ void window_notification_show()
 {
     Window* window = window_create();
 
-    window_set_window_handlers(window, (WindowHandlers)
-    {
-        .
-        load = window_load,
-        .
-        unload = window_unload,
-        .
-        appear = window_appear,
-        .
-        disappear = window_disappear,
-    }
-    )
-    ;
+    window_set_window_handlers(
+        window,
+        (WindowHandlers){
+            .load = window_load,
+            .unload = window_unload,
+            .appear = window_appear,
+            .disappear = window_disappear,
+        }
+    );
 
     window_stack_push(window, true);
 }

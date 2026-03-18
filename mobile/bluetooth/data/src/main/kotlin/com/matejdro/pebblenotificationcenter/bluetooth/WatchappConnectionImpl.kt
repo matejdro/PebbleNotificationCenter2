@@ -45,6 +45,7 @@ class WatchappConnectionImpl(
    private val preferenceStore: DataStore<Preferences>,
 ) : WatchAppConnection {
    private var watchBufferSize: Int = 0
+   private var colorWatch: Boolean = false
 
    init {
       coroutineScope.launch {
@@ -65,7 +66,8 @@ class WatchappConnectionImpl(
             if (watchBufferSize > 0) {
                notificationDetailsPusher.pushNotificationDetails(
                   bucketId = data.requireUint(1u).toInt(),
-                  maxPacketSize = watchBufferSize
+                  maxPacketSize = watchBufferSize,
+                  colorWatch = colorWatch
                )
             }
 
@@ -108,6 +110,9 @@ class WatchappConnectionImpl(
       val watchVersion = data.requireUint(2u).toUShort()
       watchBufferSize = data.requireUint(3u).toInt()
       logcat { "Watch data: version=$watchVersion, buffer size=$watchBufferSize" }
+
+      val flags = data.requireUint(4u)
+      colorWatch = (flags and 0x01u) != 0u
 
       bucketSyncWatchLoop.sendFirstPacketAndStartLoop(
          mapOfNotNull(

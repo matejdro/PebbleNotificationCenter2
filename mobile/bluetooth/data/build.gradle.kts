@@ -18,6 +18,7 @@ dependencies {
    implementation(libs.logcat)
    implementation(libs.okio)
    implementation(libs.pebblekit.common)
+   implementation(libs.pngj)
 
    testImplementation(testFixtures(projects.common))
    testImplementation(testFixtures(projects.bluetooth.api))

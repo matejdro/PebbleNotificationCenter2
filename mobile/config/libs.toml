@@ -43,6 +43,7 @@ orgJson = "20251224"
 paparazzi = "2.0.0-alpha04"
 pebblekit = "0.1.0"
 rebugger = "1.0.1"
+pngj = "2.1.0"
 showkase = "1.0.5"
 sqldelight = "2.2.1"
 tinylog = "2.7.0"
@@ -127,6 +128,7 @@ metro-plugin = { module = "dev.zacsweers.metro:gradle-plugin", version.ref = "me
 moduleGraphAssert = { module = "com.jraska.module.graph.assertion:plugin", version.ref = "moduleGraphAssert" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 orgJson = { module = "org.json:json", version.ref = "orgJson" }
+pngj = { module = "ar.com.hjg:pngj", version.ref = "pngj" }
 pebblekit = { module = "io.rebble.pebblekit2:client", version.ref = "pebblekit" }
 pebblekit-api = { module = "io.rebble.pebblekit2:client-api", version.ref = "pebblekit" }
 pebblekit-common = { module = "io.rebble.pebblekit2:common", version.ref = "pebblekit" }
