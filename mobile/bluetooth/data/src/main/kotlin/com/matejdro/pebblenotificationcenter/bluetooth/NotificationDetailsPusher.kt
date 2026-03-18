@@ -15,10 +15,13 @@ import dev.zacsweers.metro.Inject
 import dispatch.core.DefaultCoroutineScope
 import io.rebble.pebblekit2.common.model.PebbleDictionaryItem
 import io.rebble.pebblekit2.common.util.sizeInBytes
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import logcat.logcat
 import okio.Buffer
+import si.inova.kotlinova.core.exceptions.UnknownCauseException
+import si.inova.kotlinova.core.reporting.ErrorReporter
 
 @Inject
 @ContributesBinding(WatchappConnectionScope::class)
@@ -28,6 +31,7 @@ class NotificationDetailsPusherImpl(
    private val actionOrderRepository: ActionOrderRepository,
    private val drawableExtractor: DrawableExtractor,
    private val scope: DefaultCoroutineScope,
+   private val errorReporter: ErrorReporter,
 ) : NotificationDetailsPusher {
    private val stringEncoder = LimitingStringEncoder()
    private var previousDetailsSendingJob: Job? = null
@@ -42,59 +46,65 @@ class NotificationDetailsPusherImpl(
       val notification = notificationRepository.getNotification(bucketId)
 
       previousDetailsSendingJob = scope.launch {
-         notificationRepository.markAsRead(bucketId)
+         try {
+            notificationRepository.markAsRead(bucketId)
 
-         val buffer = Buffer()
-         buffer.writeUByte(bucketId.toUByte())
+            val buffer = Buffer()
+            buffer.writeUByte(bucketId.toUByte())
 
-         val actionsToSend = notification?.actions.orEmpty().take(MAX_ACTIONS_TO_SEND)
-         val sortedActions = actionOrderRepository.sort(actionsToSend)
+            val actionsToSend = notification?.actions.orEmpty().take(MAX_ACTIONS_TO_SEND)
+            val sortedActions = actionOrderRepository.sort(actionsToSend)
 
-         buffer.writeUByte(sortedActions.size.toUByte())
+            buffer.writeUByte(sortedActions.size.toUByte())
 
-         for (action in sortedActions) {
-            buffer.write(stringEncoder.encodeSizeLimited(action.title, MAX_ACTIONS_TEXT_BYTES).encodedString)
-            buffer.writeUByte(0u)
-         }
+            for (action in sortedActions) {
+               buffer.write(stringEncoder.encodeSizeLimited(action.title, MAX_ACTIONS_TEXT_BYTES).encodedString)
+               buffer.writeUByte(0u)
+            }
 
-         val iconData = notification?.systemData?.iconDrawable?.let { icon ->
-            drawableExtractor.convertIconDrawableToBitmapBytes(
-               icon as Drawable,
-               ICON_SIZE_PIXELS,
-               ICON_SIZE_PIXELS,
-               colorWatch
+            val iconData = notification?.systemData?.iconDrawable?.let { icon ->
+               drawableExtractor.convertIconDrawableToBitmapBytes(
+                  icon as Drawable,
+                  ICON_SIZE_PIXELS,
+                  ICON_SIZE_PIXELS,
+                  colorWatch
+               )
+            }
+            if (iconData != null) {
+               buffer.writeUShort(iconData.size.toUShort())
+               buffer.write(iconData)
+            } else {
+               buffer.writeUShort(0u)
+            }
+
+            val packetBeforeText = mapOf(
+               0u to PebbleDictionaryItem.UInt8(5u),
+               1u to PebbleDictionaryItem.Bytes(ByteArray(buffer.size.toInt()))
             )
+
+            val maxTextSize = maxPacketSize - packetBeforeText.sizeInBytes()
+            val encodedText = stringEncoder.encodeSizeLimited(
+               notification?.systemData?.body.orEmpty().fixPebbleIndentation(),
+               maxTextSize
+            ).encodedString
+            buffer.write(encodedText)
+
+            val packet = packetBeforeText + mapOf(
+               1u to PebbleDictionaryItem.Bytes(buffer.readByteArray())
+            )
+
+            logcat { "Sending notification details for $bucketId: ${packet.sizeInBytes()} (${sortedActions.size} actions)" }
+
+            launch {
+               queue.sendPacket(packet, priority = PRIORITY_WATCH_TEXT)
+            }
+
+            pushVibration()
+         } catch (e: CancellationException) {
+            throw e
+         } catch (e: Exception) {
+            errorReporter.report(UnknownCauseException("Failed to push notification details", e))
          }
-         if (iconData != null) {
-            buffer.writeUShort(iconData.size.toUShort())
-            buffer.write(iconData)
-         } else {
-            buffer.writeUShort(0u)
-         }
-
-         val packetBeforeText = mapOf(
-            0u to PebbleDictionaryItem.UInt8(5u),
-            1u to PebbleDictionaryItem.Bytes(ByteArray(buffer.size.toInt()))
-         )
-
-         val maxTextSize = maxPacketSize - packetBeforeText.sizeInBytes()
-         val encodedText = stringEncoder.encodeSizeLimited(
-            notification?.systemData?.body.orEmpty().fixPebbleIndentation(),
-            maxTextSize
-         ).encodedString
-         buffer.write(encodedText)
-
-         val packet = packetBeforeText + mapOf(
-            1u to PebbleDictionaryItem.Bytes(buffer.readByteArray())
-         )
-
-         logcat { "Sending notification details for $bucketId: ${packet.sizeInBytes()} (${sortedActions.size} actions)" }
-
-         launch {
-            queue.sendPacket(packet, priority = PRIORITY_WATCH_TEXT)
-         }
-
-         pushVibration()
       }
    }
 

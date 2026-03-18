@@ -46,6 +46,7 @@ class NotificationDetailsPusherImplTest {
       actionOrderRepository,
       drawableExtractor,
       DefaultCoroutineScope(scope.backgroundScope.coroutineContext),
+      {},
    )
 
    @Test
