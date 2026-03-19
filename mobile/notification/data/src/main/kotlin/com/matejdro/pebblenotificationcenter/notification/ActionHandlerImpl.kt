@@ -25,16 +25,16 @@ class ActionHandlerImpl(
    private val resources: Resources,
    private val pauseController: PauseController,
 ) : ActionHandler {
-   override suspend fun handleAction(notificationId: Int, actionIndex: Int): Boolean {
+   override suspend fun handleAction(notificationId: Int, actionId: Int): Boolean {
       val notification = notificationRepository.getNotification(notificationId)
       if (notification == null) {
          logcat { "Got action for unknown notificationId: $notificationId, skipping..." }
          return false
       }
 
-      val action = notification.actions.elementAtOrNull(actionIndex)
+      val action = notification.actions.firstOrNull { it.id == actionId.toUByte() }
       if (action == null) {
-         logcat { "Got action for unknown actionIndex: $actionIndex, notification has ${notification.actions.size} actions..." }
+         logcat { "Got action for unknown actionIndex: $actionId, notification has ${notification.actions.size} actions..." }
          return false
       }
 

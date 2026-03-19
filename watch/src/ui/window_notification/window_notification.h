@@ -15,6 +15,7 @@ typedef struct
 
 typedef struct
 {
+    uint8_t id;
     char text[21];
     bool voice;
 } Action;

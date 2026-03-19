@@ -191,9 +191,9 @@ class NotificationDetailsPusherImplTest {
                Instant.MIN,
             ),
             actions = listOf(
-               Action.Dismiss("A1"),
-               Action.Dismiss("A2"),
-               Action.Dismiss("A3"),
+               Action.Dismiss("A1", 0u),
+               Action.Dismiss("A2", 1u),
+               Action.Dismiss("A3", 2u),
             )
          ),
       )
@@ -209,8 +209,11 @@ class NotificationDetailsPusherImplTest {
                   12, // Notification id
 
                   3, // 3 actions
+                  0, // Action ID 0
                   65, 49, 0, // A1 & null
+                  1, // Action ID 1
                   65, 50, 0, // A2 & null
+                  2, // Action ID 2
                   65, 51, 0, // A2 & null
 
                   0, 0, // No image
@@ -243,7 +246,7 @@ class NotificationDetailsPusherImplTest {
                Instant.MIN,
             ),
             actions = listOf(
-               Action.Dismiss("a".repeat(100)),
+               Action.Dismiss("a".repeat(100), 0u),
             )
          ),
       )
@@ -259,6 +262,7 @@ class NotificationDetailsPusherImplTest {
                   12, // Notification id
 
                   1, // 1 action
+                  0, // Action ID
                ) +
                   // 17 'a' characters, followed by the ...
                   ByteArray(17) { 'a'.code.toByte() } +
@@ -297,7 +301,7 @@ class NotificationDetailsPusherImplTest {
                "Hello",
                Instant.MIN,
             ),
-            actions = List(30) { Action.Dismiss(it.toString()) }
+            actions = List(30) { Action.Dismiss(it.toString(), it.toUByte()) }
          ),
       )
       notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
@@ -560,9 +564,9 @@ class NotificationDetailsPusherImplTest {
                Instant.MIN,
             ),
             actions = listOf(
-               Action.Dismiss("A1"),
-               Action.Dismiss("A2"),
-               Action.Dismiss("A3"),
+               Action.Dismiss("A1", 0u),
+               Action.Dismiss("A2", 1u),
+               Action.Dismiss("A3", 2u),
             )
          ),
       )
@@ -578,9 +582,9 @@ class NotificationDetailsPusherImplTest {
                   12, // Notification id
 
                   3, // 3 actions
-                  65, 50, 0, // A2 & null
-                  65, 51, 0, // A3 & null
-                  65, 49, 0, // A1 & null
+                  1, 65, 50, 0, // ID, A2, null
+                  2, 65, 51, 0, // ID, A3, null
+                  0, 65, 49, 0, // ID, A1, null
 
                   0, 0, // No image
 

@@ -93,7 +93,7 @@ class ActionHandlerImplTest {
                Instant.MIN,
             ),
             actions = listOf(
-               Action.Dismiss("Dismiss")
+               Action.Dismiss("Dismiss", 0u)
             )
          ),
       )
@@ -119,7 +119,7 @@ class ActionHandlerImplTest {
                Instant.MIN,
             ),
             actions = listOf(
-               Action.Dismiss("Dismiss")
+               Action.Dismiss("Dismiss", 0u)
             )
          ),
       )
@@ -149,7 +149,7 @@ class ActionHandlerImplTest {
                Instant.MIN,
             ),
             actions = listOf(
-               Action.Native("Mark as read", intent)
+               Action.Native("Mark as read", intent, 0u)
             )
          ),
       )
@@ -189,7 +189,8 @@ class ActionHandlerImplTest {
                   intent = intent,
                   "ResultKey",
                   listOf("Message A", "Message B", "Message C"),
-                  allowFreeFormInput = true
+                  allowFreeFormInput = true,
+                  id = 0u,
                )
             ),
             bucketId = 2
@@ -254,7 +255,8 @@ class ActionHandlerImplTest {
                   intent = intent,
                   "ResultKey",
                   listOf("Message A", "Message B", "Message C"),
-                  allowFreeFormInput = true
+                  allowFreeFormInput = true,
+                  id = 0u,
                )
             ),
             bucketId = 2
@@ -326,7 +328,8 @@ class ActionHandlerImplTest {
                   intent = intent,
                   "ResultKey",
                   listOf("Message A", "Message B", "Message C"),
-                  allowFreeFormInput = false
+                  allowFreeFormInput = false,
+                  id = 0u,
                )
             ),
             bucketId = 2
@@ -374,7 +377,7 @@ class ActionHandlerImplTest {
          ProcessedNotification(
             notification,
             actions = listOf(
-               Action.PauseApp("Toggle app pause")
+               Action.PauseApp("Toggle app pause", 0u)
             )
          ),
       )
@@ -403,7 +406,7 @@ class ActionHandlerImplTest {
          ProcessedNotification(
             notification,
             actions = listOf(
-               Action.PauseConversation("Toggle conversation pause")
+               Action.PauseConversation("Toggle conversation pause", 0u)
             )
          ),
       )
@@ -413,6 +416,35 @@ class ActionHandlerImplTest {
       handler.handleAction(2, 0) shouldBe true
 
       pauseController.toggledConversationNotifications.shouldContainExactly(notification)
+   }
+
+   @Test
+   fun `Lookup actions by ID, not by index`() = runTest {
+      insertDefaultRules()
+
+      repo.putNotification(
+         2,
+         ProcessedNotification(
+            ParsedNotification(
+               "keyNotification",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+            ),
+            actions = listOf(
+               Action.Native("Mark as read", createPendingIntent(), 1u),
+               Action.Dismiss("Dismiss", 0u),
+            )
+         ),
+      )
+
+      servicecontroller.returnValue = true
+
+      handler.handleAction(2, 0) shouldBe true
+
+      servicecontroller.lastCancelledNotification shouldBe "keyNotification"
    }
 
    private suspend fun insertDefaultRules() {

@@ -204,9 +204,9 @@ class NotificationProcessorTest {
       processor.onNotificationPosted(notification)
 
       processor.getNotification(1)?.actions shouldBe listOf(
-         Action.Dismiss("Dismiss"),
-         Action.PauseApp("Pause app"),
-         Action.PauseConversation("Pause conversation"),
+         Action.Dismiss("Dismiss", 0u),
+         Action.PauseApp("Pause app", 1u),
+         Action.PauseConversation("Pause conversation", 2u),
       )
    }
 
@@ -406,10 +406,10 @@ class NotificationProcessorTest {
 
       processor.onNotificationPosted(notification)
 
-      processor.getNotification(1)?.actions.orEmpty().shouldContainAll(
-         Action.Dismiss("Dismiss"),
-         Action.Native("Action 1", intent1),
-         Action.Native("Action 2", intent2),
+      processor.getNotification(1)?.actions.orEmpty().zeroIds().shouldContainAll(
+         Action.Dismiss("Dismiss", 0u),
+         Action.Native("Action 1", intent1, 0u),
+         Action.Native("Action 2", intent2, 0u),
       )
    }
 
@@ -826,13 +826,14 @@ class NotificationProcessorTest {
 
       processor.onNotificationPosted(notification)
 
-      processor.getNotification(1)?.actions.orEmpty().shouldContain(
+      processor.getNotification(1)?.actions.orEmpty().zeroIds().shouldContain(
          Action.Reply(
             title = "Action 1",
             intent = intent,
             remoteInputResultKey = "inputKey",
             cannedTexts = listOf("A", "B"),
-            allowFreeFormInput = false
+            allowFreeFormInput = false,
+            id = 0u,
          )
       )
    }
@@ -976,8 +977,9 @@ class NotificationProcessorTest {
          paused.app shouldBe true
 
          actions
-            .shouldContain(Action.PauseApp("Unpause app"))
-            .shouldNotContain(Action.PauseApp("Pause app"))
+            .zeroIds()
+            .shouldContain(Action.PauseApp("Unpause app", 0u))
+            .shouldNotContain(Action.PauseApp("Pause app", 0u))
       }
    }
 
@@ -1030,20 +1032,23 @@ class NotificationProcessorTest {
       processor.getNotification(1)
          .shouldNotBeNull()
          .actions
-         .shouldContain(Action.PauseApp("Unpause app"))
-         .shouldNotContain(Action.PauseApp("Pause app"))
+         .zeroIds()
+         .shouldContain(Action.PauseApp("Unpause app", 0u))
+         .shouldNotContain(Action.PauseApp("Pause app", 0u))
 
       processor.getNotification(2)
          .shouldNotBeNull()
          .actions
-         .shouldContain(Action.PauseApp("Unpause app"))
-         .shouldNotContain(Action.PauseApp("Pause app"))
+         .zeroIds()
+         .shouldContain(Action.PauseApp("Unpause app", 0u))
+         .shouldNotContain(Action.PauseApp("Pause app", 0u))
 
       processor.getNotification(3)
          .shouldNotBeNull()
          .actions
-         .shouldContain(Action.PauseApp("Pause app"))
-         .shouldNotContain(Action.PauseApp("Unpause app"))
+         .zeroIds()
+         .shouldContain(Action.PauseApp("Pause app", 0u))
+         .shouldNotContain(Action.PauseApp("Unpause app", 0u))
    }
 
    @Test
@@ -1157,8 +1162,9 @@ class NotificationProcessorTest {
          paused.conversation shouldBe true
 
          actions
-            .shouldContain(Action.PauseConversation("Unpause conversation"))
-            .shouldNotContain(Action.PauseConversation("Pause conversation"))
+            .zeroIds()
+            .shouldContain(Action.PauseConversation("Unpause conversation", 0u))
+            .shouldNotContain(Action.PauseConversation("Pause conversation", 0u))
       }
    }
 
@@ -1211,20 +1217,23 @@ class NotificationProcessorTest {
       processor.getNotification(1)
          .shouldNotBeNull()
          .actions
-         .shouldContain(Action.PauseConversation("Unpause conversation"))
-         .shouldNotContain(Action.PauseConversation("Pause conversation"))
+         .zeroIds()
+         .shouldContain(Action.PauseConversation("Unpause conversation", 0u))
+         .shouldNotContain(Action.PauseConversation("Pause conversation", 0u))
 
       processor.getNotification(2)
          .shouldNotBeNull()
          .actions
-         .shouldContain(Action.PauseConversation("Unpause conversation"))
-         .shouldNotContain(Action.PauseConversation("Pause conversation"))
+         .zeroIds()
+         .shouldContain(Action.PauseConversation("Unpause conversation", 0u))
+         .shouldNotContain(Action.PauseConversation("Pause conversation", 0u))
 
       processor.getNotification(3)
          .shouldNotBeNull()
          .actions
-         .shouldContain(Action.PauseConversation("Pause conversation"))
-         .shouldNotContain(Action.PauseConversation("Unpause conversation"))
+         .zeroIds()
+         .shouldContain(Action.PauseConversation("Pause conversation", 0u))
+         .shouldNotContain(Action.PauseConversation("Unpause conversation", 0u))
    }
 
    @Test
@@ -1297,13 +1306,42 @@ class NotificationProcessorTest {
       processor.onNotificationPosted(notification)
 
       processor.getNotification(1)?.actions.orEmpty()
+         .zeroIds()
          .shouldContainAll(
-            Action.Dismiss("Dismiss"),
-            Action.Native("Action 1", intent1),
-            Action.Native("Dismiss (App)", intent2),
+            Action.Dismiss("Dismiss", 0u),
+            Action.Native("Action 1", intent1, 0u),
+            Action.Native("Dismiss (App)", intent2, 0u),
          )
          .shouldNotContain(
-            Action.Native("Dismiss", intent2)
+            Action.Native("Dismiss", intent2, 0u)
          )
+   }
+
+   @Test
+   fun `Returned actions should have all unique ids`() = runTest {
+      val intent1 = createPendingIntent()
+      val intent2 = createPendingIntent()
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         nativeActions = listOf(
+            NativeAction("Action 1", intent1),
+            NativeAction("Action 2", intent2),
+         )
+      )
+
+      processor.onNotificationPosted(notification)
+
+      processor.getNotification(1)?.actions.orEmpty().apply {
+         val allIds = map { it.id }
+
+         allIds.shouldContainExactly(allIds.distinct())
+      }
    }
 }

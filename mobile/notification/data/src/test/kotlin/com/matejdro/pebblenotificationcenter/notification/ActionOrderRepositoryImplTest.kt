@@ -140,15 +140,15 @@ class ActionOrderRepositoryImplTest {
    @Test
    fun `Sort provided list according to the default order`() = runTest {
       val inputList = listOf(
-         Action.Dismiss("Pause app"),
-         Action.Dismiss("Dismiss"),
-         Action.Dismiss("Other actions"),
+         Action.Dismiss("Pause app", 0u),
+         Action.Dismiss("Dismiss", 1u),
+         Action.Dismiss("Other actions", 2u),
       )
 
       repo.sort(inputList) shouldBe listOf(
-         Action.Dismiss("Dismiss"),
-         Action.Dismiss("Other actions"),
-         Action.Dismiss("Pause app"),
+         Action.Dismiss("Dismiss", 1u),
+         Action.Dismiss("Other actions", 2u),
+         Action.Dismiss("Pause app", 0u),
       )
    }
 
@@ -162,39 +162,39 @@ class ActionOrderRepositoryImplTest {
       repo.moveOrder("Dismiss", 5)
 
       val inputList = listOf(
-         Action.Dismiss("Pause app"),
-         Action.Dismiss("Dismiss"),
-         Action.Dismiss("Other actions"),
+         Action.Dismiss("Pause app", 0u),
+         Action.Dismiss("Dismiss", 1u),
+         Action.Dismiss("Other actions", 2u),
       )
 
       repo.sort(inputList) shouldBe listOf(
-         Action.Dismiss("Other actions"),
-         Action.Dismiss("Pause app"),
-         Action.Dismiss("Dismiss"),
+         Action.Dismiss("Other actions", 2u),
+         Action.Dismiss("Pause app", 0u),
+         Action.Dismiss("Dismiss", 1u),
       )
    }
 
    @Test
    fun `Unknown actions should be sorted according to the 'Other Actions' entry`() = runTest {
       val inputList = listOf(
-         Action.Dismiss("Pause app"),
-         Action.Dismiss("Dismiss"),
-         Action.Dismiss("Reply"),
+         Action.Dismiss("Pause app", 0u),
+         Action.Dismiss("Dismiss", 1u),
+         Action.Dismiss("Reply", 3u),
       )
 
       repo.sort(inputList) shouldBe listOf(
-         Action.Dismiss("Dismiss"),
-         Action.Dismiss("Reply"),
-         Action.Dismiss("Pause app"),
+         Action.Dismiss("Dismiss", 1u),
+         Action.Dismiss("Reply", 3u),
+         Action.Dismiss("Pause app", 0u),
       )
    }
 
    @Test
    fun `Unknown actions should be added to the list after the 'Other Actions' entry`() = runTest {
       val inputList = listOf(
-         Action.Dismiss("Pause app"),
-         Action.Dismiss("Dismiss"),
-         Action.Dismiss("Reply"),
+         Action.Dismiss("Pause app", 0u),
+         Action.Dismiss("Dismiss", 1u),
+         Action.Dismiss("Reply", 3u),
       )
 
       repo.sort(inputList)

@@ -58,6 +58,7 @@ class NotificationDetailsPusherImpl(
             buffer.writeUByte(sortedActions.size.toUByte())
 
             for (action in sortedActions) {
+               buffer.writeUByte(action.id)
                buffer.write(stringEncoder.encodeSizeLimited(action.title, MAX_ACTIONS_TEXT_BYTES).encodedString)
                buffer.writeUByte(0u)
             }

@@ -60,6 +60,7 @@ Sent from the phone after the packet 4
   * Notification (Bucket) ID to apply that to (uint8)
   * Number of actions (uint8)
   * For every action:
+    * Action ID (uint8) 
     * Action text (cstring, up to 20 bytes + null terminator)
   * Number of bytes of the notification icon (uint16) - 0 means no icon
   * Icon data (bytes, encoded indexed png for color watches or grayscale png for black-and-white watches)
@@ -114,7 +115,7 @@ Sent from the watch when user opens/views a notification
 Sent from the watch when selects an action from the action menu
 
 * `1` - id of the notification bucket (uint8)
-* `2` - index of the action (uint8)
+* `2` - ID (main menu) / index (submenu) of the action (uint8)
 * `3` - ID of the menu that the action is in (0 = regular actions menu, other menus are sent via packet 9) (uint8)
 * `4` - Custom text from voice (optional) (cstring)
 

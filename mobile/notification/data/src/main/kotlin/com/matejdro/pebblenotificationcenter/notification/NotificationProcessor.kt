@@ -200,40 +200,45 @@ class NotificationProcessor(
 
    private fun processActions(parsedNotification: ParsedNotification, pauseStatus: PauseStatus): List<Action> {
       val ncActions = listOf<Action>(
-         Action.Dismiss(context.getString(R.string.dismiss)),
+         Action.Dismiss(title = context.getString(R.string.dismiss), id = 0u),
          Action.PauseApp(
-            if (pauseStatus.app) {
+            title = if (pauseStatus.app) {
                context.getString(R.string.unpause_app)
             } else {
                context.getString(R.string.pause_app)
-            }
+            },
+            id = 1u
          ),
          Action.PauseConversation(
-            if (pauseStatus.conversation) {
+            title = if (pauseStatus.conversation) {
                context.getString(R.string.unpause_conversation)
             } else {
                context.getString(R.string.pause_conversation)
-            }
+            },
+            id = 2u
          ),
       )
 
-      val appActions = parsedNotification.nativeActions.map { action ->
+      val appActions = parsedNotification.nativeActions.mapIndexed { index, action ->
          val text = if (ncActions.any { it.title == action.text }) {
             context.getString(R.string.app_suffix, action.text)
          } else {
             action.text
          }
 
+         val id = (ncActions.size + index).toUByte()
+
          val remoteInputResultKey = action.remoteInputResultKey
          if (remoteInputResultKey == null) {
-            Action.Native(title = text, intent = action.pendingIntent)
+            Action.Native(title = text, intent = action.pendingIntent, id)
          } else {
             Action.Reply(
                title = text,
                intent = action.pendingIntent,
                remoteInputResultKey = remoteInputResultKey,
                cannedTexts = action.cannedTexts,
-               allowFreeFormInput = action.allowFreeFormInput
+               allowFreeFormInput = action.allowFreeFormInput,
+               id = id
             )
          }
       }

@@ -2,13 +2,14 @@ package com.matejdro.pebblenotificationcenter.notification.model
 
 sealed class Action {
    abstract val title: String
+   abstract val id: UByte
 
-   data class Dismiss(override val title: String) : Action()
+   data class Dismiss(override val title: String, override val id: UByte) : Action()
 
    // This is pure kotlin module, so we cannot reference PendingIntent directly.
    // I don't want to change it, so for now we can just use Any and upcast it
    // For that reason we also don't check equality on intent, but only check for the identity and exclude intent from toString
-   data class Native(override val title: String, val intent: Any) : Action() {
+   data class Native(override val title: String, val intent: Any, override val id: UByte) : Action() {
       override fun toString(): String {
          return "Native(title='$title')"
       }
@@ -39,6 +40,7 @@ sealed class Action {
       val remoteInputResultKey: String,
       val cannedTexts: List<String>,
       val allowFreeFormInput: Boolean,
+      override val id: UByte,
    ) : Action() {
       override fun equals(other: Any?): Boolean {
          if (this === other) return true
@@ -69,6 +71,6 @@ sealed class Action {
       }
    }
 
-   data class PauseApp(override val title: String) : Action()
-   data class PauseConversation(override val title: String) : Action()
+   data class PauseApp(override val title: String, override val id: UByte) : Action()
+   data class PauseConversation(override val title: String, override val id: UByte) : Action()
 }

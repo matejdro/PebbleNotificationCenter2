@@ -126,13 +126,18 @@ void window_notification_action_list_init(const Window* window)
     menu_layer_set_callbacks(menu_layer,
                              NULL,
                              (MenuLayerCallbacks)
-                             {
-                                 .get_num_sections = menu_get_num_sections_callback,
-                                 .get_num_rows = menu_get_num_rows_callback,
-                                 .get_cell_height = menu_get_row_height_callback,
-                                 .draw_row = menu_draw_row_callback,
-                             }
-    );
+    {
+        .
+        get_num_sections = menu_get_num_sections_callback,
+        .
+        get_num_rows = menu_get_num_rows_callback,
+        .
+        get_cell_height = menu_get_row_height_callback,
+        .
+        draw_row = menu_draw_row_callback,
+    }
+    )
+    ;
 
     layer_add_child(window_layer, menu_background);
     layer_add_child(menu_background, menu_layer_get_layer(menu_layer));
@@ -255,12 +260,12 @@ void window_notification_action_select()
     }
 
     const uint8_t notification_id = window_notification_data.currently_selected_bucket;
-    confirm_action(notification_id, action_index, menu_id, NULL);
+    confirm_action(notification_id, action->id, menu_id, NULL);
 }
 
-static void confirm_action(const uint8_t notification_id, const uint8_t action_index, const uint8_t menu_id, const char* text)
+static void confirm_action(const uint8_t notification_id, const uint8_t action_id, const uint8_t menu_id, const char* text)
 {
-    if (!send_action_trigger(notification_id, action_index, menu_id, text))
+    if (!send_action_trigger(notification_id, action_id, menu_id, text))
     {
         vibes_double_pulse();
         return;
@@ -275,9 +280,18 @@ static void voice_callback(DictationSession* session, DictationSessionStatus sta
     if (status == DictationSessionStatusSuccess)
     {
         const uint8_t action_index = menu_layer_get_selected_index(menu_layer).row;
+        uint8_t action_id;
+        if (window_notification_data.currently_displayed_menu_id == 0)
+        {
+            action_id = window_notification_data.actions[action_index].id;
+        }
+        else
+        {
+            action_id = window_notification_data.submenu_actions[action_index].id;
+        }
         const uint8_t menu_id = window_notification_data.currently_displayed_menu_id;
         const uint8_t notification_id = window_notification_data.currently_selected_bucket;
-        confirm_action(notification_id, action_index, menu_id, transcription);
+        confirm_action(notification_id, action_id, menu_id, transcription);
     }
 
     dictation_session_destroy(session);

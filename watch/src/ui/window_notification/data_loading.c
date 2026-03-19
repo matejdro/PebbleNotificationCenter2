@@ -301,6 +301,7 @@ void window_notification_data_receive_more_text(const uint8_t bucket_id, const u
     window_notification_data.num_actions = num_actions;
     for (int i = 0; i < num_actions; i++)
     {
+        window_notification_data.actions[i].id = data[position++];
         const char* action_title = strcpy(window_notification_data.actions[i].text, (char*)&data[position]);
         window_notification_data.actions[i].voice = false;
         position += strlen(action_title) + 1;
@@ -344,6 +345,7 @@ void window_notification_data_receive_show_submenu(const uint8_t* data, const si
     {
         const char* action_title = strcpy(window_notification_data.submenu_actions[i].text, (char*)&data[position]);
         position += strlen(action_title) + 1;
+        window_notification_data.submenu_actions[i].id = i;
         window_notification_data.submenu_actions[i].voice = data[position++] == 1;
     }
 
