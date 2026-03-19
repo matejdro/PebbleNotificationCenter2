@@ -35,7 +35,7 @@ class NotificationProcessor(
    private val pauseController: PauseController,
 ) : NotificationRepository {
    private val notifications = ConcurrentHashMap<Int, ProcessedNotification>()
-   private val notificationsByKey = HashMap<String, ProcessedNotification>()
+   private val notificationIdsByKeys = HashMap<String, Int>()
 
    private var nextVibration: AtomicReference<IntArray?> = AtomicReference(null)
 
@@ -51,7 +51,7 @@ class NotificationProcessor(
          return
       }
 
-      val isUpdate = notificationsByKey.containsKey(parsedNotification.key)
+      val isUpdate = notificationIdsByKeys.containsKey(parsedNotification.key)
       val pauseStatusBeforeInsert = pauseController.computePauseStatus(parsedNotification)
       if (!isUpdate) {
          pauseController.onNewNotification(parsedNotification, settings)
@@ -71,7 +71,7 @@ class NotificationProcessor(
 
       val processedNotification = initialProcessedNotification.copy(bucketId = bucketId)
 
-      val previousNotification = notificationsByKey[parsedNotification.key]
+      val previousNotification = notificationIdsByKeys[parsedNotification.key]?.let { notifications[it] }
 
       logcat {
          "Notification flags: " +
@@ -94,7 +94,7 @@ class NotificationProcessor(
       }
 
       notifications[bucketId] = processedNotification
-      notificationsByKey[parsedNotification.key] = processedNotification
+      notificationIdsByKeys[parsedNotification.key] = bucketId
    }
 
    private fun shouldHide(
@@ -244,7 +244,7 @@ class NotificationProcessor(
    override suspend fun notifyPackagePauseStatusChanged(pkg: String) {
       val activeMatchingNotifications = getAllActiveNotifications().filter { it.systemData.pkg == pkg }
       for (notificationIterator in activeMatchingNotifications) {
-         val newNotification = notificationsByKey.compute(notificationIterator.systemData.key) { _, oldNotification ->
+         val newNotification = notifications.compute(notificationIterator.bucketId) { _, oldNotification ->
             if (oldNotification == null) {
                return@compute null
             }
@@ -270,10 +270,12 @@ class NotificationProcessor(
    }
 
    suspend fun onNotificationDismissed(key: String) {
-      val processedNotification = notificationsByKey.remove(key)
-      if (processedNotification != null) {
-         notifications.remove(processedNotification.bucketId)
-         pauseController.onNotificationDismissed(processedNotification.systemData)
+      val notificationId = notificationIdsByKeys.remove(key)
+      if (notificationId != null) {
+         val processedNotification = notifications.remove(notificationId)
+         if (processedNotification != null) {
+            pauseController.onNotificationDismissed(processedNotification.systemData)
+         }
       }
 
       watchSyncer.clearNotification(key)
@@ -281,7 +283,7 @@ class NotificationProcessor(
 
    suspend fun onNotificationsCleared() {
       notifications.clear()
-      notificationsByKey.clear()
+      notificationIdsByKeys.clear()
 
       watchSyncer.clearAllNotifications()
    }
@@ -295,7 +297,7 @@ class NotificationProcessor(
    }
 
    fun getNotificationByKey(key: String): ProcessedNotification? {
-      return notificationsByKey[key]
+      return notificationIdsByKeys[key]?.let { notifications[it] }
    }
 
    override fun pollNextVibration(): IntArray? {
@@ -308,7 +310,6 @@ class NotificationProcessor(
          value.copy(unread = false)
       } ?: return
 
-      notificationsByKey[notification.systemData.key] = notification
       watchSyncer.prepareNotificationReadStatus(notification)
    }
 
