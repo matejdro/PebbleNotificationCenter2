@@ -1,5 +1,6 @@
 package com.matejdro.pebblenotificationcenter.bluetooth
 
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import com.matejdro.bucketsync.BucketSyncRepository
@@ -11,6 +12,8 @@ import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotificati
 import com.matejdro.pebblenotificationcenter.notification.model.PauseStatus
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.pebblenotificationcenter.rules.PebbleFont
+import com.matejdro.pebblenotificationcenter.rules.RuleOption
 import com.matejdro.pebblenotificationcenter.rules.keys.set
 import dispatch.core.DefaultCoroutineScope
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -62,6 +65,11 @@ class WatchSyncerImplTest {
                   0x5a,
                   0xbd.toByte(),
                   0x01,
+
+                  // Fonts
+                  5,
+                  1,
+                  0,
 
                   // UTF8 Bytes for the title, followed by null terminator
                   84,
@@ -118,15 +126,21 @@ class WatchSyncerImplTest {
                   0x5a,
                   0xbd.toByte(),
                   0x01,
+
+                  // Fonts
+                  5,
+                  1,
+                  0,
                ) +
+
                   // 17 'a' characters, followed by the ... and null
                   ByteArray(17) { 'a'.code.toByte() } +
                   byteArrayOf(46, 46, 46, 0) +
                   // 17 'b' characters, followed by the ... and null
                   ByteArray(17) { 'b'.code.toByte() } +
                   byteArrayOf(46, 46, 46, 0) +
-                  // 207 'c' characters, followed by the ...
-                  ByteArray(206) { 'c'.code.toByte() } +
+                  // 203 'c' characters, followed by the ...
+                  ByteArray(203) { 'c'.code.toByte() } +
                   byteArrayOf(46, 46, 46)
             )
          )
@@ -161,6 +175,11 @@ class WatchSyncerImplTest {
                   0xbd.toByte(),
                   0x01,
 
+                  // Fonts
+                  5,
+                  1,
+                  0,
+
                   // UTF8 Bytes for the title, followed by null terminator
                   97,
                   0,
@@ -169,8 +188,8 @@ class WatchSyncerImplTest {
                   98,
                   0,
                ) +
-                  // 245 'c' characters, followed by the ...
-                  ByteArray(244) { 'c'.code.toByte() } +
+                  // 241 'c' characters, followed by the ...
+                  ByteArray(241) { 'c'.code.toByte() } +
                   byteArrayOf(46, 46, 46)
             )
          )
@@ -292,7 +311,8 @@ class WatchSyncerImplTest {
                Instant.ofEpochSecond(1_767_554_305)
             ),
             unread = true
-         )
+         ),
+         emptyPreferences()
       )
 
       bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
@@ -308,6 +328,11 @@ class WatchSyncerImplTest {
                   0x5a,
                   0xbd.toByte(),
                   0x01,
+
+                  // Fonts
+                  5,
+                  1,
+                  0,
 
                   // UTF8 Bytes for the title, followed by null terminator
                   84,
@@ -435,6 +460,11 @@ class WatchSyncerImplTest {
                   0xbd.toByte(),
                   0x01,
 
+                  // Fonts
+                  5,
+                  1,
+                  0,
+
                   // UTF8 Bytes for the title, followed by null terminator
                   97,
                   0,
@@ -534,7 +564,8 @@ class WatchSyncerImplTest {
                Instant.ofEpochSecond(1_767_554_305)
             ),
             paused = PauseStatus(app = true, conversation = false)
-         )
+         ),
+         emptyPreferences()
       )
 
       bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
@@ -550,6 +581,11 @@ class WatchSyncerImplTest {
                   0x5a,
                   0xbd.toByte(),
                   0x01,
+
+                  // Fonts
+                  5,
+                  1,
+                  0,
 
                   // UTF8 Bytes for the title, followed by null terminator
                   84,
@@ -594,7 +630,8 @@ class WatchSyncerImplTest {
                Instant.ofEpochSecond(1_767_554_305)
             ),
             paused = PauseStatus(app = false, conversation = true)
-         )
+         ),
+         emptyPreferences(),
       )
 
       bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
@@ -610,6 +647,79 @@ class WatchSyncerImplTest {
                   0x5a,
                   0xbd.toByte(),
                   0x01,
+
+                  // Fonts
+                  5,
+                  1,
+                  0,
+
+                  // UTF8 Bytes for the title, followed by null terminator
+                  84,
+                  105,
+                  116,
+                  108,
+                  101,
+                  0,
+
+                  // UTF8 Bytes for the subtitle, followed by null terminator
+                  115,
+                  84,
+                  105,
+                  116,
+                  108,
+                  101,
+                  0,
+
+                  // UTF8 Bytes for the body, NOT followed by null terminator
+                  66,
+                  111,
+                  100,
+                  121,
+               )
+            )
+         )
+      )
+   }
+
+   @Test
+   fun `Send a different font when different one is set`() = scope.runTest {
+      val preferences = emptyPreferences().toMutablePreferences().apply {
+         set(RuleOption.titleFont, PebbleFont.GOTHIC_18_BOLD)
+         set(RuleOption.subtitleFont, PebbleFont.GOTHIC_24_BOLD)
+         set(RuleOption.bodyFont, PebbleFont.GOTHIC_14_BOLD)
+      }
+
+      init()
+      watchSyncer.syncNotification(
+         ParsedNotification(
+            "key",
+            "com.app",
+            "Title",
+            "sTitle",
+            "Body",
+            // 19:18:25 GMT | Sunday, January 4, 2026
+            Instant.ofEpochSecond(1_767_554_305)
+         ),
+         preferences
+      )
+
+      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+         1u,
+         listOf(2u),
+         listOf(
+            Bucket(
+               2u,
+               byteArrayOf(
+                  // Timestamp, in 4 bytes
+                  0x69,
+                  0x5a,
+                  0xbd.toByte(),
+                  0x01,
+
+                  // Fonts
+                  3,
+                  5,
+                  1,
 
                   // UTF8 Bytes for the title, followed by null terminator
                   84,
@@ -645,6 +755,9 @@ class WatchSyncerImplTest {
    }
 }
 
-private suspend fun WatchSyncer.syncNotification(parsedNotification: ParsedNotification): Int {
-   return syncNotification(ProcessedNotification(parsedNotification))
+private suspend fun WatchSyncer.syncNotification(
+   parsedNotification: ParsedNotification,
+   preferences: Preferences = emptyPreferences(),
+): Int {
+   return syncNotification(ProcessedNotification(parsedNotification), preferences)
 }

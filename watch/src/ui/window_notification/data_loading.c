@@ -76,6 +76,11 @@ static void reload_data_for_current_bucket()
         window_notification_data.receive_time = read_uint32_from_byte_array(bucket_data, 0);
 
         uint8_t position = 4;
+
+        window_notification_data.title_font = bucket_data[position++];
+        window_notification_data.subtitle_font = bucket_data[position++];
+        window_notification_data.body_font = bucket_data[position++];
+
         strcpy(window_notification_data.title_text, (char*)&bucket_data[position]);
         position += strlen(window_notification_data.title_text) + 1;
         strcpy(window_notification_data.subtitle_text, (char*)&bucket_data[position]);

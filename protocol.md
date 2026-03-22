@@ -155,6 +155,9 @@ Bucket flags:
 Bucket data:
 
 * Notification receive timestamp, in unix time (uint32)
+* Title font (uint8)
+* Subtitle font (uint8)
+* Body font (uint8)
 * Notification title (string, up to 20 bytes + null terminator)
 * Notification subtitle (string, up to 20 bytes + null terminator)
 * Notification text (string, up to 249 bytes, depending on how much space was already taken by the title and the subtitle). No null terminator (end of bucket functions as the end of string)

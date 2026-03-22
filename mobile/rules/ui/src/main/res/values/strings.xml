@@ -97,4 +97,7 @@
         rule:\n\nThe watch will not vibrate for any new messages in the conversation until it is manually unpaused or dismissed.
     </string>
     <string name="pausing">Pausing</string>
+    <string name="preference_font_title">Title font</string>
+    <string name="preference_font_subtitle">Subtitle font</string>
+    <string name="preference_font_body">Body font</string>
 </resources>

@@ -12,6 +12,7 @@ import com.matejdro.pebble.bluetooth.common.util.writeUInt
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.any
 import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.pebblenotificationcenter.rules.RuleOption
 import com.matejdro.pebblenotificationcenter.rules.keys.get
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -55,7 +56,7 @@ class WatchSyncerImpl(
    // Magic numbers are a whole point of this function (protocol constants).
    // Use is not required for memory-only Buffer
    @Suppress("MagicNumber", "MissingUseCall")
-   override suspend fun syncNotification(notification: ProcessedNotification): Int {
+   override suspend fun syncNotification(notification: ProcessedNotification, preferences: Preferences): Int {
       val buffer = Buffer()
 
       val notificationData = notification.systemData
@@ -63,6 +64,11 @@ class WatchSyncerImpl(
 
       val epochSecond = notificationData.timestamp.epochSecond
       buffer.writeUInt(epochSecond.toUInt())
+
+      buffer.writeUByte(preferences[RuleOption.titleFont].ordinal.toUByte())
+      buffer.writeUByte(preferences[RuleOption.subtitleFont].ordinal.toUByte())
+      buffer.writeUByte(preferences[RuleOption.bodyFont].ordinal.toUByte())
+
       buffer.write(
          utf8Encoder.encodeSizeLimited(
             notificationData.title,

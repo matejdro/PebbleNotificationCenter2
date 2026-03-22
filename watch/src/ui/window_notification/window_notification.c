@@ -20,6 +20,9 @@ NotificationWindowData window_notification_data = {
     .num_actions = 0,
     .menu_displayed = false,
     .user_interacted = false,
+    .title_font = 0,
+    .subtitle_font = 0,
+    .body_font = 0,
 };
 
 static CustomStatusBarLayer* status_bar_layer;
@@ -31,10 +34,36 @@ static TextParameters title;
 static TextParameters subtitle;
 static TextParameters body;
 
+static const char* fonts[] = {
+    FONT_KEY_GOTHIC_14,
+    FONT_KEY_GOTHIC_14_BOLD,
+    FONT_KEY_GOTHIC_18,
+    FONT_KEY_GOTHIC_18_BOLD,
+    FONT_KEY_GOTHIC_24,
+    FONT_KEY_GOTHIC_24_BOLD,
+    FONT_KEY_GOTHIC_28,
+    FONT_KEY_GOTHIC_28_BOLD,
+    FONT_KEY_BITHAM_30_BLACK,
+    FONT_KEY_BITHAM_42_BOLD,
+    FONT_KEY_BITHAM_42_LIGHT,
+    FONT_KEY_BITHAM_42_MEDIUM_NUMBERS,
+    FONT_KEY_BITHAM_34_MEDIUM_NUMBERS,
+    FONT_KEY_BITHAM_34_LIGHT_SUBSET,
+    FONT_KEY_BITHAM_18_LIGHT_SUBSET,
+    FONT_KEY_ROBOTO_CONDENSED_21,
+    FONT_KEY_ROBOTO_BOLD_SUBSET_49,
+    FONT_KEY_DROID_SERIF_28_BOLD
+};
+
+
 void window_notification_ui_redraw_scroller_content()
 {
     const int16_t scroller_width = scroll_layer_get_content_size(scroll_layer).w;
     const int16_t max_title_width = scroller_width - ICON_SIZE_AND_BOUNDS;
+
+    title.font = fonts_get_system_font(fonts[window_notification_data.title_font]);
+    subtitle.font = fonts_get_system_font(fonts[window_notification_data.subtitle_font]);
+    body.font = fonts_get_system_font(fonts[window_notification_data.body_font]);
 
     int16_t y = 0;
     title.bounds.origin = GPoint(0, 0);
@@ -123,11 +152,8 @@ static void window_load(Window* window)
         )
     );
 
-    title.font = fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD);
     title.text = window_notification_data.title_text;
-    subtitle.font = fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD);
     subtitle.text = window_notification_data.subtitle_text;
-    body.font = fonts_get_system_font(FONT_KEY_GOTHIC_14);
     body.text = window_notification_data.body_text;
 
     scroll_content_layer = layer_create(GRect(0, 0, 0, 0));

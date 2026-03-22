@@ -68,7 +68,7 @@ class NotificationProcessor(
          unread = !suppressVibration,
          paused = pauseStatus
       )
-      val bucketId = watchSyncer.syncNotification(initialProcessedNotification)
+      val bucketId = watchSyncer.syncNotification(initialProcessedNotification, settings)
 
       val processedNotification = initialProcessedNotification.copy(bucketId = bucketId)
 
@@ -269,7 +269,8 @@ class NotificationProcessor(
             notifications[newNotification.bucketId] = newNotification
 
             if (newNotification != notificationIterator) {
-               watchSyncer.syncNotification(newNotification)
+               val preferences = ruleResolver.resolveRules(newNotification.systemData).preferences
+               watchSyncer.syncNotification(newNotification, preferences)
             }
          }
       }

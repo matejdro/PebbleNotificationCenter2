@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -20,7 +21,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.pebblenotificationcenter.navigation.util.rememberNavigationPopup
-import com.matejdro.pebblenotificationcenter.rules.MasterSwitch
+import com.matejdro.pebblenotificationcenter.rules.PebbleFont
 import com.matejdro.pebblenotificationcenter.rules.RuleOption
 import com.matejdro.pebblenotificationcenter.rules.keys.SetPreference
 import com.matejdro.pebblenotificationcenter.rules.keys.StringListPreferenceKeyWithDefault
@@ -75,6 +76,30 @@ internal fun ColumnScope.Settings(
          RuleOption.replyCannedTexts,
          stringResource(R.string.setting_mute_silent_description),
          preferences
+      )
+
+      val fontNames = remember {
+         PebbleFont.entries.map { font ->
+            font.name.split("_").joinToString(" ") { name -> name.lowercase().replaceFirstChar { it.uppercase() } }
+         }
+      }
+      EnumListPreference(
+         preferences[RuleOption.titleFont],
+         { updatePreference(RuleOption.titleFont, it) },
+         stringResource(R.string.preference_font_title),
+         fontNames,
+      )
+      EnumListPreference(
+         preferences[RuleOption.subtitleFont],
+         { updatePreference(RuleOption.subtitleFont, it) },
+         stringResource(R.string.preference_font_subtitle),
+         fontNames,
+      )
+      EnumListPreference(
+         preferences[RuleOption.bodyFont],
+         { updatePreference(RuleOption.bodyFont, it) },
+         stringResource(R.string.preference_font_body),
+         fontNames,
       )
 
       PreferenceCategory({ Text(stringResource(R.string.pausing)) })
@@ -178,7 +203,7 @@ private inline fun <reified T : Enum<T>> EnumListPreference(
    valueTexts: List<String>,
    description: String = "",
 ) {
-   val enumEntries = enumEntries<MasterSwitch>()
+   val enumEntries = enumEntries<T>()
    require(valueTexts.size == valueTexts.size) { "valueTexts does not contain values for every enum" }
 
    ListPreference(
@@ -192,7 +217,7 @@ private inline fun <reified T : Enum<T>> EnumListPreference(
       valueToText = { enumName ->
          AnnotatedString(
             valueTexts.elementAt(
-               enumValueOf<MasterSwitch>(enumName).ordinal
+               enumValueOf<T>(enumName).ordinal
             )
          )
       },

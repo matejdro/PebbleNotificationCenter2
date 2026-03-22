@@ -1,5 +1,6 @@
 package com.matejdro.pebblenotificationcenter.bluetooth
 
+import androidx.datastore.preferences.core.Preferences
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 
 interface WatchSyncer {
@@ -11,7 +12,7 @@ interface WatchSyncer {
    /**
     * @return bucket id of the notification
     */
-   suspend fun syncNotification(notification: ProcessedNotification): Int
+   suspend fun syncNotification(notification: ProcessedNotification, preferences: Preferences): Int
 
    suspend fun prepareNotificationReadStatus(notification: ProcessedNotification)
 }

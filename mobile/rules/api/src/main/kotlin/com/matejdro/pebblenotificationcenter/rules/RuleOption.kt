@@ -23,6 +23,9 @@ object RuleOption {
       "reply_canned_texts_list",
       listOf("Yes", "No", "Okay")
    )
+   val titleFont = EnumPreferenceKeyWithDefault("font_title", PebbleFont.GOTHIC_24_BOLD)
+   val subtitleFont = EnumPreferenceKeyWithDefault("font_subtitle", PebbleFont.GOTHIC_14_BOLD)
+   val bodyFont = EnumPreferenceKeyWithDefault("font_body", PebbleFont.GOTHIC_14)
 
    val autoAppPause = BooleanPreferenceKeyWithDefault("auto_app_pause", false)
    val autoConversationPause = BooleanPreferenceKeyWithDefault("auto_conversation_pause", false)

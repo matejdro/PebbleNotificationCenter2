@@ -29,8 +29,11 @@ typedef struct
     uint8_t bucket_count;
     enum DotState dot_states[14];
 
+    uint8_t title_font;
     char title_text[21];
+    uint8_t subtitle_font;
     char subtitle_text[21];
+    uint8_t body_font;
     // Include + 40 for the date and the null character
     char body_text[MAX_BODY_TEXT_SIZE + 40];
     GBitmap* icon;

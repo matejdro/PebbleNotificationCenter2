@@ -1,5 +1,6 @@
 package com.matejdro.pebblenotificationcenter.bluetooth
 
+import androidx.datastore.preferences.core.Preferences
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 
 class FakeWatchSyncer : WatchSyncer {
@@ -21,7 +22,10 @@ class FakeWatchSyncer : WatchSyncer {
       clearedNotifications.add(key)
    }
 
-   override suspend fun syncNotification(notification: ProcessedNotification): Int {
+   override suspend fun syncNotification(
+      notification: ProcessedNotification,
+      preferences: Preferences,
+   ): Int {
       syncedNotifications.add(notification)
       return nextBucketId++
    }

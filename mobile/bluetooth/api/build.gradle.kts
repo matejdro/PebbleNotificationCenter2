@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
    api(projects.notification.api)
+   api(libs.androidx.datastore.preferences.core)
 
    implementation(libs.pebblekit.common.api)
 
