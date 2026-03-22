@@ -2,6 +2,7 @@
 
 #include "action_list.h"
 #include "data_loading.h"
+#include "idle_handler.h"
 #include "connection/packets.h"
 #include "ui/window_preferences.h"
 
@@ -10,7 +11,7 @@ const int32_t SINGLE_SCROLL_HEIGHT = 32;
 // ReSharper disable once CppParameterMayBeConst
 static void button_up_single(ClickRecognizerRef recognizer, void* context)
 {
-    window_notification_data.user_interacted = true;
+    idle_handler_notify_user_interacted();
 
     if (window_notification_data.menu_displayed)
     {
@@ -25,7 +26,7 @@ static void button_up_single(ClickRecognizerRef recognizer, void* context)
 // ReSharper disable once CppParameterMayBeConst
 static void button_down_single(ClickRecognizerRef recognizer, void* context)
 {
-    window_notification_data.user_interacted = true;
+    idle_handler_notify_user_interacted();
 
     if (window_notification_data.menu_displayed)
     {
@@ -39,7 +40,7 @@ static void button_down_single(ClickRecognizerRef recognizer, void* context)
 
 static void button_select_single(ClickRecognizerRef recognizer, void* context)
 {
-    window_notification_data.user_interacted = true;
+    idle_handler_notify_user_interacted();
 
     if (window_notification_data.num_actions == 0)
     {
@@ -60,7 +61,7 @@ static void button_select_single(ClickRecognizerRef recognizer, void* context)
 
 static void button_back_single(ClickRecognizerRef recognizer, void* context)
 {
-    window_notification_data.user_interacted = true;
+    idle_handler_notify_user_interacted();
 
     if (window_notification_data.menu_displayed)
     {
@@ -74,7 +75,7 @@ static void button_back_single(ClickRecognizerRef recognizer, void* context)
 
 static void button_back_double(ClickRecognizerRef recognizer, void* context)
 {
-    window_notification_data.user_interacted = true;
+    idle_handler_notify_user_interacted();
 
     window_preferences_show();
 }

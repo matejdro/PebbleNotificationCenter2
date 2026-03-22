@@ -18,9 +18,12 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -30,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -47,6 +51,7 @@ import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
 import me.zhanghai.compose.preference.LocalPreferenceTheme
 import me.zhanghai.compose.preference.Preference
 import me.zhanghai.compose.preference.SwitchPreference
+import me.zhanghai.compose.preference.TextFieldPreference
 import me.zhanghai.compose.preference.preferenceTheme
 import si.inova.kotlinova.compose.flow.collectAsStateWithLifecycleAndBlinkingPrevention
 import si.inova.kotlinova.core.outcome.Outcome
@@ -176,6 +181,37 @@ private fun ToolsScreenContent(
                title = { Text(stringResource(R.string.setting_action_order)) },
                summary = { Text(stringResource(R.string.setting_action_order_description)) },
                onClick = openActionOrderDialog
+            )
+         }
+
+         item(span = { GridItemSpan(maxLineSpan) }) {
+            TextFieldPreference(
+               state.preferences[GlobalPreferenceKeys.autoCloseSeconds].toString(),
+               onValueChange = {
+                  updatePreference(GlobalPreferenceKeys.autoCloseSeconds, it)
+               },
+               title = { Text(stringResource(R.string.setting_auto_close)) },
+               textToValue = { it.toIntOrNull() ?: 0 },
+               summary = {
+                  Text(
+                     stringResource(
+                        R.string.setting_auto_close_description,
+                        state.preferences[GlobalPreferenceKeys.autoCloseSeconds]
+                     )
+                  )
+               },
+               textField = { value, onValueChange, onOk ->
+                  OutlinedTextField(
+                     value = value,
+                     onValueChange = { textFieldValue ->
+                        onValueChange(textFieldValue.copy(text = textFieldValue.text.filter { it.isDigit() }))
+                     },
+                     modifier = Modifier.fillMaxWidth(),
+                     keyboardActions = KeyboardActions { onOk() },
+                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                     singleLine = true,
+                  )
+               }
             )
          }
 

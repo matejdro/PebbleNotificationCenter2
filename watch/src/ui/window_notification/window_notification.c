@@ -5,6 +5,7 @@
 #include "action_list.h"
 #include "buttons.h"
 #include "data_loading.h"
+#include "idle_handler.h"
 #include "../layers/dots.h"
 #include "../layers/status_bar.h"
 #include "commons/math.h"
@@ -19,7 +20,6 @@ NotificationWindowData window_notification_data = {
     .active = false,
     .num_actions = 0,
     .menu_displayed = false,
-    .user_interacted = false,
     .title_font = 0,
     .subtitle_font = 0,
     .body_font = 0,
@@ -170,6 +170,8 @@ static void window_load(Window* window)
 
     window_notification_data.active = true;
     window_notification_action_list_init(window);
+
+    idle_handler_register_timers();
 }
 
 static void window_unload(Window* window)
@@ -207,13 +209,19 @@ void window_notification_show()
 
     window_set_window_handlers(
         window,
-        (WindowHandlers){
-            .load = window_load,
-            .unload = window_unload,
-            .appear = window_appear,
-            .disappear = window_disappear,
-        }
-    );
+        (WindowHandlers)
+    {
+        .
+        load = window_load,
+        .
+        unload = window_unload,
+        .
+        appear = window_appear,
+        .
+        disappear = window_disappear,
+    }
+    )
+    ;
 
     window_stack_push(window, true);
 }

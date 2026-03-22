@@ -7,6 +7,7 @@
 #include "../ui/window_status.h"
 #include "commons/bytes.h"
 #include "ui/window_notification/data_loading.h"
+#include "ui/window_notification/idle_handler.h"
 
 static void receive_phone_welcome(const DictionaryIterator* iterator);
 static void receive_sync_restart(const DictionaryIterator* iterator);
@@ -225,6 +226,8 @@ static void receive_vibrate_packet(const DictionaryIterator* iterator)
     };
     vibes_cancel();
     vibes_enqueue_custom_pattern(vibe_pattern);
+
+    idle_handler_notify_received_new_vibration();
 }
 
 static void receive_submenu_packet(const DictionaryIterator* iterator)

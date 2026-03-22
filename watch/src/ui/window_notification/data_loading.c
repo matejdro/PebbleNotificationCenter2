@@ -1,6 +1,7 @@
 #include "data_loading.h"
 
 #include "action_list.h"
+#include "idle_handler.h"
 #include "window_notification.h"
 #include "commons/bytes.h"
 #include "commons/math.h"
@@ -176,7 +177,10 @@ void window_notification_data_select_bucket_on_index(const uint8_t target_index)
 
 void notification_window_ingest_bucket_metadata()
 {
-    if (!window_notification_data.user_interacted && launch_reason() == APP_LAUNCH_PHONE)
+    if (idle_handler_has_user_interacted_since_app_start&& launch_reason() 
+    ==
+    APP_LAUNCH_PHONE
+    )
     {
         // Force switch to the new notification after app is opened due to new notification
         window_notification_data.currently_selected_bucket = 0;
@@ -252,6 +256,13 @@ static void on_buckets_changed()
 
 static void on_bucket_updated(const BucketMetadata bucket_metadata, void* context)
 {
+    if (bucket_metadata.id == 1)
+    {
+        // Settings update
+        idle_handler_register_timers();
+        return;
+    }
+
     const uint8_t new_notification_id = bucket_metadata.id;
     persist_delete(new_notification_id + STORAGE_BUCKET_FLAGS_ID_MIN);
 
@@ -286,7 +297,6 @@ static void on_bucket_updated(const BucketMetadata bucket_metadata, void* contex
             count_without_settings++;
         }
     }
-
 
     if (new_notification_id == window_notification_data.currently_selected_bucket)
     {

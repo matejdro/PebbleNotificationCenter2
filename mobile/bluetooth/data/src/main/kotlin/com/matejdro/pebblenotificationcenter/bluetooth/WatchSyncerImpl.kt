@@ -9,6 +9,7 @@ import com.matejdro.pebble.bluetooth.common.util.LimitingStringEncoder
 import com.matejdro.pebble.bluetooth.common.util.fixPebbleIndentation
 import com.matejdro.pebble.bluetooth.common.util.writeUByte
 import com.matejdro.pebble.bluetooth.common.util.writeUInt
+import com.matejdro.pebble.bluetooth.common.util.writeUShort
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.any
 import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
@@ -138,8 +139,7 @@ class WatchSyncerImpl(
       )
    }
 
-   // Magic numbers are a whole point of this function (protocol constants).
-   @Suppress("MagicNumber")
+   @Suppress("MissingUseCall") // Buffer does not need to be closed
    private fun syncPreferences() {
       defaultScope.launch {
          preferenceStore.data.debounce(50.milliseconds).collect { preferences ->
@@ -151,9 +151,16 @@ class WatchSyncerImpl(
                flags = flags or 0x02
             }
 
+            val autoClose = preferences[GlobalPreferenceKeys.autoCloseSeconds]
+
+            val buffer = Buffer()
+
+            buffer.writeByte(flags.toInt())
+            buffer.writeUShort(autoClose.toUShort())
+
             bucketSyncRepository.updateBucket(
                1u,
-               byteArrayOf(flags)
+               buffer.readByteArray()
             )
          }
       }

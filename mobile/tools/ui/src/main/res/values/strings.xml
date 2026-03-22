@@ -11,4 +11,8 @@
     </string>
     <string name="setting_action_order">Action order</string>
     <string name="setting_action_order_description">Change order of the actions</string>
+    <string name="setting_auto_close">Auto close</string>
+    <string name="setting_auto_close_description">%1$d\n\nAuto close the notification popup after this many seconds. Pressing any
+        button will stop the timer until the next notification. Set to 0 to disable.
+    </string>
 </resources>

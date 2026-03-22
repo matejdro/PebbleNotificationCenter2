@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 
@@ -30,6 +31,12 @@ class NullableStringPreferenceKeyWithDefault(name: String, default: String?) : D
 class StringSetPreferenceKeyWithDefault(name: String, default: Set<String>) : DirectKeyWithDefault<Set<String>>(name, default) {
    override val key: Preferences.Key<Set<String>>
       get() = stringSetPreferencesKey(name)
+}
+
+@Stable
+class IntPreferenceKeyWithDefault(name: String, default: Int) : DirectKeyWithDefault<Int>(name, default) {
+   override val key: Preferences.Key<Int>
+      get() = intPreferencesKey(name)
 }
 
 @Suppress("FunctionNaming") // It's a factory function

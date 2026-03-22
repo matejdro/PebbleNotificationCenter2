@@ -45,7 +45,6 @@ typedef struct
     uint8_t num_submenu_actions;
     Action submenu_actions[20];
     bool menu_displayed;
-    bool user_interacted;
     uint8_t currently_displayed_menu_id;
     uint8_t open_menu_on_success;
 } NotificationWindowData;
