@@ -59,21 +59,19 @@ jobs:
           VERSION_MAJOR=${OLD_VERSION%%.*}
           VERSION_MINORPATCH=${OLD_VERSION##*.}
           
-          # Temporarily disable major and minor release
           VERSION_CHANGE_AFTER_FIRST_DOT="${VERSION_BUMP#*.}"
-          #if [[ "${VERSION_BUMP%%.*}" == "1" ]] then
-          if false; then
+          if [[ "${VERSION_BUMP%%.*}" == "1" ]] then
             # Major version change
             VERSION_MAJOR=$(($VERSION_MAJOR+1))
-          #elif [[ false && "${VERSION_CHANGE_AFTER_FIRST_DOT%%.*}" == "1" ]] then
-          elif false; then
+          elif [[ "${VERSION_CHANGE_AFTER_FIRST_DOT%%.*}" == "1" ]] then
             # Minor version change
             VERSION_MINORPATCH=$(($VERSION_MINORPATCH+10))
           else
-            # Patch version change
+            # Minor version change
             VERSION_MINORPATCH=$(($VERSION_MINORPATCH+1))          
+            # Patch version change
           fi
-          
+                    
           if [[ $VERSION_MINORPATCH -ge 100 ]] then
             VERSION_MAJOR=$(($VERSION_MAJOR+1))
             VERSION_MINORPATCH=$((VERSION_MINORPATCH-100))
