@@ -177,7 +177,8 @@ void window_notification_data_select_bucket_on_index(const uint8_t target_index)
 
 void notification_window_ingest_bucket_metadata()
 {
-    if (idle_handler_has_user_interacted_since_app_start&& launch_reason() 
+    if (idle_handler_has_user_interacted_since_app_start&& launch_reason()
+    
     ==
     APP_LAUNCH_PHONE
     )
@@ -252,6 +253,8 @@ static void on_buckets_changed()
 {
     buckets = bucket_sync_get_bucket_list();
     notification_window_ingest_bucket_metadata();
+
+    idle_handler_notify_notifications_updated();
 }
 
 static void on_bucket_updated(const BucketMetadata bucket_metadata, void* context)
