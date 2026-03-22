@@ -63,6 +63,7 @@ jobs:
           if [[ "${VERSION_BUMP%%.*}" == "1" ]] then
             # Major version change
             VERSION_MAJOR=$(($VERSION_MAJOR+1))
+            VERSION_MINORPATCH=0
           elif [[ "${VERSION_CHANGE_AFTER_FIRST_DOT%%.*}" == "1" ]] then
             # Minor version change
             VERSION_MINORPATCH=$(($VERSION_MINORPATCH+10))
