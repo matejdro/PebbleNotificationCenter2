@@ -4,6 +4,7 @@ import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKe
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleListScreenKey
 import com.matejdro.pebblenotificationcenter.notification.api.AppNameProvider
 import com.matejdro.pebblenotificationcenter.rules.FakeRulesRepository
+import com.matejdro.pebblenotificationcenter.rules.MasterSwitch
 import com.matejdro.pebblenotificationcenter.rules.RuleMetadata
 import com.matejdro.pebblenotificationcenter.rules.RuleOption
 import com.matejdro.pebblenotificationcenter.rules.keys.get
@@ -134,7 +135,7 @@ class RuleListViewModelTest {
       repo.getRulePreferences(2).first().apply {
          this[RuleOption.conditionAppPackage] shouldBe "my.pkg"
          this[RuleOption.conditionNotificationChannels] shouldBe setOf("channelA", "channelB")
-         this[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.MUTE
+         this[RuleOption.masterSwitch] shouldBe MasterSwitch.MUTE
       }
    }
 
@@ -151,7 +152,7 @@ class RuleListViewModelTest {
       repo.getRulePreferences(2).first().apply {
          this[RuleOption.conditionAppPackage] shouldBe "my.pkg"
          this[RuleOption.conditionNotificationChannels] shouldBe setOf("channelA", "channelB")
-         this[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.HIDE
+         this[RuleOption.masterSwitch] shouldBe MasterSwitch.HIDE
       }
    }
 }

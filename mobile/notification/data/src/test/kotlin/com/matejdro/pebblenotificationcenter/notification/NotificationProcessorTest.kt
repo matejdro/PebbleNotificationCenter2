@@ -12,6 +12,7 @@ import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotificati
 import com.matejdro.pebblenotificationcenter.notification.model.PauseStatus
 import com.matejdro.pebblenotificationcenter.rules.FakeRulesRepository
 import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.pebblenotificationcenter.rules.MasterSwitch
 import com.matejdro.pebblenotificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
 import com.matejdro.pebblenotificationcenter.rules.RuleOption
 import com.matejdro.pebblenotificationcenter.rules.keys.set
@@ -481,7 +482,7 @@ class NotificationProcessorTest {
    fun `It should forward received notifications to the watch syncer even with master switch set to MUTE`() = runTest {
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.MUTE
+         RuleOption.masterSwitch setTo MasterSwitch.MUTE
       )
 
       val notification = ParsedNotification(
@@ -503,7 +504,7 @@ class NotificationProcessorTest {
    fun `It should ignore received notifications with master switch set to hide`() = runTest {
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -525,7 +526,7 @@ class NotificationProcessorTest {
    fun `It should not vibrate when the master switch is set to mute`() = runTest {
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.MUTE
+         RuleOption.masterSwitch setTo MasterSwitch.MUTE
       )
 
       val notification = ParsedNotification(
@@ -562,7 +563,7 @@ class NotificationProcessorTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
       processor.onNotificationPosted(notification)
 

@@ -20,6 +20,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.pebblenotificationcenter.navigation.util.rememberNavigationPopup
+import com.matejdro.pebblenotificationcenter.rules.MasterSwitch
 import com.matejdro.pebblenotificationcenter.rules.RuleOption
 import com.matejdro.pebblenotificationcenter.rules.keys.SetPreference
 import com.matejdro.pebblenotificationcenter.rules.keys.StringListPreferenceKeyWithDefault
@@ -177,7 +178,7 @@ private inline fun <reified T : Enum<T>> EnumListPreference(
    valueTexts: List<String>,
    description: String = "",
 ) {
-   val enumEntries = enumEntries<RuleOption.MasterSwitch>()
+   val enumEntries = enumEntries<MasterSwitch>()
    require(valueTexts.size == valueTexts.size) { "valueTexts does not contain values for every enum" }
 
    ListPreference(
@@ -191,7 +192,7 @@ private inline fun <reified T : Enum<T>> EnumListPreference(
       valueToText = { enumName ->
          AnnotatedString(
             valueTexts.elementAt(
-               enumValueOf<RuleOption.MasterSwitch>(enumName).ordinal
+               enumValueOf<MasterSwitch>(enumName).ordinal
             )
          )
       },

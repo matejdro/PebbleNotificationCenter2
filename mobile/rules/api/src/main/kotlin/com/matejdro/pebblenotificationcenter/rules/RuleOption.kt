@@ -34,10 +34,4 @@ object RuleOption {
    val hideGroupSummaryNotifications = BooleanPreferenceKeyWithDefault("hide_group_summary_notifications", true)
    val hideLocalOnlyNotifications = BooleanPreferenceKeyWithDefault("hide_local_only_notifications", true)
    val hideMediaNotifications = BooleanPreferenceKeyWithDefault("hide_media_notifications", true)
-
-   enum class MasterSwitch {
-      SHOW,
-      MUTE,
-      HIDE,
-   }
 }

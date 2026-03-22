@@ -12,6 +12,7 @@ import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotific
 import com.matejdro.pebblenotificationcenter.notification.model.any
 import com.matejdro.pebblenotificationcenter.notification.utils.parseVibrationPattern
 import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.pebblenotificationcenter.rules.MasterSwitch
 import com.matejdro.pebblenotificationcenter.rules.RuleOption
 import com.matejdro.pebblenotificationcenter.rules.keys.get
 import dev.zacsweers.metro.AppScope
@@ -106,7 +107,7 @@ class NotificationProcessor(
          return false
       }
 
-      if (preferences[RuleOption.masterSwitch] == RuleOption.MasterSwitch.HIDE) {
+      if (preferences[RuleOption.masterSwitch] == MasterSwitch.HIDE) {
          logcat { "Hiding: master switch is hidden" }
          return true
       }
@@ -170,7 +171,7 @@ class NotificationProcessor(
          return null
       }
 
-      if (preferences[RuleOption.masterSwitch] == RuleOption.MasterSwitch.MUTE) {
+      if (preferences[RuleOption.masterSwitch] == MasterSwitch.MUTE) {
          logcat { "Not vibrating: master switch" }
          return null
       }

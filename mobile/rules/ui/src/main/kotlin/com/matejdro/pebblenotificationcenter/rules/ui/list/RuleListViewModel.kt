@@ -7,6 +7,7 @@ import com.matejdro.pebblenotificationcenter.navigation.instructions.OpenScreenO
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKey
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleListScreenKey
 import com.matejdro.pebblenotificationcenter.notification.api.AppNameProvider
+import com.matejdro.pebblenotificationcenter.rules.MasterSwitch
 import com.matejdro.pebblenotificationcenter.rules.RuleMetadata
 import com.matejdro.pebblenotificationcenter.rules.RuleOption
 import com.matejdro.pebblenotificationcenter.rules.RulesRepository
@@ -62,7 +63,7 @@ class RuleListViewModel(
       }
 
       val ruleName = androidResources.getString(R.string.mute, appNameProvider.getAppName(appPkg))
-      addRuleWithMasterSwitchSet(ruleName, appPkg, channelIds, RuleOption.MasterSwitch.MUTE)
+      addRuleWithMasterSwitchSet(ruleName, appPkg, channelIds, MasterSwitch.MUTE)
    }
 
    fun addRuleWithAppHide(appPkg: String, channelIds: List<String>) = resources.launchWithExceptionReporting {
@@ -71,14 +72,14 @@ class RuleListViewModel(
       }
 
       val ruleName = androidResources.getString(R.string.hide, appNameProvider.getAppName(appPkg))
-      addRuleWithMasterSwitchSet(ruleName, appPkg, channelIds, RuleOption.MasterSwitch.HIDE)
+      addRuleWithMasterSwitchSet(ruleName, appPkg, channelIds, MasterSwitch.HIDE)
    }
 
    private suspend fun addRuleWithMasterSwitchSet(
       ruleName: String,
       appPkg: String,
       channelIds: List<String>,
-      masterSwitch: RuleOption.MasterSwitch,
+      masterSwitch: MasterSwitch,
    ) {
       val newRuleId = rulesRepository.insert(ruleName)
       rulesRepository.updateRulePreferences(

@@ -2,6 +2,7 @@ package com.matejdro.pebblenotificationcenter.notification
 
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.rules.FakeRulesRepository
+import com.matejdro.pebblenotificationcenter.rules.MasterSwitch
 import com.matejdro.pebblenotificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
 import com.matejdro.pebblenotificationcenter.rules.RuleOption
 import com.matejdro.pebblenotificationcenter.rules.keys.get
@@ -23,7 +24,7 @@ class RuleResolverTest {
       rulesRepository.insert("Default Rule")
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.MUTE
+         RuleOption.masterSwitch setTo MasterSwitch.MUTE
       )
 
       val notification = ParsedNotification(
@@ -39,7 +40,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldBeEmpty()
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.MUTE
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.MUTE
    }
 
    @Test
@@ -49,12 +50,12 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionAppPackage setTo null,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -70,7 +71,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldContainExactly("Rule B")
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.HIDE
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.HIDE
    }
 
    @Test
@@ -80,12 +81,12 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionAppPackage setTo "com.app",
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.MUTE
+         RuleOption.masterSwitch setTo MasterSwitch.MUTE
       )
 
       val notification = ParsedNotification(
@@ -101,7 +102,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldContainExactly("Rule B")
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.MUTE
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.MUTE
    }
 
    @Test
@@ -111,12 +112,12 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionAppPackage setTo "com.app2",
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.MUTE
+         RuleOption.masterSwitch setTo MasterSwitch.MUTE
       )
 
       val notification = ParsedNotification(
@@ -132,7 +133,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldBeEmpty()
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.HIDE
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.HIDE
    }
 
    @Test
@@ -142,13 +143,13 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionAppPackage setTo "com.app",
          RuleOption.conditionNotificationChannels setTo setOf("channel_2", "test_channel"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.MUTE
+         RuleOption.masterSwitch setTo MasterSwitch.MUTE
       )
 
       val notification = ParsedNotification(
@@ -164,7 +165,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldContainExactly("Rule B")
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.MUTE
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.MUTE
    }
 
    @Test
@@ -174,13 +175,13 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionAppPackage setTo "com.app",
          RuleOption.conditionNotificationChannels setTo setOf("channel_2", "channel_3"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.MUTE
+         RuleOption.masterSwitch setTo MasterSwitch.MUTE
       )
 
       val notification = ParsedNotification(
@@ -196,7 +197,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldBeEmpty()
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.HIDE
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.HIDE
    }
 
    @Test
@@ -207,15 +208,15 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
       rulesRepository.updateRulePreferences(
          3,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.MUTE
+         RuleOption.masterSwitch setTo MasterSwitch.MUTE
       )
 
       rulesRepository.reorder(3, 1)
@@ -233,7 +234,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldContainExactly("Rule C", "Rule B")
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.HIDE
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.HIDE
    }
 
    @Test
@@ -243,12 +244,12 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionWhitelistRegexes setTo setOf("T.tle"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -264,7 +265,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldContainExactly("Rule B")
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.HIDE
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.HIDE
    }
 
    @Test
@@ -274,12 +275,12 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionWhitelistRegexes setTo setOf("Subheading"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -295,7 +296,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldContainExactly("Rule B")
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.HIDE
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.HIDE
    }
 
    @Test
@@ -305,12 +306,12 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionWhitelistRegexes setTo setOf("Bod"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -326,7 +327,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldContainExactly("Rule B")
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.HIDE
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.HIDE
    }
 
    @Test
@@ -336,12 +337,12 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionWhitelistRegexes setTo setOf("Abcd"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -357,7 +358,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldBeEmpty()
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.SHOW
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.SHOW
    }
 
    @Test
@@ -367,12 +368,12 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionWhitelistRegexes setTo setOf("Bod", "abc"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -388,7 +389,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldBeEmpty()
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.SHOW
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.SHOW
    }
 
    @Test
@@ -398,12 +399,12 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionWhitelistRegexes setTo setOf("Bod", "ody"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -419,7 +420,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldContainExactly("Rule B")
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.HIDE
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.HIDE
    }
 
    @Test
@@ -429,12 +430,12 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionWhitelistRegexes setTo setOf("itle", "heading", "ody"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -450,7 +451,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldContainExactly("Rule B")
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.HIDE
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.HIDE
    }
 
    @Test
@@ -460,12 +461,12 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionBlacklistRegexes setTo setOf("T.tle"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -481,7 +482,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldBeEmpty()
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.SHOW
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.SHOW
    }
 
    @Test
@@ -491,12 +492,12 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionBlacklistRegexes setTo setOf("Subheading"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -512,7 +513,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldBeEmpty()
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.SHOW
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.SHOW
    }
 
    @Test
@@ -522,12 +523,12 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionBlacklistRegexes setTo setOf("Bod"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -543,7 +544,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldBeEmpty()
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.SHOW
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.SHOW
    }
 
    @Test
@@ -553,12 +554,12 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionBlacklistRegexes setTo setOf("Abcd"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -574,7 +575,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldContainExactly("Rule B")
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.HIDE
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.HIDE
    }
 
    @Test
@@ -584,12 +585,12 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionBlacklistRegexes setTo setOf("Bod", "abc"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -605,7 +606,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldBeEmpty()
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.SHOW
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.SHOW
    }
 
    @Test
@@ -615,13 +616,13 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionWhitelistRegexes setTo setOf("Title"),
          RuleOption.conditionBlacklistRegexes setTo setOf("Bod"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -637,7 +638,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldBeEmpty()
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.SHOW
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.SHOW
    }
 
    @Test
@@ -647,13 +648,13 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionWhitelistRegexes setTo setOf("abcd"),
          RuleOption.conditionBlacklistRegexes setTo setOf("efgh"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -669,7 +670,7 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldBeEmpty()
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.SHOW
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.SHOW
    }
 
    @Test
@@ -679,13 +680,13 @@ class RuleResolverTest {
 
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW
+         RuleOption.masterSwitch setTo MasterSwitch.SHOW
       )
       rulesRepository.updateRulePreferences(
          2,
          RuleOption.conditionWhitelistRegexes setTo setOf("Body"),
          RuleOption.conditionBlacklistRegexes setTo setOf("efgh"),
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE
       )
 
       val notification = ParsedNotification(
@@ -701,6 +702,6 @@ class RuleResolverTest {
 
       val resolvedRules = resolver.resolveRules(notification)
       resolvedRules.involvedRules.shouldContainExactly("Rule B")
-      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.HIDE
+      resolvedRules.preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.HIDE
    }
 }

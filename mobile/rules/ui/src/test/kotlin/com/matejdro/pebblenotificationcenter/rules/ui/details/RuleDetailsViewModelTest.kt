@@ -7,6 +7,7 @@ import com.matejdro.pebblenotificationcenter.navigation.keys.RuleDetailsScreenKe
 import com.matejdro.pebblenotificationcenter.notification.api.AppNameProvider
 import com.matejdro.pebblenotificationcenter.notification.model.LightNotificationChannel
 import com.matejdro.pebblenotificationcenter.rules.FakeRulesRepository
+import com.matejdro.pebblenotificationcenter.rules.MasterSwitch
 import com.matejdro.pebblenotificationcenter.rules.RuleMetadata
 import com.matejdro.pebblenotificationcenter.rules.RuleOption
 import com.matejdro.pebblenotificationcenter.rules.keys.get
@@ -230,32 +231,32 @@ class RuleDetailsViewModelTest {
       insertDefaultRules()
       rulesRepository.updateRulePreferences(
          1,
-         RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE,
+         RuleOption.masterSwitch setTo MasterSwitch.HIDE,
       )
 
       viewModel.onServiceRegistered()
 
       viewModel.uiState.test {
          runCurrent()
-         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.HIDE
+         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.HIDE
 
          rulesRepository.updateRulePreferences(
             1,
-            RuleOption.masterSwitch setTo RuleOption.MasterSwitch.MUTE,
+            RuleOption.masterSwitch setTo MasterSwitch.MUTE,
          )
          runCurrent()
-         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.MUTE
+         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.MUTE
 
          rulesRepository.updateRulePreferences(
             2,
-            RuleOption.masterSwitch setTo RuleOption.MasterSwitch.SHOW,
+            RuleOption.masterSwitch setTo MasterSwitch.SHOW,
          )
          runCurrent()
-         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.masterSwitch] shouldBe RuleOption.MasterSwitch.SHOW
+         expectMostRecentItem().data.shouldNotBeNull().preferences[RuleOption.masterSwitch] shouldBe MasterSwitch.SHOW
 
          rulesRepository.updateRulePreferences(
             1,
-            RuleOption.masterSwitch setTo RuleOption.MasterSwitch.HIDE,
+            RuleOption.masterSwitch setTo MasterSwitch.HIDE,
          )
          runCurrent()
          expectNoEvents()
