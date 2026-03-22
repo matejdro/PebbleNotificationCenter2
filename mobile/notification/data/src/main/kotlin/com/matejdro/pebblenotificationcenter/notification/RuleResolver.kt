@@ -1,6 +1,7 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
 import com.matejdro.pebblenotificationcenter.common.preferences.plus
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
@@ -27,7 +28,7 @@ class RuleResolver(private val rulesRepository: RulesRepository) {
 
       return ResolvedRules(
          matchingRules.mapNotNull { (name, _) -> name },
-         matchingRules.map { (_, preferences) -> preferences }.reduce(Preferences::plus)
+         matchingRules.map { (_, preferences) -> preferences }.fold(emptyPreferences(), Preferences::plus)
       )
    }
 
