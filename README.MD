@@ -1,6 +1,8 @@
 # Notification Center for Pebble
 
-A WIP improved notifications app for the PebbleOS watches
+An improved notifications app for the PebbleOS watches
+
+![Image](docs/screenshot1.png) ![Image](docs/screenshot2.png)
 
 # Install
 
@@ -14,6 +16,38 @@ A WIP improved notifications app for the PebbleOS watches
 ## Watchapp
 
 [<img src="docs/badge_github.png" alt="Get it on GitHub">](../../releases/latest)
+
+# Features
+
+#### Full notification sync
+Instead of just showing received notification pager-style, NC will show all the notificications from your phone  (within reason).
+
+#### Customizability
+Configure every aspect of the notification. Have different settings depending on which app sent the notification or depending on what the notification says.
+
+#### Display icons for all apps
+Instead of just a few hardcoded icons in the firmware, NC will display icons for every single notification.
+
+#### Full length text
+Display whole notification text instead of just short excerpts.
+
+#### Regex filtering
+Filter out notifications saying specific text.
+
+#### Spam control
+Pausing system helps with controlling bursty noisy notifications like a group chat with a heated conversation.
+
+#### Snoozing
+Don't want to deal with the notification right now? Just snooze it for later (Android 8+ only).
+
+#### Periodic vibration
+Original vibration happened while you were distracted and you did not notice it? App can keep buzzing for it periodically until you notice it.
+
+#### Offline operation
+You can still read excerpts of your notifications while the watch is not connected to the phone.
+
+#### Dynamic phone mute
+Don't you hate when your phone also makes noise / vibrate in addition to the watch's vibration? You can have enable auto-phone-mute that mutes your phone automatically whenever a watch is connected. Also toggleable directly from the watch.
 
 # Usage
 
@@ -76,6 +110,12 @@ all notifications from this app are dismissed.
 When triggered, all vibrations from the selected conversation will be temporarily paused.
 
 The watch will not vibrate for any new messages in this conversation until it is manually unpaused or dismissed.
+
+### Snooze
+
+By selecting the Snooze action and then selecting the time, notification will "disappear" from your phone & watch and re-appear after the selected time. You will get notified about it again.
+
+Note: only supported on Android 8 and newer.
 
 ## On the phone
 
