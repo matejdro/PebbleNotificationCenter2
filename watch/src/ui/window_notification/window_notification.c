@@ -23,6 +23,11 @@ NotificationWindowData window_notification_data = {
     .title_font = 0,
     .subtitle_font = 0,
     .body_font = 0,
+    .currently_selected_bucket = 0,
+    .currently_selected_bucket_index = 0,
+    .bucket_count = 0,
+    .open_menu_on_success = 0,
+    .icon = NULL,
 };
 
 static CustomStatusBarLayer* status_bar_layer;
@@ -130,12 +135,6 @@ static void scroll_content_paint(Layer* layer, GContext* ctx)
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 static void window_load(Window* window)
 {
-    window_notification_data.currently_selected_bucket = 0;
-    window_notification_data.currently_selected_bucket_index = 0;
-    window_notification_data.bucket_count = 0;
-    window_notification_data.open_menu_on_success = 0;
-    window_notification_data.icon = NULL;
-
     Layer* window_layer = window_get_root_layer(window);
     const GRect screen_bounds = layer_get_bounds(window_layer);
     status_bar_layer = custom_status_bar_layer_create(screen_bounds);
