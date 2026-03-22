@@ -1,10 +1,12 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import android.content.Context
+import android.os.Build
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.matejdro.pebblenotificationcenter.bluetooth.WatchSyncer
 import com.matejdro.pebblenotificationcenter.bluetooth.WatchappOpenController
+import com.matejdro.pebblenotificationcenter.common.di.AndroidVersion
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.PauseStatus
@@ -34,6 +36,8 @@ class NotificationProcessor(
    private val ruleResolver: RuleResolver,
    private val globalPreferenceStore: DataStore<Preferences>,
    private val pauseController: PauseController,
+   @AndroidVersion
+   private val androidVersion: Int,
 ) : NotificationRepository {
    private val notifications = ConcurrentHashMap<Int, ProcessedNotification>()
    private val notificationIdsByKeys = HashMap<String, Int>()
@@ -200,25 +204,34 @@ class NotificationProcessor(
    }
 
    private fun processActions(parsedNotification: ParsedNotification, pauseStatus: PauseStatus): List<Action> {
-      val ncActions = listOf<Action>(
-         Action.Dismiss(title = context.getString(R.string.dismiss), id = 0u),
-         Action.PauseApp(
-            title = if (pauseStatus.app) {
-               context.getString(R.string.unpause_app)
-            } else {
-               context.getString(R.string.pause_app)
-            },
-            id = 1u
-         ),
-         Action.PauseConversation(
-            title = if (pauseStatus.conversation) {
-               context.getString(R.string.unpause_conversation)
-            } else {
-               context.getString(R.string.pause_conversation)
-            },
-            id = 2u
-         ),
-      )
+      val ncActions = buildList {
+         add(Action.Dismiss(title = context.getString(R.string.dismiss), id = size.toUByte()))
+
+         if (androidVersion >= Build.VERSION_CODES.O) {
+            add(Action.Snooze(title = context.getString(R.string.snooze), id = size.toUByte()))
+         }
+
+         add(
+            Action.PauseApp(
+               title = if (pauseStatus.app) {
+                  context.getString(R.string.unpause_app)
+               } else {
+                  context.getString(R.string.pause_app)
+               },
+               id = size.toUByte()
+            )
+         )
+         add(
+            Action.PauseConversation(
+               title = if (pauseStatus.conversation) {
+                  context.getString(R.string.unpause_conversation)
+               } else {
+                  context.getString(R.string.pause_conversation)
+               },
+               id = size.toUByte()
+            )
+         )
+      }
 
       val appActions = parsedNotification.nativeActions.mapIndexed { index, action ->
          val text = if (ncActions.any { it.title == action.text }) {

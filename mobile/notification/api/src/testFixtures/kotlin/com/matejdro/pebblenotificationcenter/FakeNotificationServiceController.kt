@@ -3,6 +3,7 @@ package com.matejdro.pebblenotificationcenter
 import com.matejdro.pebblenotificationcenter.notification.NotificationServiceController
 import com.matejdro.pebblenotificationcenter.notification.model.LightNotificationChannel
 import com.matejdro.pebblenotificationcenter.notification.model.NativeAction
+import kotlin.time.Duration
 
 class FakeNotificationServiceController : NotificationServiceController {
    private val providedChannels = HashMap<String, List<LightNotificationChannel>>()
@@ -11,6 +12,7 @@ class FakeNotificationServiceController : NotificationServiceController {
    var lastCancelledNotification: String? = null
    var lastTriggeredIntent: Any? = null
    var lastTriggeredReplyAction: NativeAction? = null
+   var lastSnooze: Pair<String, Duration>? = null
 
    override fun cancelNotification(key: String): Boolean {
       lastCancelledNotification = key
@@ -28,6 +30,11 @@ class FakeNotificationServiceController : NotificationServiceController {
 
    override fun getNotificationChannels(pkg: String): List<LightNotificationChannel> {
       return providedChannels[pkg] ?: error("Channels for the package $pkg not faked")
+   }
+
+   override fun snoozeNotificationNotification(key: String, duration: Duration): Boolean {
+      lastSnooze = key to duration
+      return true
    }
 
    override fun triggerReplyAction(

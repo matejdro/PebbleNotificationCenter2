@@ -27,6 +27,7 @@ class ActionOrderRepositoryImplTest {
       context.resources.putString(R.string.pause_conversation, "Pause conversation")
       context.resources.putString(R.string.unpause_conversation, "Unpause conversation")
       context.resources.putString(R.string.other_actions, "Other actions")
+      context.resources.putString(R.string.snooze, "Snooze")
 
       repo = ActionOrderRepositoryImpl(context, preferenceStore)
    }
@@ -39,6 +40,7 @@ class ActionOrderRepositoryImplTest {
          expectMostRecentItem() shouldBe listOf(
             "Dismiss",
             "Other actions",
+            "Snooze",
             "Pause app",
             "Unpause app",
             "Pause conversation",
@@ -69,6 +71,7 @@ class ActionOrderRepositoryImplTest {
             "Pause conversation",
             "Unpause conversation",
             "Dismiss",
+            "Snooze",
          )
       }
    }
@@ -79,6 +82,7 @@ class ActionOrderRepositoryImplTest {
          prefs[GlobalPreferenceKeys.actionOrder] = listOf(
             "Reply",
             "Other actions",
+            "Snooze",
             "Pause app",
             "Unpause app",
             "Pause conversation",
@@ -92,6 +96,7 @@ class ActionOrderRepositoryImplTest {
          expectMostRecentItem() shouldBe listOf(
             "Reply",
             "Other actions",
+            "Snooze",
             "Pause app",
             "Unpause app",
             "Pause conversation",
@@ -112,6 +117,7 @@ class ActionOrderRepositoryImplTest {
             "Pause app",
             "Dismiss",
             "Other actions",
+            "Snooze",
             "Unpause app",
             "Pause conversation",
             "Unpause conversation",
@@ -123,11 +129,12 @@ class ActionOrderRepositoryImplTest {
    fun `Reorder list items down`() = runTest {
       repo.getList().test {
          runCurrent()
-         repo.moveOrder("Dismiss", 3)
+         repo.moveOrder("Dismiss", 4)
          runCurrent()
 
          expectMostRecentItem() shouldBe listOf(
             "Other actions",
+            "Snooze",
             "Pause app",
             "Unpause app",
             "Dismiss",
@@ -206,6 +213,7 @@ class ActionOrderRepositoryImplTest {
             "Dismiss",
             "Other actions",
             "Reply",
+            "Snooze",
             "Pause app",
             "Unpause app",
             "Pause conversation",

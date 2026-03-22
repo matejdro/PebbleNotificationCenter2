@@ -68,6 +68,22 @@ class StringListPreferenceKeyWithDefault(name: String, default: List<String>) :
 }
 
 @Stable
+class IntListPreferenceKeyWithDefault(name: String, default: List<Int>) :
+   ProxyPreferenceKeyWithDefault<List<Int>, String>(name, default) {
+   override val key: Preferences.Key<String>
+      get() = stringPreferencesKey(name)
+
+   override fun serialize(value: List<Int>): String {
+      return value.joinToString(",")
+   }
+
+   override fun deserialize(value: String): List<Int> {
+      if (value.isEmpty()) return emptyList()
+      return value.split(",").map { it.toInt() }
+   }
+}
+
+@Stable
 abstract class ProxyPreferenceKeyWithDefault<T, P>(protected val name: String, protected val default: T) :
    PreferenceKeyWithDefault<T> {
    abstract override val key: Preferences.Key<P>

@@ -6,16 +6,21 @@ import com.matejdro.pebblenotificationcenter.bluetooth.FakeSubmenuController
 import com.matejdro.pebblenotificationcenter.bluetooth.SubmenuItem
 import com.matejdro.pebblenotificationcenter.bluetooth.SubmenuType
 import com.matejdro.pebblenotificationcenter.notification.model.NativeAction
+import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import com.matejdro.pebblenotificationcenter.submenus.ReplySubmenuPayload
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
+import java.time.Instant
+import kotlin.time.Duration.Companion.minutes
 
 class SubmenuActionHandlerImplTest {
    private val submenuController = FakeSubmenuController()
    private val serviceController = FakeNotificationServiceController()
+   private val notifications = FakeNotificationRepository()
 
-   private val actionHandler = SubmenuActionHandlerImpl(submenuController, serviceController)
+   private val actionHandler = SubmenuActionHandlerImpl(submenuController, serviceController, notifications)
 
    @Test
    fun `Send reply response to the service controller`() = runTest {
@@ -72,5 +77,43 @@ class SubmenuActionHandlerImplTest {
 
       serviceController.lastTriggeredReplyAction shouldBe
          NativeAction("Hello from the watch", intent1, "inputKey")
+   }
+
+   @Test
+   fun `Send snooze response to the service controller`() = runTest {
+      notifications.putNotification(
+         2,
+         ProcessedNotification(
+            ParsedNotification(
+               "keyNotification",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+            ),
+            bucketId = 2
+         ),
+      )
+
+      submenuController.showSubmenuOnTheWatch(
+         2u,
+         SubmenuType.SNOOZE,
+         listOf(
+            SubmenuItem(
+               "10 min",
+               10.minutes
+            ),
+            SubmenuItem(
+               "10 min",
+               20.minutes
+            ),
+         )
+      )
+
+      actionHandler.handleSubmenuAction(2u, SubmenuType.SNOOZE, 0)
+
+      serviceController.lastSnooze shouldBe
+         ("keyNotification" to 10.minutes)
    }
 }

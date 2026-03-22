@@ -32,8 +32,10 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.text.isDigitsOnly
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.pebblenotificationcenter.rules.ui.R
 import com.matejdro.pebblenotificationcenter.ui.components.AlertDialogInnerContent
@@ -52,13 +54,13 @@ import si.inova.kotlinova.navigation.screens.Screen
 import com.matejdro.pebblenotificationcenter.sharedresources.R as sharedR
 
 @InjectNavigationScreen
-class StringListScreen(private val navigator: Navigator) : Screen<StringListScreenKey>() {
+class IntListScreen(private val navigator: Navigator) : Screen<IntListScreenKey>() {
    @Composable
-   override fun Content(key: StringListScreenKey) {
+   override fun Content(key: IntListScreenKey) {
       val resultPassingStore = LocalResultPassingStore.current
       var list by remember { mutableStateOf(key.initialList.withIndex().toList()) }
 
-      StringListScreenContent(
+      NumberListScreenContent(
          key.title,
          list,
          addNew = { list += IndexedValue(list.size, it) },
@@ -81,19 +83,21 @@ class StringListScreen(private val navigator: Navigator) : Screen<StringListScre
             navigator.goBack()
             resultPassingStore.sendResult(key.result, list.map { it.value })
          },
+         allowEmptyList = key.allowEmptyList,
       )
    }
 }
 
 @Composable
-private fun StringListScreenContent(
+private fun NumberListScreenContent(
    title: String,
-   list: List<IndexedValue<String>>,
-   addNew: (String) -> Unit,
+   list: List<IndexedValue<Int>>,
+   addNew: (Int) -> Unit,
    delete: (Int) -> Unit,
    dismiss: () -> Unit,
    accept: () -> Unit,
    move: (from: Int, to: Int) -> Unit,
+   allowEmptyList: Boolean,
    showTextField: Boolean = false,
 ) {
    val textFieldState = rememberTextFieldState("")
@@ -121,14 +125,18 @@ private fun StringListScreenContent(
          TextButton(
             onClick = {
                if (addTextFieldShown.value) {
-                  addNew(textFieldState.text.toString())
+                  addNew(textFieldState.text.toString().toInt())
                   textFieldState.clearText()
                   addTextFieldShown.value = false
                } else {
                   accept()
                }
             },
-            enabled = !addTextFieldShown.value || textFieldState.text.isNotBlank()
+            enabled = if (addTextFieldShown.value) {
+               textFieldState.text.isNotBlank()
+            } else {
+               allowEmptyList || list.isNotEmpty()
+            }
          ) {
             Text(stringResource(sharedR.string.ok))
          }
@@ -165,7 +173,7 @@ private fun StringListScreenContent(
                      Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.fillMaxWidth()) {
                         Text("•", Modifier.padding(end = 8.dp))
 
-                        Text(entry.value, modifier = Modifier.padding(end = 8.dp))
+                        Text(entry.value.toString(), modifier = Modifier.padding(end = 8.dp))
                         Spacer(Modifier.weight(1f))
 
                         Button(onClick = { delete(entry.index) }) {
@@ -185,12 +193,17 @@ private fun StringListScreenContent(
                            .fillMaxWidth()
                            .focusRequester(focusRequester),
                         onKeyboardAction = {
-                           addNew(textFieldState.text.toString())
+                           addNew(textFieldState.text.toString().toInt())
                            textFieldState.clearText()
                            addTextFieldShown.value = false
                         },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Number),
                         lineLimits = TextFieldLineLimits.SingleLine,
+                        inputTransformation = {
+                           if (!asCharSequence().isDigitsOnly()) {
+                              revertAllChanges()
+                           }
+                        },
                      )
 
                      LaunchedEffect(Unit) {
@@ -213,12 +226,12 @@ private fun StringListScreenContent(
 @ShowkaseComposable(group = "test")
 @Composable
 @FullScreenPreviews
-internal fun StringListScreenPreview() {
+internal fun NumberListScreenPreview() {
    PreviewTheme {
       Box {
-         StringListScreenContent(
+         NumberListScreenContent(
             "Options",
-            listOf("Option A", "Option B", "Option C").mapIndexed { index, value ->
+            listOf(10, 20, 30).mapIndexed { index, value ->
                IndexedValue(index, value)
             },
             { },
@@ -226,6 +239,7 @@ internal fun StringListScreenPreview() {
             {},
             {},
             { _, _ -> },
+            false,
          )
       }
    }
@@ -234,12 +248,12 @@ internal fun StringListScreenPreview() {
 @ShowkaseComposable(group = "test")
 @Composable
 @Preview
-internal fun StringListAddFieldPreview() {
+internal fun NumberListAddFieldPreview() {
    PreviewTheme {
       Box {
-         StringListScreenContent(
+         NumberListScreenContent(
             "Options",
-            listOf("Option A", "Option B", "Option C").mapIndexed { index, value ->
+            listOf(10, 20, 30).mapIndexed { index, value ->
                IndexedValue(index, value)
             },
             { },
@@ -247,6 +261,7 @@ internal fun StringListAddFieldPreview() {
             {},
             {},
             { _, _ -> },
+            false,
             showTextField = true
          )
       }
@@ -254,8 +269,9 @@ internal fun StringListAddFieldPreview() {
 }
 
 @Serializable
-data class StringListScreenKey(
+data class IntListScreenKey(
    val title: String,
-   val initialList: List<String>,
-   val result: ResultKey<List<String>>,
+   val initialList: List<Int>,
+   val result: ResultKey<List<Int>>,
+   val allowEmptyList: Boolean = false,
 ) : ScreenKey(), DialogKey

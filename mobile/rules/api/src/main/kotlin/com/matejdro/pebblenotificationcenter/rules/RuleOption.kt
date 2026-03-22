@@ -2,6 +2,7 @@ package com.matejdro.pebblenotificationcenter.rules
 
 import com.matejdro.pebblenotificationcenter.rules.keys.BooleanPreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.EnumPreferenceKeyWithDefault
+import com.matejdro.pebblenotificationcenter.rules.keys.IntListPreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.NullableStringPreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.StringListPreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.StringPreferenceKeyWithDefault
@@ -23,6 +24,12 @@ object RuleOption {
       "reply_canned_texts_list",
       listOf("Yes", "No", "Okay")
    )
+
+   val snoozeIntervals = IntListPreferenceKeyWithDefault(
+      "snooze_intervals",
+      listOf(10, 30, 60, 90)
+   )
+
    val titleFont = EnumPreferenceKeyWithDefault("font_title", PebbleFont.GOTHIC_24_BOLD)
    val subtitleFont = EnumPreferenceKeyWithDefault("font_subtitle", PebbleFont.GOTHIC_14_BOLD)
    val bodyFont = EnumPreferenceKeyWithDefault("font_body", PebbleFont.GOTHIC_14)

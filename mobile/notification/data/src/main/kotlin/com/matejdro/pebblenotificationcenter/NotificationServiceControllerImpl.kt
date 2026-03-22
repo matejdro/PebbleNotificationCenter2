@@ -7,6 +7,7 @@ import android.content.ClipDescription
 import android.content.Intent
 import android.os.Build
 import android.os.Process
+import androidx.annotation.RequiresApi
 import androidx.core.os.bundleOf
 import com.matejdro.pebblenotificationcenter.notification.NotificationService
 import com.matejdro.pebblenotificationcenter.notification.NotificationServiceController
@@ -15,6 +16,7 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import logcat.logcat
+import kotlin.time.Duration
 
 @Inject
 @ContributesBinding(AppScope::class)
@@ -26,6 +28,16 @@ class NotificationServiceControllerImpl : NotificationServiceController {
 
       service.cancelNotification(key)
 
+      return true
+   }
+
+   @RequiresApi(Build.VERSION_CODES.O)
+   override fun snoozeNotificationNotification(key: String, duration: Duration): Boolean {
+      val service = NotificationService.instance ?: return false
+
+      logcat { "Snoozing notification $key for $duration" }
+
+      service.snoozeNotification(key, duration.inWholeMilliseconds)
       return true
    }
 

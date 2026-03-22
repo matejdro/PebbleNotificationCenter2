@@ -1,6 +1,7 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import android.app.createPendingIntent
+import android.os.Build
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import com.matejdro.pebblenotificationcenter.bluetooth.FakeWatchSyncer
@@ -56,6 +57,7 @@ class NotificationProcessorTest {
       RuleResolver(rulesRepository),
       globalPreferences,
       pauseController,
+      androidVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM
    )
 
    @BeforeEach
@@ -66,6 +68,7 @@ class NotificationProcessorTest {
       context.resources.putString(R.string.pause_conversation, "Pause conversation")
       context.resources.putString(R.string.unpause_conversation, "Unpause conversation")
       context.resources.putString(R.string.app_suffix) { "${it.elementAt(0)} (App)" }
+      context.resources.putString(R.string.snooze, "Snooze")
 
       runBlocking {
          rulesRepository.insert("Default Rule")
@@ -191,7 +194,7 @@ class NotificationProcessorTest {
    }
 
    @Test
-   fun `It should return dismiss and pause actions on every notification`() = runTest {
+   fun `It should return default actions on every notification`() = runTest {
       val notification = ParsedNotification(
          "key",
          "com.app",
@@ -206,8 +209,9 @@ class NotificationProcessorTest {
 
       processor.getNotification(1)?.actions shouldBe listOf(
          Action.Dismiss("Dismiss", 0u),
-         Action.PauseApp("Pause app", 1u),
-         Action.PauseConversation("Pause conversation", 2u),
+         Action.Snooze("Snooze", 1u),
+         Action.PauseApp("Pause app", 2u),
+         Action.PauseConversation("Pause conversation", 3u),
       )
    }
 
@@ -1344,5 +1348,36 @@ class NotificationProcessorTest {
 
          allIds.shouldContainExactly(allIds.distinct())
       }
+   }
+
+   @Test
+   fun `It should not return snooze action on older Android versions`() = runTest {
+      val processorWithOldVersion = NotificationProcessor(
+         context,
+         watchSyncer,
+         openController,
+         RuleResolver(rulesRepository),
+         globalPreferences,
+         pauseController,
+         androidVersion = Build.VERSION_CODES.N
+      )
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processorWithOldVersion.onNotificationPosted(notification)
+
+      processorWithOldVersion.getNotification(1)?.actions shouldBe listOf(
+         Action.Dismiss("Dismiss", 0u),
+         Action.PauseApp("Pause app", 1u),
+         Action.PauseConversation("Pause conversation", 2u),
+      )
    }
 }

@@ -8,10 +8,7 @@ interface SubmenuController {
 enum class SubmenuType {
    REPLY_ANSWERS,
 
-   /**
-    * For tests only
-    */
-   OTHER,
+   SNOOZE,
 }
 
 data class SubmenuItem<T>(val text: String, val payload: T, val voiceInput: Boolean = false)

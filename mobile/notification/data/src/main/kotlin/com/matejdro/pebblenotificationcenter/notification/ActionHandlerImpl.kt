@@ -14,6 +14,7 @@ import com.matejdro.pebblenotificationcenter.submenus.ReplySubmenuPayload
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import logcat.logcat
+import kotlin.time.Duration.Companion.minutes
 
 @ContributesBinding(WatchappConnectionScope::class)
 @Inject
@@ -53,40 +54,7 @@ class ActionHandlerImpl(
          }
 
          is Action.Reply -> {
-            val voiceItem = if (action.allowFreeFormInput) {
-               listOf(
-                  SubmenuItem(
-                     resources.getString(R.string.voice),
-                     ReplySubmenuPayload("", action.intent as PendingIntent, action.remoteInputResultKey),
-                     voiceInput = true
-                  )
-               )
-            } else {
-               emptyList()
-            }
-
-            val userTexts = if (action.allowFreeFormInput) {
-               val preferences = ruleResolver.resolveRules(notification.systemData).preferences
-               preferences[RuleOption.replyCannedTexts]
-            } else {
-               emptyList()
-            }
-
-            val cannedTexts = userTexts + action.cannedTexts
-            val listItems = voiceItem + cannedTexts.map { cannedText ->
-               SubmenuItem(
-                  cannedText,
-                  ReplySubmenuPayload(cannedText, action.intent as PendingIntent, action.remoteInputResultKey)
-               )
-            }
-
-            submenuController.showSubmenuOnTheWatch(
-               notification.bucketId.toUByte(),
-               SubmenuType.REPLY_ANSWERS,
-               listItems
-            )
-
-            true
+            handleReplyAction(action, notification)
          }
 
          is Action.PauseApp -> {
@@ -98,6 +66,69 @@ class ActionHandlerImpl(
             pauseController.toggleConversationPause(notification.systemData)
             true
          }
+
+         is Action.Snooze -> {
+            handleSnoozeAction(notification)
+         }
       }
+   }
+
+   private suspend fun handleReplyAction(
+      action: Action.Reply,
+      notification: ProcessedNotification,
+   ): Boolean {
+      val voiceItem = if (action.allowFreeFormInput) {
+         listOf(
+            SubmenuItem(
+               resources.getString(R.string.voice),
+               ReplySubmenuPayload("", action.intent as PendingIntent, action.remoteInputResultKey),
+               voiceInput = true
+            )
+         )
+      } else {
+         emptyList()
+      }
+
+      val userTexts = if (action.allowFreeFormInput) {
+         val preferences = ruleResolver.resolveRules(notification.systemData).preferences
+         preferences[RuleOption.replyCannedTexts]
+      } else {
+         emptyList()
+      }
+
+      val cannedTexts = userTexts + action.cannedTexts
+      val listItems = voiceItem + cannedTexts.map { cannedText ->
+         SubmenuItem(
+            cannedText,
+            ReplySubmenuPayload(cannedText, action.intent as PendingIntent, action.remoteInputResultKey)
+         )
+      }
+
+      submenuController.showSubmenuOnTheWatch(
+         notification.bucketId.toUByte(),
+         SubmenuType.REPLY_ANSWERS,
+         listItems
+      )
+
+      return true
+   }
+
+   private suspend fun handleSnoozeAction(notification: ProcessedNotification): Boolean {
+      val preferences = ruleResolver.resolveRules(notification.systemData).preferences
+
+      val listItems = preferences[RuleOption.snoozeIntervals].map { snoozeMinutes ->
+         SubmenuItem(
+            resources.getString(R.string.minutes_suffix_short, snoozeMinutes),
+            snoozeMinutes.minutes
+         )
+      }
+
+      submenuController.showSubmenuOnTheWatch(
+         notification.bucketId.toUByte(),
+         SubmenuType.SNOOZE,
+         listItems
+      )
+
+      return true
    }
 }

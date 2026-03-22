@@ -125,6 +125,7 @@ kotlinova-navigation-test = { module = "si.inova.kotlinova:navigation-test", ver
 ksp = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 logcat = { module = "com.squareup.logcat:logcat", version.ref = "logcat" }
 metro-plugin = { module = "dev.zacsweers.metro:gradle-plugin", version.ref = "metro" }
+metro-runtime = { module = "dev.zacsweers.metro:runtime", version.ref = "metro" }
 moduleGraphAssert = { module = "com.jraska.module.graph.assertion:plugin", version.ref = "moduleGraphAssert" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 orgJson = { module = "org.json:json", version.ref = "orgJson" }

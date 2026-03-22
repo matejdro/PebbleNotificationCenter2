@@ -16,12 +16,12 @@ custom {
 dependencies {
    api(projects.bluetooth.api)
    api(projects.bluetoothCommon)
+   api(projects.commonAndroid)
    api(projects.notification.api)
    api(projects.rules.api)
    api(libs.androidx.datastore.preferences)
    api(libs.dispatch)
 
-   implementation(projects.commonAndroid)
    implementation(libs.androidx.core)
    implementation(libs.logcat)
    implementation(libs.kotlin.coroutines)

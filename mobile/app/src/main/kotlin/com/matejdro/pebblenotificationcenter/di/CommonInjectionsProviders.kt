@@ -3,6 +3,7 @@ package com.matejdro.pebblenotificationcenter.di
 import android.app.Application
 import android.content.Context
 import android.content.res.Resources
+import android.os.Build
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
@@ -11,6 +12,7 @@ import androidx.work.WorkManager
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.matejdro.pebblenotificationcenter.Database
+import com.matejdro.pebblenotificationcenter.common.di.AndroidVersion
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
@@ -61,4 +63,8 @@ interface CommonInjectionsProviders {
    fun provideSqliteDriver(context: Context): SqlDriver {
       return AndroidSqliteDriver(Database.Schema, context, "database.db")
    }
+
+   @Provides
+   @AndroidVersion
+   fun provideAndroidVersion(): Int = Build.VERSION.SDK_INT
 }

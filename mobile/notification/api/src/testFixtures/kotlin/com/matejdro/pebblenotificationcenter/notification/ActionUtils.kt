@@ -9,6 +9,7 @@ fun Action.zeroId(): Action {
       is Action.PauseApp -> copy(id = 0u)
       is Action.PauseConversation -> copy(id = 0u)
       is Action.Reply -> copy(id = 0u)
+      is Action.Snooze -> copy(id = 0u)
    }
 }
 

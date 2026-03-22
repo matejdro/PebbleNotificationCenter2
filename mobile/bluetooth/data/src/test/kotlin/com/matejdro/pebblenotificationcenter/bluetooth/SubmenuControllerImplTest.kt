@@ -66,7 +66,7 @@ class SubmenuControllerImplTest {
    fun `Limit action text length`() = scope.runTest {
       submenuController.showSubmenuOnTheWatch(
          9u,
-         SubmenuType.OTHER,
+         SubmenuType.SNOOZE,
          listOf(
             SubmenuItem("a".repeat(100), 1),
             SubmenuItem("A2", 2),
@@ -126,7 +126,7 @@ class SubmenuControllerImplTest {
       )
       submenuController.showSubmenuOnTheWatch(
          11u,
-         SubmenuType.OTHER,
+         SubmenuType.SNOOZE,
          listOf(
             SubmenuItem("B1", 5678),
             SubmenuItem("B2", 9876),
@@ -135,7 +135,7 @@ class SubmenuControllerImplTest {
       runCurrent()
 
       submenuController.getPayloadForMenuItem<Int>(10u, SubmenuType.REPLY_ANSWERS, 1) shouldBe 4567
-      submenuController.getPayloadForMenuItem<Int>(11u, SubmenuType.OTHER, 0) shouldBe 5678
+      submenuController.getPayloadForMenuItem<Int>(11u, SubmenuType.SNOOZE, 0) shouldBe 5678
       submenuController.getPayloadForMenuItem<Int>(11u, SubmenuType.REPLY_ANSWERS, 4) shouldBe null
    }
 
@@ -151,7 +151,7 @@ class SubmenuControllerImplTest {
       )
       submenuController.showSubmenuOnTheWatch(
          11u,
-         SubmenuType.OTHER,
+         SubmenuType.SNOOZE,
          listOf(
             SubmenuItem("B1", 5678),
             SubmenuItem("B2", 9876),

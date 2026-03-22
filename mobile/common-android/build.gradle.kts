@@ -14,4 +14,5 @@ dependencyAnalysis {
 dependencies {
    api(libs.kotlinova.navigation)
    implementation(libs.androidx.datastore.preferences)
+   implementation(libs.metro.runtime)
 }

@@ -1,5 +1,6 @@
 package com.matejdro.pebblenotificationcenter.rules.ui.details
 
+import android.os.Build
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.padding
@@ -23,10 +24,12 @@ import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.pebblenotificationcenter.navigation.util.rememberNavigationPopup
 import com.matejdro.pebblenotificationcenter.rules.PebbleFont
 import com.matejdro.pebblenotificationcenter.rules.RuleOption
+import com.matejdro.pebblenotificationcenter.rules.keys.IntListPreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.SetPreference
 import com.matejdro.pebblenotificationcenter.rules.keys.StringListPreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.rules.ui.R
+import com.matejdro.pebblenotificationcenter.rules.ui.dialogs.IntListScreenKey
 import com.matejdro.pebblenotificationcenter.rules.ui.dialogs.StringListScreenKey
 import com.matejdro.pebblenotificationcenter.rules.ui.dialogs.VibrationPatternScreenKey
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
@@ -101,6 +104,17 @@ internal fun ColumnScope.Settings(
          stringResource(R.string.preference_font_body),
          fontNames,
       )
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+         IntListPreference(
+            navigator,
+            "Snooze intervals",
+            updatePreference,
+            RuleOption.snoozeIntervals,
+            null,
+            preferences
+         )
+      }
 
       PreferenceCategory({ Text(stringResource(R.string.pausing)) })
 
@@ -188,6 +202,37 @@ private fun StringListPreference(
       title = { Text(title) },
       summary = {
          Text(description)
+      },
+      onClick = {
+         dialog.trigger(updatedPreferences[preference].toList())
+      }
+   )
+}
+
+@Composable
+private fun IntListPreference(
+   navigator: Navigator,
+   title: String,
+   updatePreference: SetPreference,
+   preference: IntListPreferenceKeyWithDefault,
+   description: String?,
+   preferences: Preferences,
+) {
+   val updatedPreferences by rememberUpdatedState(preferences)
+
+   val dialog = navigator.rememberNavigationPopup(
+      navigationKey = { initialList: List<Int>, resultKey: ResultKey<List<Int>> ->
+         IntListScreenKey(title, initialList, resultKey)
+      },
+      onResult = {
+         updatePreference(preference, it)
+      }
+   )
+
+   Preference(
+      title = { Text(title) },
+      summary = {
+         description?.let { Text(it) }
       },
       onClick = {
          dialog.trigger(updatedPreferences[preference].toList())

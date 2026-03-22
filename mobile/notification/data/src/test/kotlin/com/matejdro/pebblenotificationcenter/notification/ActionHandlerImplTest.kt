@@ -22,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import si.inova.kotlinova.core.test.fakes.FakeResources
 import java.time.Instant
+import kotlin.time.Duration.Companion.minutes
 
 class ActionHandlerImplTest {
    private val repo = FakeNotificationRepository()
@@ -46,6 +47,7 @@ class ActionHandlerImplTest {
    @BeforeEach
    fun setUp() {
       resources.putString(R.string.voice, "- Voice -")
+      resources.putString(R.string.minutes_suffix_short) { "${it.elementAt(0)} min" }
    }
 
    @Test
@@ -445,6 +447,59 @@ class ActionHandlerImplTest {
       handler.handleAction(2, 0) shouldBe true
 
       servicecontroller.lastCancelledNotification shouldBe "keyNotification"
+   }
+
+   @Test
+   fun `Open submenu on the watch with the snooze options`() = runTest {
+      insertDefaultRules()
+
+      repo.putNotification(
+         2,
+         ProcessedNotification(
+            ParsedNotification(
+               "keyNotification",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+            ),
+            actions = listOf(
+               Action.Snooze(
+                  title = "Snooze",
+                  id = 0u,
+               )
+            ),
+            bucketId = 2
+         ),
+      )
+
+      handler.handleAction(2, 0) shouldBe true
+
+      submenuController.sentMenus.toMap().shouldBe(
+         mapOf(
+            FakeSubmenuController.MenuItemKey(2u, SubmenuType.SNOOZE) to listOf(
+               SubmenuItem(
+                  "10 min",
+                  10.minutes,
+               ),
+               SubmenuItem(
+                  "30 min",
+                  30.minutes,
+               ),
+               SubmenuItem(
+                  "60 min",
+                  60.minutes,
+               ),
+               SubmenuItem(
+                  "90 min",
+                  90.minutes,
+               ),
+            )
+         )
+      )
+
+      servicecontroller.lastTriggeredIntent shouldBe null
    }
 
    private suspend fun insertDefaultRules() {

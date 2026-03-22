@@ -8,4 +8,6 @@
     <string name="unpause_conversation">Unpause convo</string>
     <string name="other_actions">Other actions</string>
     <string name="app_suffix">%1$s (App)</string>
+    <string name="snooze">Snooze</string>
+    <string name="minutes_suffix_short">%1$d min</string>
 </resources>
