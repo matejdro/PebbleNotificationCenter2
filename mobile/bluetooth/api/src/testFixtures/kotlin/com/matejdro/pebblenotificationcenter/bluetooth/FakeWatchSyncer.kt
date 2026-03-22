@@ -30,7 +30,7 @@ class FakeWatchSyncer : WatchSyncer {
       return nextBucketId++
    }
 
-   override suspend fun prepareNotificationReadStatus(notification: ProcessedNotification) {
+   override suspend fun prepareNotificationReadStatus(notification: ProcessedNotification, preferences: Preferences) {
       syncedNotificationReadStatuses.add(notification)
    }
 }

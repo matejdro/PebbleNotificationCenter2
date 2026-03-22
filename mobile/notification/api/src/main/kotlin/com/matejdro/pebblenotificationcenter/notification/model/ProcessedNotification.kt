@@ -6,4 +6,5 @@ data class ProcessedNotification(
    val actions: List<Action> = emptyList(),
    val unread: Boolean = false,
    val paused: PauseStatus = PauseStatus(),
+   val vibrated: Boolean = false,
 )

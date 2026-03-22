@@ -197,9 +197,9 @@ private fun AppIcon(pkg: String, modifier: Modifier = Modifier) {
    } else if (pkg.isEmpty()) {
       Spacer(modifier.size(24.dp))
    } else {
-      var icon by remember { mutableStateOf<Drawable?>(null) }
+      var icon by remember(pkg) { mutableStateOf<Drawable?>(null) }
       val context = LocalContext.current
-      LaunchedEffect(context) {
+      LaunchedEffect(pkg, context) {
          icon = withContext(Dispatchers.Default) {
             val packageManager = context.packageManager
             packageManager.getApplicationIcon(pkg)

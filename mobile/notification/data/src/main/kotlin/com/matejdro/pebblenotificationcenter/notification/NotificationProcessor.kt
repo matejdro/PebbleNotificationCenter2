@@ -65,26 +65,7 @@ class NotificationProcessor(
 
       val actions = processActions(parsedNotification, pauseStatus)
 
-      val initialProcessedNotification = ProcessedNotification(
-         parsedNotification,
-         0,
-         actions,
-         unread = !suppressVibration,
-         paused = pauseStatus
-      )
-      val bucketId = watchSyncer.syncNotification(initialProcessedNotification, settings)
-
-      val processedNotification = initialProcessedNotification.copy(bucketId = bucketId)
-
       val previousNotification = notificationIdsByKeys[parsedNotification.key]?.let { notifications[it] }
-
-      logcat {
-         "Notification flags: " +
-            "suppress=$suppressVibration " +
-            "silent=${parsedNotification.isSilent} " +
-            "dnd=${parsedNotification.isFilteredByDoNotDisturb}"
-      }
-
       val vibrationPattern = getVibrationPattern(
          previousNotification,
          parsedNotification,
@@ -92,6 +73,25 @@ class NotificationProcessor(
          settings,
          pauseStatusBeforeInsert
       )
+
+      val initialProcessedNotification = ProcessedNotification(
+         parsedNotification,
+         0,
+         actions,
+         unread = !suppressVibration,
+         paused = pauseStatus,
+         vibrated = vibrationPattern != null
+      )
+      val bucketId = watchSyncer.syncNotification(initialProcessedNotification, settings)
+
+      val processedNotification = initialProcessedNotification.copy(bucketId = bucketId)
+
+      logcat {
+         "Notification flags: " +
+            "suppress=$suppressVibration " +
+            "silent=${parsedNotification.isSilent} " +
+            "dnd=${parsedNotification.isFilteredByDoNotDisturb}"
+      }
       if (vibrationPattern != null) {
          logcat { "Vibrating with ${vibrationPattern.contentToString()}" }
          nextVibration.set(vibrationPattern)
@@ -330,7 +330,9 @@ class NotificationProcessor(
          value.copy(unread = false)
       } ?: return
 
-      watchSyncer.prepareNotificationReadStatus(notification)
+      val preferences = ruleResolver.resolveRules(notification.systemData).preferences
+
+      watchSyncer.prepareNotificationReadStatus(notification, preferences)
    }
 
    private fun List<Action>.renamePauseActions(newPausedStatus: PauseStatus): List<Action> = map { action ->

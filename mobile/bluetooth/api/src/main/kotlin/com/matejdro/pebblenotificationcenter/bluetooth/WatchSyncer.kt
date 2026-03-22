@@ -14,5 +14,5 @@ interface WatchSyncer {
     */
    suspend fun syncNotification(notification: ProcessedNotification, preferences: Preferences): Int
 
-   suspend fun prepareNotificationReadStatus(notification: ProcessedNotification)
+   suspend fun prepareNotificationReadStatus(notification: ProcessedNotification, preferences: Preferences)
 }

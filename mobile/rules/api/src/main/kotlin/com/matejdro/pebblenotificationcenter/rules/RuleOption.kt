@@ -20,6 +20,11 @@ object RuleOption {
       "50, 50, 50, 50, 50, 50, 50, 50, 50, 50"
    )
 
+   val periodicVibration = BooleanPreferenceKeyWithDefault(
+      "periodic_vibration",
+      false
+   )
+
    val replyCannedTexts = StringListPreferenceKeyWithDefault(
       "reply_canned_texts_list",
       listOf("Yes", "No", "Okay")

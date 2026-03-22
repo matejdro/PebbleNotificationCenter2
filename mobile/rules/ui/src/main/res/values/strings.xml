@@ -100,4 +100,9 @@
     <string name="preference_font_title">Title font</string>
     <string name="preference_font_subtitle">Subtitle font</string>
     <string name="preference_font_body">Body font</string>
+    <string name="setting_periodic_vibration">Periodic vibration</string>
+    <string name="setting_periodic_vibration_description">When enabled, after notification vibrates for the first time, it will
+        also make a periodic short buzz. \n\nPressing any button will stop this until the next notification with this enabled is
+        received.
+    </string>
 </resources>

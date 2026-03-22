@@ -390,7 +390,8 @@ class WatchSyncerImplTest {
             ),
             bucketId = 2,
             unread = false
-         )
+         ),
+         emptyPreferences(),
       )
 
       bucketSyncRepository.awaitNextUpdate(0u).activeBucketFlags.shouldContainExactly(0u)
@@ -426,7 +427,8 @@ class WatchSyncerImplTest {
             ),
             bucketId = 2,
             unread = false
-         )
+         ),
+         emptyPreferences(),
       )
 
       bucketSyncRepository.checkForNextUpdate(1u).shouldBeNull()
@@ -779,6 +781,60 @@ class WatchSyncerImplTest {
             )
          )
       )
+   }
+
+   @Test
+   fun `Set periodic vibration flag when the notification is loud and periodic vibration is enabled`() = scope.runTest {
+      val preferences = emptyPreferences().toMutablePreferences().apply {
+         set(RuleOption.periodicVibration, true)
+      }
+
+      init()
+      watchSyncer.syncNotification(
+         ProcessedNotification(
+            ParsedNotification(
+               "key",
+               "com.app",
+               "Title",
+               "sTitle",
+               "Body",
+               // 19:18:25 GMT | Sunday, January 4, 2026
+               Instant.ofEpochSecond(1_767_554_305)
+            ),
+            vibrated = true
+         ),
+         preferences
+      )
+
+      bucketSyncRepository.awaitNextUpdate(0u)
+         .activeBucketFlags shouldBe listOf(3u.toUByte())
+   }
+
+   @Test
+   fun `Do not set the periodic vibration flag when the notification is not loud`() = scope.runTest {
+      val preferences = emptyPreferences().toMutablePreferences().apply {
+         set(RuleOption.periodicVibration, true)
+      }
+
+      init()
+      watchSyncer.syncNotification(
+         ProcessedNotification(
+            ParsedNotification(
+               "key",
+               "com.app",
+               "Title",
+               "sTitle",
+               "Body",
+               // 19:18:25 GMT | Sunday, January 4, 2026
+               Instant.ofEpochSecond(1_767_554_305)
+            ),
+            vibrated = false
+         ),
+         preferences
+      )
+
+      bucketSyncRepository.awaitNextUpdate(0u)
+         .activeBucketFlags shouldBe listOf(0u.toUByte())
    }
 
    private suspend fun init(enablePreferences: Boolean = false) {

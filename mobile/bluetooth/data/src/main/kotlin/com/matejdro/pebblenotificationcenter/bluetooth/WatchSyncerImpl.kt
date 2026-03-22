@@ -95,7 +95,7 @@ class WatchSyncerImpl(
          ).encodedString
       )
 
-      val flags: UByte = getNotificationFlags(notification)
+      val flags: UByte = getNotificationFlags(notification, preferences)
 
       val id = bucketSyncRepository.updateBucketDynamic(
          notificationData.key,
@@ -109,7 +109,8 @@ class WatchSyncerImpl(
       return id
    }
 
-   private fun getNotificationFlags(notification: ProcessedNotification): UByte {
+   @Suppress("MagicNumber") // Protocol constants
+   private fun getNotificationFlags(notification: ProcessedNotification, preferences: Preferences): UByte {
       var flags: UByte = 0u
 
       if (notification.unread) {
@@ -118,6 +119,10 @@ class WatchSyncerImpl(
 
       if (notification.paused.any) {
          flags = flags or 0x02u
+      }
+
+      if (notification.vibrated && preferences[RuleOption.periodicVibration]) {
+         flags = flags or 0x03u
       }
 
       return flags
@@ -132,10 +137,10 @@ class WatchSyncerImpl(
       logcat { "Deleting Notification $key from the store" }
    }
 
-   override suspend fun prepareNotificationReadStatus(notification: ProcessedNotification) {
+   override suspend fun prepareNotificationReadStatus(notification: ProcessedNotification, preferences: Preferences) {
       bucketSyncRepository.updateBucketFlagsSilently(
          id = notification.bucketId.toUByte(),
-         flags = getNotificationFlags(notification)
+         flags = getNotificationFlags(notification, preferences)
       )
    }
 

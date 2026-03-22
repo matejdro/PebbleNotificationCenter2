@@ -70,7 +70,15 @@ internal fun ColumnScope.Settings(
          ),
          stringResource(R.string.setting_master_switch_description_suffix)
       )
+
       VibrationPatternPreference(navigator, updatePreference, preferences)
+
+      SwitchPreference(
+         value = preferences[RuleOption.periodicVibration],
+         onValueChange = { updatePreference(RuleOption.periodicVibration, it) },
+         title = { Text(stringResource(R.string.setting_periodic_vibration)) },
+         summary = { Text(stringResource(R.string.setting_periodic_vibration_description)) }
+      )
 
       StringListPreference(
          navigator,

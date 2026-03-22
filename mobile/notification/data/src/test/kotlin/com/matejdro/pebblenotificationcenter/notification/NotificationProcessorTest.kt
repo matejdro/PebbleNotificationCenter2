@@ -320,6 +320,8 @@ class NotificationProcessorTest {
       processor.pollNextVibration().shouldNotBeNull().toList().shouldContainExactly(
          50, 50, 50, 50, 50, 50, 50, 50, 50, 50
       )
+      processor.getNotificationByKey("key").shouldNotBeNull()
+         .vibrated shouldBe true
    }
 
    @Test
