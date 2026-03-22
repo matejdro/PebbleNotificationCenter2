@@ -95,6 +95,7 @@ If an indicator is filled with black color, it indicates the currently selected 
 #### While not pressing anything
 
 * Double buzz - Phone got disconnected from the watch while the app was open (check the status icon).
+* Single very short buzz - You have periodic vibration enabled
 
 ### Special actions
 
