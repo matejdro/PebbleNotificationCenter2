@@ -20,7 +20,7 @@ An improved notifications app for the PebbleOS watches
 # Features
 
 #### Full notification sync
-Instead of just showing received notification pager-style, NC will show all the notificications from your phone  (within reason).
+Instead of just showing received notification pager-style, NC will show all the notifications from your phone  (within reason).
 
 #### Customizability
 Configure every aspect of the notification. Have different settings depending on which app sent the notification or depending on what the notification says.
@@ -41,13 +41,13 @@ Pausing system helps with controlling bursty noisy notifications like a group ch
 Don't want to deal with the notification right now? Just snooze it for later (Android 8+ only).
 
 #### Periodic vibration
-Original vibration happened while you were distracted and you did not notice it? App can keep buzzing for it periodically until you notice it.
+Original vibration happened while you were distracted, and you did not notice it? App can keep buzzing for it periodically until you notice it.
 
 #### Offline operation
 You can still read excerpts of your notifications while the watch is not connected to the phone.
 
 #### Dynamic phone mute
-Don't you hate when your phone also makes noise / vibrate in addition to the watch's vibration? You can have enable auto-phone-mute that mutes your phone automatically whenever a watch is connected. Also toggleable directly from the watch.
+Don't you hate when your phone also makes noise / vibrate in addition to the watch's vibration? You can have auto-phone-mute that mutes your phone automatically whenever a watch is connected. Also, toggleable directly from the watch.
 
 # Usage
 
@@ -58,8 +58,8 @@ Don't you hate when your phone also makes noise / vibrate in addition to the wat
 ### Status icons
 
 * Hourglass (![Image](docs/busy.png)) - The app is loading data in the background. You can generally keep using the app while this is going on.
-* Phone disconnected (![Image](docs/disconnected.png)) - The Watch has been disconnected from the phone. You can stil use the app to read excerpts of the previously-synced notifications, but you cannot execute any actions
-* Error (E) - Something has gone wrong. Please make a Github issue with the reproduction steps.
+* Phone disconnected (![Image](docs/disconnected.png)) - The Watch has been disconnected from the phone. You can still use the app to read excerpts of the previously-synced notifications, but you cannot execute any actions
+* Error (E) - Something has gone wrong. Please make a GitHub issue with the reproduction steps.
 
 ### Notification list indicators
 
@@ -90,7 +90,7 @@ If an indicator is filled with black color, it indicates the currently selected 
 #### While triggering a notification action
 
 * Double buzz - Trigger failed. That usually means the phone got disconnected (check the status icon).
-* Single buzz - Action triggered successfuly
+* Single buzz - Action triggered successfully
 
 #### While not pressing anything
 
@@ -129,7 +129,7 @@ On the top of the rules list is the `Default Settings` rule. These settings are 
 
 ### Custom rules
 
-Rules are a primary way to configure notifications in the Notification Center. Rather than a static configuration, they consists of a conditions that determine when a specific rule applies and settings that get applied.
+Rules are a primary way to configure notifications in the Notification Center. Rather than a static configuration, they consist of a conditions that determine when a specific rule applies and settings that get applied.
 
 Example rules:
 
@@ -143,7 +143,7 @@ You can currently set up three different conditions for every rule:
 
 * Originating app / channel - Passes when a notification originates from a specific app or a specific notification channel of that app
 * Whitelist regex - Passes when a notification title, subtitle or body text contains the specified regular expression
-* Blacklist regex - Passes when a notification title, subtitle or body text does not contains the specified regular expression
+* Blacklist regex - Passes when a notification title, subtitle or body text does not contain the specified regular expression
 
 All conditions are applied using the AND logic - every condition on the rule needs to pass in order for the rule to apply. There is currently no way of performing OR logic, but you can simulate it by creating a copy of the rule.
 
