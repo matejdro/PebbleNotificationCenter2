@@ -14,7 +14,7 @@ An improved notifications app for the PebbleOS watches
 [<img src="docs/badge_github.png" alt="Get it on GitHub">](../../releases/latest)
 
 ## Watchapp
-
+[<img src="docs/badge_rebble.svg" alt="Get it on Rebble Store">](https://apps.rebble.io/en_US/application/69c000c26d8fa50009bffa61)
 [<img src="docs/badge_github.png" alt="Get it on GitHub">](../../releases/latest)
 
 # Features
