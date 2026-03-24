@@ -15,6 +15,7 @@ import com.matejdro.pebblenotificationcenter.rules.keys.get
 import dev.zacsweers.metro.Inject
 import dispatch.core.DefaultCoroutineScope
 import io.rebble.pebblekit2.client.PebbleInfoRetriever
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -25,6 +26,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import logcat.logcat
 import si.inova.kotlinova.core.reporting.ErrorReporter
+import kotlin.time.Duration.Companion.milliseconds
 
 class NotificationService : NotificationListenerService() {
    @Inject
@@ -44,6 +46,9 @@ class NotificationService : NotificationListenerService() {
 
    @Inject
    private lateinit var preferenceStore: DataStore<Preferences>
+
+   @Inject
+   private lateinit var notificationServiceStatus: NotificationServiceStatus
 
    private val mutex = Mutex()
 
@@ -108,7 +113,7 @@ class NotificationService : NotificationListenerService() {
       }
    }
 
-   private fun parseNotification(sbn: StatusBarNotification): ParsedNotification? {
+   private suspend fun parseNotification(sbn: StatusBarNotification): ParsedNotification? {
       val ranking = Ranking()
       currentRanking.getRanking(sbn.key, ranking)
 
@@ -125,13 +130,20 @@ class NotificationService : NotificationListenerService() {
       }
    }
 
-   private fun getNotificationChannel(sbn: StatusBarNotification): Any? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      getNotificationChannels(sbn.packageName, Process.myUserHandle()).firstOrNull {
-         it.id == sbn.notification.channelId
+   private suspend fun getNotificationChannel(sbn: StatusBarNotification): Any? =
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+         val cdmActive = waitForCompanionDeviceManager()
+         if (!cdmActive) {
+            logcat { "Companion device manager is not active. Ignoring channels." }
+            return null
+         }
+
+         getNotificationChannels(sbn.packageName, Process.myUserHandle()).firstOrNull {
+            it.id == sbn.notification.channelId
+         }
+      } else {
+         null
       }
-   } else {
-      null
-   }
 
    private fun controlListenerHints() = coroutineScope.launch {
       val anyWatchConnected = pebbleInfoRetriever.getConnectedWatches().map { it.isNotEmpty() }.distinctUntilChanged()
@@ -157,6 +169,7 @@ class NotificationService : NotificationListenerService() {
       }
          .collect { listenerHints ->
             try {
+               waitForCompanionDeviceManager()
                requestListenerHints(listenerHints)
             } catch (e: SecurityException) {
                errorReporter.report(e)
@@ -164,7 +177,23 @@ class NotificationService : NotificationListenerService() {
          }
    }
 
+   private suspend fun waitForCompanionDeviceManager(): Boolean {
+      // CompanionDeviceManager sometimes takes a while to bind
+      // Wait a bit
+      repeat(CDM_WAIT_ATTEMPTS) {
+         if (notificationServiceStatus.isPermissionGranted()) {
+            return true
+         }
+
+         delay(100.milliseconds)
+      }
+
+      return false
+   }
+
    companion object {
       internal var instance: NotificationService? = null
    }
 }
+
+private const val CDM_WAIT_ATTEMPTS = 10
