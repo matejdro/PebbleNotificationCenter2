@@ -63,8 +63,6 @@ class NotificationService : NotificationListenerService() {
 
       instance = this
 
-      controlListenerHints()
-
       super.onCreate()
    }
 
@@ -97,6 +95,8 @@ class NotificationService : NotificationListenerService() {
             }
          }
       }
+
+      controlListenerHints()
    }
 
    override fun onNotificationPosted(sbn: StatusBarNotification) {
