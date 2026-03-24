@@ -807,7 +807,7 @@ class WatchSyncerImplTest {
       )
 
       bucketSyncRepository.awaitNextUpdate(0u)
-         .activeBucketFlags shouldBe listOf(3u.toUByte())
+         .activeBucketFlags shouldBe listOf(4u.toUByte())
    }
 
    @Test

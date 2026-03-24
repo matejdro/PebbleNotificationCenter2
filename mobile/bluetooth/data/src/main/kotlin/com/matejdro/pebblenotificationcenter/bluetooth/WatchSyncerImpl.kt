@@ -122,7 +122,7 @@ class WatchSyncerImpl(
       }
 
       if (notification.vibrated && preferences[RuleOption.periodicVibration]) {
-         flags = flags or 0x03u
+         flags = flags or 0x04u
       }
 
       return flags

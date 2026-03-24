@@ -153,7 +153,7 @@ Bucket flags:
 
 * 0x01 - When set, notification was not seen by the user yet
 * 0x02 - When set, notification has a pause enabled
-* 0x03 - When set and this notification is present, app should do periodic vibration
+* 0x04 - When set and this notification is present, app should do periodic vibration
 
 Bucket data:
 

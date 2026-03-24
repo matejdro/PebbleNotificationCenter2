@@ -38,7 +38,7 @@ static bool any_notification_wants_periodic_vibration(void)
     const BucketList* bucket_list = bucket_sync_get_bucket_list();
     for (int i = 0; i < bucket_list->count; i++)
     {
-        if ((bucket_list->data[i].flags) & 0x03)
+        if ((bucket_list->data[i].flags) & 0x04)
         {
             return true;
         }
@@ -81,8 +81,10 @@ void idle_handler_register_timers()
 
 static void maybe_start_periodic_vibration_timer()
 {
-    if (any_notification_vibrated && !idle_handler_has_user_interacted_since_last_vibration &&
-        any_notification_wants_periodic_vibration())
+    if (any_notification_vibrated &&
+        !idle_handler_has_user_interacted_since_last_vibration &&
+        any_notification_wants_periodic_vibration()
+    )
     {
         periodic_vibration_timer = app_timer_register(PERIODIC_VIBRATION_PERIOD_MS, handle_periodic_vibration, NULL);
     }
