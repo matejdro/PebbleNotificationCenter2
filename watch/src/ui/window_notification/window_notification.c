@@ -71,21 +71,21 @@ void window_notification_ui_redraw_scroller_content()
     body.font = fonts_get_system_font(fonts[window_notification_data.body_font]);
 
     int16_t y = 0;
-    title.bounds.origin = GPoint(0, 0);
+    title.bounds.origin = GPoint(HORIZONTAL_TEXT_PADDING, 0);
     title.bounds.size = graphics_text_layout_get_content_size(
         title.text,
         title.font,
-        GRect(0, 0, max_title_width, 3000),
+        GRect(HORIZONTAL_TEXT_PADDING, 0, max_title_width, 3000),
         GTextOverflowModeWordWrap,
         GTextAlignmentLeft
     );
     y += title.bounds.size.h + MID_TEXT_VERTICAL_PADDING;
 
-    subtitle.bounds.origin = GPoint(0, y);
+    subtitle.bounds.origin = GPoint(HORIZONTAL_TEXT_PADDING, y);
     subtitle.bounds.size = graphics_text_layout_get_content_size(
         subtitle.text,
         subtitle.font,
-        GRect(0, 0, max_title_width, 3000),
+        GRect(HORIZONTAL_TEXT_PADDING, 0, max_title_width, 3000),
         GTextOverflowModeWordWrap,
         GTextAlignmentLeft
     );
@@ -97,11 +97,11 @@ void window_notification_ui_redraw_scroller_content()
     // Even if the title and subtitle are very small, reserve at least ICON_SIZE_AND_BOUNDS height for the icon
     y = MAX(y, ICON_SIZE_AND_BOUNDS);
 
-    body.bounds.origin = GPoint(0, y);
+    body.bounds.origin = GPoint(HORIZONTAL_TEXT_PADDING, y);
     body.bounds.size = graphics_text_layout_get_content_size(
         body.text,
         body.font,
-        GRect(0, 0, scroller_width, 3000),
+        GRect(HORIZONTAL_TEXT_PADDING, 0, scroller_width, 3000),
         GTextOverflowModeWordWrap,
         GTextAlignmentLeft
     );
@@ -144,9 +144,9 @@ static void window_load(Window* window)
 
     scroll_layer = scroll_layer_create(
         GRect(
-            HORIZONTAL_TEXT_PADDING,
+            0,
             dots_bounds.size.h,
-            screen_bounds.size.w - HORIZONTAL_TEXT_PADDING * 2,
+            screen_bounds.size.w,
             screen_bounds.size.h - dots_bounds.size.h
         )
     );
@@ -162,7 +162,7 @@ static void window_load(Window* window)
     layer_add_child(window_layer, dots_layer->layer);
     layer_add_child(window_layer, scroll_layer_get_layer(scroll_layer));
     scroll_layer_add_child(scroll_layer, scroll_content_layer);
-    scroll_layer_set_content_size(scroll_layer, GSize(screen_bounds.size.w - HORIZONTAL_TEXT_PADDING * 2, 0));
+    scroll_layer_set_content_size(scroll_layer, GSize(screen_bounds.size.w - HORIZONTAL_TEXT_PADDING, 0));
 
     window_set_click_config_provider(window, window_notification_buttons_config);
 
