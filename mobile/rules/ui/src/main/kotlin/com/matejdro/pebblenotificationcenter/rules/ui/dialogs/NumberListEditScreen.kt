@@ -173,8 +173,12 @@ private fun NumberListScreenContent(
                      Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.fillMaxWidth()) {
                         Text("•", Modifier.padding(end = 8.dp))
 
-                        Text(entry.value.toString(), modifier = Modifier.padding(end = 8.dp))
-                        Spacer(Modifier.weight(1f))
+                        Text(
+                           entry.value.toString(),
+                           modifier = Modifier
+                              .weight(1f)
+                              .padding(end = 8.dp),
+                        )
 
                         Button(onClick = { delete(entry.index) }) {
                            Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.delete_rule))
