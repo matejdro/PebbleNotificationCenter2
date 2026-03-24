@@ -1,6 +1,9 @@
+import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
 import jacoco.setupJacocoMergingRoot
 import nl.littlerobots.vcu.plugin.resolver.ModuleVersionCandidate
 import nl.littlerobots.vcu.plugin.versionSelector
+import si.inova.kotlinova.gradle.sarifmerge.SarifMergeTask
 
 // Please do not add any subprojects {} / allprojects {} blocks or anything else that affects suborpojects to allow for
 // project isolation when it comes out (https://gradle.github.io/configuration-cache/#project_isolation)
@@ -134,4 +137,21 @@ versionCatalogUpdate {
 // Always update to the ALL distribution when updating Gradle
 tasks.wrapper {
    distributionType = Wrapper.DistributionType.ALL
+}
+
+// Workaround for the https://youtrack.jetbrains.com/issue/QD-13913
+// We remove the %SRCROOT% from the final merged sarif
+tasks.named("reportMerge", SarifMergeTask::class.java).configure {
+   @Suppress("UNCHECKED_CAST")
+   doLast {
+      val sarifFile = output.get().asFile
+      if (sarifFile.exists()) {
+         val sarifJson = JsonSlurper().parse(sarifFile) as Map<String, Any>
+         val runs = sarifJson["runs"] as List<Map<String, Any>>
+
+         val runsWithoutSrcRoot = runs.map { run -> run.filterKeys { it -> it != "originalUriBaseIds" } }
+         val newSarifJson = sarifJson + mapOf("runs" to runsWithoutSrcRoot)
+         sarifFile.writeText(JsonBuilder(newSarifJson).toPrettyString())
+      }
+   }
 }
