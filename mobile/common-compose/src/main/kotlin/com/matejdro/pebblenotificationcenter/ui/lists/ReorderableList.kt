@@ -104,7 +104,7 @@ fun <T> ReorderableListContainer(
                   coroutineScope.launch {
                      handleLazyListScroll(
                         lazyListState = lazyListState,
-                        dropIndex = index,
+                        dropKey = key,
                         density = density,
                      )
                   }

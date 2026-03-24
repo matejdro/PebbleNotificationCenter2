@@ -14,27 +14,28 @@ import kotlinx.coroutines.launch
 internal suspend fun handleLazyListScroll(
    lazyListState: LazyListState,
    density: Density,
-   dropIndex: Int,
+   dropKey: Any,
 ): Unit = coroutineScope {
    val firstVisibleItemIndex = lazyListState.firstVisibleItemIndex
    val firstVisibleItemScrollOffset = lazyListState.firstVisibleItemScrollOffset
 
    val scrollPadding = with(density) { 32.dp.roundToPx() }
 
+   val layoutInfo = lazyListState.layoutInfo
+
+   val (targetIndex, targetItem) = layoutInfo.visibleItemsInfo.withIndex().firstOrNull { it.value.key == dropKey }
+      ?: return@coroutineScope
+
    // Workaround to fix scroll issue when dragging the first item
-   if (dropIndex == 0 || dropIndex == 1) {
+   if (targetIndex == 0 || targetIndex == 1) {
       launch {
          lazyListState.scrollToItem(index = firstVisibleItemIndex, scrollOffset = firstVisibleItemScrollOffset)
       }
    }
 
-   // Animate scroll when entering the first or last item
-   val layoutInfo = lazyListState.layoutInfo
-
    val firstVisibleItem = layoutInfo.visibleItemsInfo.firstOrNull() ?: return@coroutineScope
    val scrollAmount = firstVisibleItem.size * 2f
 
-   val targetItem = layoutInfo.visibleItemsInfo.firstOrNull { it.index == dropIndex } ?: return@coroutineScope
    val endPosition = targetItem.offset + targetItem.size
 
    if (targetItem.offset - scrollPadding <= layoutInfo.viewportStartOffset) {
