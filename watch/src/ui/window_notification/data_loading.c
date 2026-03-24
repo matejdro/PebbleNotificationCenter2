@@ -177,11 +177,7 @@ void window_notification_data_select_bucket_on_index(const uint8_t target_index)
 
 void notification_window_ingest_bucket_metadata()
 {
-    if (idle_handler_has_user_interacted_since_app_start&& launch_reason()
-    
-    ==
-    APP_LAUNCH_PHONE
-    )
+    if (!idle_handler_has_user_interacted_since_app_start && launch_reason() == APP_LAUNCH_PHONE)
     {
         // Force switch to the new notification after app is opened due to new notification
         window_notification_data.currently_selected_bucket = 0;
