@@ -1,5 +1,6 @@
 package com.matejdro.pebblenotificationcenter.navigation.util
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -14,6 +15,7 @@ import si.inova.kotlinova.navigation.screenkeys.DialogKey
 import si.inova.kotlinova.navigation.screenkeys.ScreenKey
 
 @Composable
+@SuppressLint("VisibleForTests") // Temporarily accessing those directly until the library can be fixed
 fun <P, T : Any, K> Navigator.rememberNavigationPopup(
    navigationKey: Context.(param: P, resultKey: ResultKey<T>) -> K,
    onResult: (T) -> Unit,
