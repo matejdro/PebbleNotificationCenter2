@@ -4,10 +4,14 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.Icon
+import android.net.Uri
 import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
+import androidx.core.os.BundleCompat
 import com.matejdro.pebblenotificationcenter.notification.NotificationConstants
 import com.matejdro.pebblenotificationcenter.notification.api.AppNameProvider
 import com.matejdro.pebblenotificationcenter.notification.model.NativeAction
@@ -29,7 +33,8 @@ class NotificationParser(
       val notification = sbn.notification
       val title = appNameProvider.getAppName(sbn.packageName)
 
-      val (subtitle, text) = parseSubtitleAndBody(notification)
+      val (imageUri, messagingStyleText) = notification.parseMessagingStyle()
+      val (subtitle, text) = parseSubtitleAndBody(notification, messagingStyleText)
 
       if (subtitle.isBlank() && text.isNullOrBlank()) {
          return null
@@ -42,6 +47,11 @@ class NotificationParser(
       } else {
          sbn.postTime
       }
+
+      val largeImage = imageUri?.let { Icon.createWithContentUri(it) }
+         ?: BundleCompat.getParcelable<Bitmap>(notification.extras, NotificationCompat.EXTRA_PICTURE, Bitmap::class.java)
+            ?.let { Icon.createWithBitmap(it) }
+         ?: BundleCompat.getParcelable<Icon>(notification.extras, NotificationCompat.EXTRA_PICTURE_ICON, Icon::class.java)
 
       return ParsedNotification(
          key = sbn.key,
@@ -61,12 +71,14 @@ class NotificationParser(
          forceVibrate = sbn.packageName == context.packageName &&
             notification.extras.getBoolean(NotificationConstants.KEY_FORCE_VIBRATE, false),
          overrideVibrationPattern = parseVibrationPattern(notification),
-         iconDrawable = notification.smallIcon?.loadDrawable(context)
+         iconDrawable = notification.smallIcon?.loadDrawable(context),
+         largeImage = largeImage
       )
    }
 
    private fun parseSubtitleAndBody(
       notification: Notification,
+      messagingStyleText: String?,
    ): Pair<String, String?> {
       val extras = notification.extras
 
@@ -79,7 +91,7 @@ class NotificationParser(
 
       val text =
          (
-            notification.parseMessagingStyle()
+            messagingStyleText
                ?: notification.parseInboxStyle()
                ?: extras.getCharSequence(NotificationCompat.EXTRA_BIG_TEXT)
                ?: extras.getCharSequence(NotificationCompat.EXTRA_TEXT)
@@ -124,13 +136,19 @@ class NotificationParser(
       return channelId to isSilent
    }
 
-   private fun Notification.parseMessagingStyle(): String? {
-      val messagingStyle = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(this) ?: return null
+   private fun Notification.parseMessagingStyle(): Pair<Uri?, String?> {
+      val messagingStyle = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(this) ?: return (null to null)
 
       val messages = (messagingStyle.messages + messagingStyle.historicMessages).sortedByDescending { it.timestamp }
 
       var lastName: CharSequence? = null
-      return messages.joinToString("\n") { message ->
+      var firstImage: Uri? = null
+
+      val text = messages.joinToString("\n") { message ->
+         if (firstImage == null && message.dataMimeType?.startsWith("image/") == true) {
+            firstImage = message.dataUri
+         }
+
          val personName = message.person?.name ?: messagingStyle.user.name
          val text = message.text?.toString().orEmpty()
          if (personName != null && lastName != personName) {
@@ -141,6 +159,8 @@ class NotificationParser(
             lastName = personName
          }
       }
+
+      return firstImage to text
    }
 
    private fun Notification.parseMessagingStyleTimestamp(): Long? {

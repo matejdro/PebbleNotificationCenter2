@@ -5,6 +5,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Build
 import android.os.Parcel
@@ -15,12 +17,14 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.PendingIntentCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
+import androidx.core.net.toUri
 import androidx.test.core.app.ApplicationProvider
 import com.matejdro.pebblenotificationcenter.notification.NotificationConstants
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.AssumptionViolatedException
 import org.junit.Test
 import java.time.Instant
@@ -852,6 +856,60 @@ class NotificationParserTest {
          .apply {
             this.allowFreeFormInput shouldBe false
          }
+   }
+
+   @Test
+   fun parseImageFromMessagingStyle() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setStyle(
+            NotificationCompat.MessagingStyle(Person.Builder().setName("Group Chat A").build())
+               .setConversationTitle("Group Chat A")
+               .addMessage(
+                  NotificationCompat.MessagingStyle.Message("Message 2", 1L, Person.Builder().setName("Alice").build())
+                     .setData("image/png", "content://image/1".toUri())
+               )
+               .addMessage(
+                  NotificationCompat.MessagingStyle.Message("Message 2", 2L, Person.Builder().setName("Alice").build())
+                     .setData("image/jpg", "content://image/2".toUri())
+               )
+               .addMessage(
+                  NotificationCompat.MessagingStyle.Message("Message 3", 3L, Person.Builder().setName("Bob").build())
+                     .setData("text/plain", "content://logs".toUri())
+               )
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
+         .shouldNotBeNull()
+         .largeImage
+         .shouldNotBeNull()
+         .shouldBeInstanceOf<Icon>()
+         .uri shouldBe Uri.parse("content://image/2")
+   }
+
+   @Test
+   fun parseImageFromBigPicture() {
+      val bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setStyle(
+            NotificationCompat.BigPictureStyle()
+               .bigPicture(bitmap)
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
+         .shouldNotBeNull()
+         .largeImage
+         .shouldNotBeNull()
+         .shouldBeInstanceOf<Icon>()
+         .type shouldBe Icon.TYPE_BITMAP
    }
 
    private fun createDefaultSilentChannel(): Any? {

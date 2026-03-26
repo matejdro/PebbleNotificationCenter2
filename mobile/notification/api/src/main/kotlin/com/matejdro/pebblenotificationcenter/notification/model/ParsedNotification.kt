@@ -32,6 +32,9 @@ data class ParsedNotification(
    // This is pure kotlin module, so we cannot reference Drawable directly.
    // I don't want to change it, so for now we can just use Any and upcast it
    val iconDrawable: Any? = null,
+
+   // Android type of this is android.graphics.drawable.Icon
+   val largeImage: Any? = null,
 )
 
 data class NativeAction(
