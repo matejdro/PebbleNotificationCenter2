@@ -158,12 +158,13 @@ class NotificationParser(
    }
 
    private fun Notification.parseActions(): List<NativeAction> {
-      return actions.orEmpty().map { action ->
+      return actions.orEmpty().mapNotNull { action ->
          val remoteInput = action.remoteInputs?.firstOrNull()
+         val actionIntent = action.actionIntent ?: return@mapNotNull null
 
          NativeAction(
             text = action.title.toString(),
-            pendingIntent = action.actionIntent,
+            pendingIntent = actionIntent,
             remoteInputResultKey = remoteInput?.resultKey,
             cannedTexts = remoteInput?.choices?.map { it.toString() }.orEmpty(),
             allowFreeFormInput = remoteInput?.allowFreeFormInput != false

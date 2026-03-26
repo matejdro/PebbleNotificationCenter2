@@ -544,6 +544,11 @@ class NotificationParserTest {
             "Action 2",
             PendingIntentCompat.getActivity(context, 0, Intent(), 0, false)
          )
+         .addAction(
+            123,
+            "Action 3",
+            null
+         )
          .setSmallIcon(0)
          .setShowWhen(false)
          .build()
