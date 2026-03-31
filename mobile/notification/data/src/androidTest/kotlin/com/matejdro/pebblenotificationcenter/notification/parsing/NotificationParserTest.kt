@@ -882,7 +882,8 @@ class NotificationParserTest {
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
-         .shouldNotBeNull().apply {
+         .shouldNotBeNull()
+         .apply {
             largeImage
                .shouldNotBeNull()
                .shouldBeInstanceOf<Icon>()
@@ -908,7 +909,8 @@ class NotificationParserTest {
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
-         .shouldNotBeNull().apply {
+         .shouldNotBeNull()
+         .apply {
             largeImage
                .shouldNotBeNull()
                .shouldBeInstanceOf<Icon>()
@@ -942,7 +944,8 @@ class NotificationParserTest {
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
-         .shouldNotBeNull().apply {
+         .shouldNotBeNull()
+         .apply {
             largeImage
                .shouldNotBeNull()
                .shouldBeInstanceOf<Icon>()
@@ -951,7 +954,6 @@ class NotificationParserTest {
             subtitle shouldBe "Group Chat A \uD83D\uDCF7"
          }
    }
-
 
    private fun createDefaultSilentChannel(): Any? {
       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {

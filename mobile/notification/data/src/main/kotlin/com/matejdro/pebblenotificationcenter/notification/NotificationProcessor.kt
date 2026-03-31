@@ -329,6 +329,10 @@ class NotificationProcessor(
       return nextVibration.getAndSet(null)
    }
 
+   override fun resetNextVibration(value: IntArray) {
+      nextVibration.compareAndSet(null, value)
+   }
+
    override suspend fun markAsRead(bucketId: Int) {
       logcat { "Marking $bucketId as read" }
       val notification = notifications.computeIfPresent(bucketId) { _, value ->

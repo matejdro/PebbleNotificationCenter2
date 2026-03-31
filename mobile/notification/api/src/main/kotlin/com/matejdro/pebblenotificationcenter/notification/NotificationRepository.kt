@@ -7,6 +7,11 @@ interface NotificationRepository {
    fun getNotification(bucketId: Int): ProcessedNotification?
    fun pollNextVibration(): IntArray?
 
+   /**
+    * If the next vibration is null, re-set it to the set value
+    */
+   fun resetNextVibration(value: IntArray)
+
    suspend fun markAsRead(bucketId: Int)
 
    suspend fun notifyPackagePauseStatusChanged(pkg: String)

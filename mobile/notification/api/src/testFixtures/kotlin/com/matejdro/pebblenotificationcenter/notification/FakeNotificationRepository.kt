@@ -23,6 +23,10 @@ class FakeNotificationRepository : NotificationRepository {
       return nextVibrationLocal
    }
 
+   override fun resetNextVibration(value: IntArray) {
+      nextVibration = value
+   }
+
    fun putNotification(bucketId: Int, processedNotification: ProcessedNotification) {
       notifications[bucketId] = processedNotification
    }

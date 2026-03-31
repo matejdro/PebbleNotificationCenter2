@@ -1404,4 +1404,20 @@ class NotificationProcessorTest {
          Action.ShowImage("Show image", 0u),
       )
    }
+
+   @Test
+   fun `It should vibrate when the next vibration is manually set`() = runTest {
+      processor.resetNextVibration(intArrayOf(1, 2, 3))
+
+      processor.pollNextVibration() shouldBe intArrayOf(1, 2, 3)
+      processor.pollNextVibration() shouldBe null
+   }
+
+   @Test
+   fun `resetNextVibration should not override existing vibration pattern`() = runTest {
+      processor.resetNextVibration(intArrayOf(1, 2, 3))
+      processor.resetNextVibration(intArrayOf(3, 2, 1))
+
+      processor.pollNextVibration() shouldBe intArrayOf(1, 2, 3)
+   }
 }

@@ -21,6 +21,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.rebble.pebblekit2.common.model.PebbleDictionaryItem
 import io.rebble.pebblekit2.common.model.WatchIdentifier
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
@@ -752,8 +753,37 @@ class NotificationDetailsPusherImplTest {
       )
    }
 
-   private fun TestScope.setup() {
-      backgroundScope.launch {
+   @Test
+   fun `Reset vibration pattern when sending fails`() = scope.runTest {
+      val watchSenderJob = setup()
+      sender.pauseSending = true
+
+      notificationRepository.nextVibration = intArrayOf(10, 10, 10, 10)
+
+      notificationRepository.putNotification(
+         12,
+         ProcessedNotification(
+            ParsedNotification(
+               "",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+            )
+         )
+      )
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
+
+      runCurrent()
+      watchSenderJob.cancel()
+      runCurrent()
+
+      notificationRepository.nextVibration shouldBe intArrayOf(10, 10, 10, 10)
+   }
+
+   private fun TestScope.setup(): Job {
+      return backgroundScope.launch {
          packetQueue.runQueue()
       }
    }

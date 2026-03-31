@@ -130,7 +130,13 @@ class NotificationDetailsPusherImpl(
             0u to PebbleDictionaryItem.UInt8(7u),
             1u to PebbleDictionaryItem.Bytes(buffer.readByteArray())
          )
-         queue.sendPacket(packet, priority = PRIORITY_VIBRATION)
+         @Suppress("SuspendFunSwallowedCancellation") // Reset vibration before re-throwing
+         try {
+            queue.sendPacket(packet, priority = PRIORITY_VIBRATION)
+         } catch (e: CancellationException) {
+            notificationRepository.resetNextVibration(vibrationPattern)
+            throw e
+         }
       }
    }
 }
