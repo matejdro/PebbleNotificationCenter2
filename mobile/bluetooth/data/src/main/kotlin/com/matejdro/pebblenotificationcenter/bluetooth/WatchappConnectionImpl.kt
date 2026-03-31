@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import com.matejdro.bucketsync.BucketSyncWatchLoop
+import com.matejdro.pebble.bluetooth.WatchMetadata
 import com.matejdro.pebble.bluetooth.common.PacketQueue
 import com.matejdro.pebble.bluetooth.common.WatchAppConnection
 import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionGraph
@@ -43,9 +44,8 @@ class WatchappConnectionImpl(
    private val notificationRepository: NotificationRepository,
    private val watch: WatchIdentifier,
    private val preferenceStore: DataStore<Preferences>,
+   private val watchMetadata: WatchMetadata,
 ) : WatchAppConnection {
-   private var watchBufferSize: Int = 0
-   private var colorWatch: Boolean = false
 
    init {
       coroutineScope.launch {
@@ -63,11 +63,11 @@ class WatchappConnectionImpl(
          }
 
          4u -> {
-            if (watchBufferSize > 0) {
+            if (watchMetadata.watchBufferSize > 0) {
                notificationDetailsPusher.pushNotificationDetails(
                   bucketId = data.requireUint(1u).toInt(),
-                  maxPacketSize = watchBufferSize,
-                  colorWatch = colorWatch
+                  maxPacketSize = watchMetadata.watchBufferSize,
+                  colorWatch = watchMetadata.colorWatch
                )
             }
 
@@ -108,11 +108,21 @@ class WatchappConnectionImpl(
       }
 
       val watchVersion = data.requireUint(2u).toUShort()
-      watchBufferSize = data.requireUint(3u).toInt()
-      logcat { "Watch data: version=$watchVersion, buffer size=$watchBufferSize" }
+      watchMetadata.watchBufferSize = data.requireUint(3u).toInt()
+      data[5u]
+         ?.let { it as? PebbleDictionaryItem.UInt32 }
+         ?.let {
+            watchMetadata.screenWidth = it.value.toInt()
+         }
+      data[6u]
+         ?.let { it as? PebbleDictionaryItem.UInt32 }
+         ?.let {
+            watchMetadata.screenHeight = it.value.toInt()
+         }
+      logcat { "Watch data: version=$watchVersion, buffer size=${watchMetadata.watchBufferSize}" }
 
       val flags = data.requireUint(4u)
-      colorWatch = (flags and 0x01u) != 0u
+      watchMetadata.colorWatch = (flags and 0x01u) != 0u
 
       bucketSyncWatchLoop.sendFirstPacketAndStartLoop(
          mapOfNotNull(
@@ -121,7 +131,7 @@ class WatchappConnectionImpl(
             (3u to UInt8(1u)).takeIf { watchappOpenController.isNextWatchappOpenForAutoSync() },
          ),
          watchVersion,
-         watchBufferSize,
+         watchMetadata.watchBufferSize,
          onBucketsChanged = { pushVibration() }
       )
 

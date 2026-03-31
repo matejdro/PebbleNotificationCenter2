@@ -92,6 +92,17 @@ Sent from the phone after the packet 4
     * Should send result with voice - 1 or 0 (uint8)
       * When `1`, upon selecting the item, watchapp will prompt the user for voice text entry and reply with it included in key `4` on packet 6.
 
+### Show an image (packet 11)
+
+When user requests an image from the phone, one or more packets 11 will be sent, containing image data.
+
+* `1` - Data (byte array)
+  * Total size of the image bytes (uint16) 
+  * Flags (uint8)
+    * 0x01 - 1 when this is the first packet in the image sequence, 0 otherwise
+    * 0x02 - 1 when this is the last packet in the image sequence, 0 otherwise
+  * Image data (bytes, encoded indexed png for color watches or grayscale png for black-and-white watches)
+
 ## Watch -> Phone
 
 ### Watch Welcome (packet 0)
@@ -103,6 +114,8 @@ Sent from the watch when the app is opened.
 * `3` - Appmessage incoming buffer size in bytes (uint16)
 * `4` - Watch info flags
   * 0x01 - 1 when the watch has a color screen, 0 otherwise
+* `5` - Width of the watch screen (uint16)
+* `6` - Height of the watch screen (uint16)
 
 ### Notification opened notification (packet 4)
 

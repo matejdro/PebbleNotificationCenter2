@@ -4,6 +4,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import com.matejdro.bucketsync.BucketSyncWatchLoopImpl
 import com.matejdro.bucketsync.FakeBucketSyncRepository
 import com.matejdro.bucketsync.background.FakeBackgroundSyncNotifier
+import com.matejdro.pebble.bluetooth.WatchMetadata
 import com.matejdro.pebble.bluetooth.common.PacketQueue
 import com.matejdro.pebble.bluetooth.common.test.FakePebbleSender
 import com.matejdro.pebble.bluetooth.common.test.sentData
@@ -21,6 +22,7 @@ import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.rebble.pebblekit2.common.model.PebbleDictionaryItem
+import io.rebble.pebblekit2.common.model.PebbleDictionaryItem.UInt32
 import io.rebble.pebblekit2.common.model.ReceiveResult
 import io.rebble.pebblekit2.common.model.WatchIdentifier
 import kotlinx.coroutines.async
@@ -54,6 +56,8 @@ class WatchappConnectionImplTest {
 
    private val globalPreferences = InMemoryDataStore(emptyPreferences())
 
+   private val watchMetadata = WatchMetadata()
+
    private val connection = WatchappConnectionImpl(
       scope.backgroundScope,
       watchappOpenController,
@@ -72,6 +76,7 @@ class WatchappConnectionImplTest {
       notificationsRepository,
       watch,
       globalPreferences,
+      watchMetadata,
    )
 
    @Test
@@ -432,6 +437,25 @@ class WatchappConnectionImplTest {
       notificationDetailsPusher.lastPushRequestId shouldBe 12
       notificationDetailsPusher.lastMaxPacketSize shouldBe 123
       notificationDetailsPusher.lastColorWatch shouldBe true
+   }
+
+   @Test
+   fun `Save width and height into watch metadata`() = scope.runTest {
+      connection.onPacketReceived(
+         mapOf(
+            0u to UInt32(0u),
+            1u to UInt32(PROTOCOL_VERSION.toUInt()),
+            2u to UInt32(0u),
+            3u to UInt32(value = 123u),
+            4u to UInt32(0u),
+            5u to UInt32(300u),
+            6u to UInt32(400u),
+         )
+      )
+      runCurrent()
+
+      watchMetadata.screenWidth shouldBe 300
+      watchMetadata.screenHeight shouldBe 400
    }
 
    private suspend fun receiveStandardHelloPacket(version: UInt = 0u, bufferSize: UInt = 1000u, flags: UInt = 0u): ReceiveResult =

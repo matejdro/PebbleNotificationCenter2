@@ -28,6 +28,7 @@ class ActionOrderRepositoryImplTest {
       context.resources.putString(R.string.unpause_conversation, "Unpause conversation")
       context.resources.putString(R.string.other_actions, "Other actions")
       context.resources.putString(R.string.snooze, "Snooze")
+      context.resources.putString(R.string.show_image, "Show image")
 
       repo = ActionOrderRepositoryImpl(context, preferenceStore)
    }
@@ -39,6 +40,7 @@ class ActionOrderRepositoryImplTest {
 
          expectMostRecentItem() shouldBe listOf(
             "Dismiss",
+            "Show image",
             "Other actions",
             "Snooze",
             "Pause app",
@@ -54,6 +56,7 @@ class ActionOrderRepositoryImplTest {
       preferenceStore.edit { prefs ->
          prefs[GlobalPreferenceKeys.actionOrder] = listOf(
             "Other actions",
+            "Show image",
             "Pause app",
             "Unpause app",
             "Pause conversation",
@@ -66,6 +69,7 @@ class ActionOrderRepositoryImplTest {
 
          expectMostRecentItem() shouldBe listOf(
             "Other actions",
+            "Show image",
             "Pause app",
             "Unpause app",
             "Pause conversation",
@@ -83,6 +87,7 @@ class ActionOrderRepositoryImplTest {
             "Reply",
             "Other actions",
             "Snooze",
+            "Show image",
             "Pause app",
             "Unpause app",
             "Pause conversation",
@@ -97,6 +102,7 @@ class ActionOrderRepositoryImplTest {
             "Reply",
             "Other actions",
             "Snooze",
+            "Show image",
             "Pause app",
             "Unpause app",
             "Pause conversation",
@@ -116,6 +122,7 @@ class ActionOrderRepositoryImplTest {
          expectMostRecentItem() shouldBe listOf(
             "Pause app",
             "Dismiss",
+            "Show image",
             "Other actions",
             "Snooze",
             "Unpause app",
@@ -129,10 +136,11 @@ class ActionOrderRepositoryImplTest {
    fun `Reorder list items down`() = runTest {
       repo.getList().test {
          runCurrent()
-         repo.moveOrder("Dismiss", 4)
+         repo.moveOrder("Dismiss", 5)
          runCurrent()
 
          expectMostRecentItem() shouldBe listOf(
+            "Show image",
             "Other actions",
             "Snooze",
             "Pause app",
@@ -211,6 +219,7 @@ class ActionOrderRepositoryImplTest {
 
          expectMostRecentItem() shouldBe listOf(
             "Dismiss",
+            "Show image",
             "Other actions",
             "Reply",
             "Snooze",

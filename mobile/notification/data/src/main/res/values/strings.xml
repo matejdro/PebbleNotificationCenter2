@@ -10,4 +10,5 @@
     <string name="app_suffix">%1$s (App)</string>
     <string name="snooze">Snooze</string>
     <string name="minutes_suffix_short">%1$d min</string>
+    <string name="show_image">Show image</string>
 </resources>

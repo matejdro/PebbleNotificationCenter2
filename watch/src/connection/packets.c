@@ -6,6 +6,7 @@
 #include "notification_details_fetcher.h"
 #include "../ui/window_status.h"
 #include "commons/bytes.h"
+#include "ui/window_image.h"
 #include "ui/window_notification/data_loading.h"
 #include "ui/window_notification/idle_handler.h"
 
@@ -16,6 +17,7 @@ static void receive_notification_details_text_packet(const DictionaryIterator* i
 static void receive_submenu_packet(const DictionaryIterator* iterator);
 static void receive_watch_packet(const DictionaryIterator* received);
 static void receive_vibrate_packet(const DictionaryIterator* iterator);
+static void receive_image_packet(const DictionaryIterator* iterator);
 
 static int close_retries_left = 3;
 
@@ -33,7 +35,9 @@ void send_watch_welcome()
     dict_write_uint16(iterator, 1, PROTOCOL_VERSION);
     dict_write_uint16(iterator, 2, bucket_sync_current_version);
     dict_write_uint16(iterator, 3, appmessage_max_size);
-    dict_write_uint16(iterator, 4, PBL_IF_COLOR_ELSE(1, 0));
+    dict_write_uint8(iterator, 4, PBL_IF_COLOR_ELSE(1, 0));
+    dict_write_uint16(iterator, 5, PBL_DISPLAY_WIDTH);
+    dict_write_uint16(iterator, 6, PBL_DISPLAY_HEIGHT);
     bluetooth_app_message_outbox_send();
 }
 
@@ -149,6 +153,9 @@ static void receive_watch_packet(const DictionaryIterator* received)
     case 9:
         receive_submenu_packet(received);
         break;
+    case 11:
+        receive_image_packet(received);
+        break;
     default:
         break;
     }
@@ -234,4 +241,10 @@ static void receive_submenu_packet(const DictionaryIterator* iterator)
 {
     const Tuple* data_dict_entry = dict_find(iterator, 1);
     window_notification_data_receive_show_submenu(data_dict_entry->value->data, data_dict_entry->length);
+}
+
+static void receive_image_packet(const DictionaryIterator* iterator)
+{
+    const Tuple* data_dict_entry = dict_find(iterator, 1);
+    window_image_show(data_dict_entry->value->data, data_dict_entry->length);
 }

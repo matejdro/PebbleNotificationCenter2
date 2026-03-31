@@ -36,7 +36,7 @@ fun ImagePixels.dither(toColorScreen: Boolean): ImagePixels {
    // Implementation of the Floyd Steinberg dithering
    val separatedColorArray: Array<Array<SeparatedColor>?> =
       Array(width) { x ->
-         Array(width) { y ->
+         Array(height) { y ->
             SeparatedColor(this[x, y])
          }
       }

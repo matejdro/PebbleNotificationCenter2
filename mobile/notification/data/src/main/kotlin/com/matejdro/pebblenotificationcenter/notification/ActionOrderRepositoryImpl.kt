@@ -28,6 +28,7 @@ class ActionOrderRepositoryImpl(
 
    private val defaultOrder = listOf(
       context.getString(R.string.dismiss),
+      context.getString(R.string.show_image),
       otherActionsEntry,
       context.getString(R.string.snooze),
       context.getString(R.string.pause_app),

@@ -1,10 +1,12 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import android.app.createPendingIntent
+import android.graphics.drawable.Icon
 import com.matejdro.pebblenotificationcenter.FakeNotificationServiceController
 import com.matejdro.pebblenotificationcenter.bluetooth.FakeSubmenuController
 import com.matejdro.pebblenotificationcenter.bluetooth.SubmenuItem
 import com.matejdro.pebblenotificationcenter.bluetooth.SubmenuType
+import com.matejdro.pebblenotificationcenter.bluetooth.images.FakeImageSender
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
@@ -35,6 +37,8 @@ class ActionHandlerImplTest {
 
    private val pauseController = FakePauseController()
 
+   private val imageSender = FakeImageSender()
+
    private val handler = ActionHandlerImpl(
       repo,
       servicecontroller,
@@ -42,6 +46,7 @@ class ActionHandlerImplTest {
       RuleResolver(rulesRepository),
       resources,
       pauseController,
+      imageSender
    )
 
    @BeforeEach
@@ -499,6 +504,39 @@ class ActionHandlerImplTest {
          )
       )
 
+      servicecontroller.lastTriggeredIntent shouldBe null
+   }
+
+   @Test
+   fun `Send bitmap to the watch when triggering show image action`() = runTest {
+      insertDefaultRules()
+
+      val icon = Icon.createWithContentUri("content://image")
+
+      repo.putNotification(
+         2,
+         ProcessedNotification(
+            ParsedNotification(
+               "keyNotification",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+               largeImage = icon
+            ),
+            actions = listOf(
+               Action.ShowImage(
+                  title = "Show image",
+                  id = 0u,
+               )
+            ),
+            bucketId = 2
+         ),
+      )
+
+      handler.handleAction(2, 0) shouldBe true
+      imageSender.lastSentIcon shouldBe icon
       servicecontroller.lastTriggeredIntent shouldBe null
    }
 

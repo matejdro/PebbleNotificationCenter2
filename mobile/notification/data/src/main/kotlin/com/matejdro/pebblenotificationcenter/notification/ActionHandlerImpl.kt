@@ -6,6 +6,7 @@ import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionScope
 import com.matejdro.pebblenotificationcenter.bluetooth.SubmenuController
 import com.matejdro.pebblenotificationcenter.bluetooth.SubmenuItem
 import com.matejdro.pebblenotificationcenter.bluetooth.SubmenuType
+import com.matejdro.pebblenotificationcenter.bluetooth.images.ImageSender
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import com.matejdro.pebblenotificationcenter.rules.RuleOption
@@ -25,6 +26,7 @@ class ActionHandlerImpl(
    private val ruleResolver: RuleResolver,
    private val resources: Resources,
    private val pauseController: PauseController,
+   private val imageSender: ImageSender,
 ) : ActionHandler {
    override suspend fun handleAction(notificationId: Int, actionId: Int): Boolean {
       val notification = notificationRepository.getNotification(notificationId)
@@ -69,6 +71,10 @@ class ActionHandlerImpl(
 
          is Action.Snooze -> {
             handleSnoozeAction(notification)
+         }
+
+         is Action.ShowImage -> {
+            handleShowImageAction(notification)
          }
       }
    }
@@ -129,6 +135,12 @@ class ActionHandlerImpl(
          listItems
       )
 
+      return true
+   }
+
+   private suspend fun handleShowImageAction(notification: ProcessedNotification): Boolean {
+      val image = notification.systemData.largeImage ?: return false
+      imageSender.showImageOnTheWatch(image)
       return true
    }
 }

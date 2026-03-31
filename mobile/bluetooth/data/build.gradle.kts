@@ -1,6 +1,7 @@
 plugins {
    androidLibraryModule
    di
+   unmock
 }
 
 dependencies {

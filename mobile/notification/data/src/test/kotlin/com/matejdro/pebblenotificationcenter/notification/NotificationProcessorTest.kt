@@ -1,6 +1,7 @@
 package com.matejdro.pebblenotificationcenter.notification
 
 import android.app.createPendingIntent
+import android.graphics.drawable.Icon
 import android.os.Build
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
@@ -69,6 +70,7 @@ class NotificationProcessorTest {
       context.resources.putString(R.string.unpause_conversation, "Unpause conversation")
       context.resources.putString(R.string.app_suffix) { "${it.elementAt(0)} (App)" }
       context.resources.putString(R.string.snooze, "Snooze")
+      context.resources.putString(R.string.show_image, "Show image")
 
       runBlocking {
          rulesRepository.insert("Default Rule")
@@ -1380,6 +1382,26 @@ class NotificationProcessorTest {
          Action.Dismiss("Dismiss", 0u),
          Action.PauseApp("Pause app", 1u),
          Action.PauseConversation("Pause conversation", 2u),
+      )
+   }
+
+   @Test
+   fun `It should return show image action when notification has an icon`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         largeImage = Icon.createWithContentUri("content://icon")
+      )
+
+      processor.onNotificationPosted(notification)
+
+      processor.getNotification(1)?.actions.orEmpty().zeroIds().shouldContain(
+         Action.ShowImage("Show image", 0u),
       )
    }
 }

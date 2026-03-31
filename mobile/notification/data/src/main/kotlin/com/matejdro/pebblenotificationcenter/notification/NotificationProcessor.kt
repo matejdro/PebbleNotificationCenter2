@@ -203,12 +203,17 @@ class NotificationProcessor(
       return pattern
    }
 
+   @Suppress("CognitiveComplexMethod") // A bunch of ifs for separate actions. Clearer when left together.
    private fun processActions(parsedNotification: ParsedNotification, pauseStatus: PauseStatus): List<Action> {
       val ncActions = buildList {
          add(Action.Dismiss(title = context.getString(R.string.dismiss), id = size.toUByte()))
 
          if (androidVersion >= Build.VERSION_CODES.O) {
             add(Action.Snooze(title = context.getString(R.string.snooze), id = size.toUByte()))
+         }
+
+         if (parsedNotification.largeImage != null) {
+            add(Action.ShowImage(title = context.getString(R.string.show_image), id = size.toUByte()))
          }
 
          add(
