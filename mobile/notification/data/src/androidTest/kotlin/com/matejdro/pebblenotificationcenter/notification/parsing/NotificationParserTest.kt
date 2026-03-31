@@ -882,11 +882,14 @@ class NotificationParserTest {
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
-         .shouldNotBeNull()
-         .largeImage
-         .shouldNotBeNull()
-         .shouldBeInstanceOf<Icon>()
-         .uri shouldBe Uri.parse("content://image/2")
+         .shouldNotBeNull().apply {
+            largeImage
+               .shouldNotBeNull()
+               .shouldBeInstanceOf<Icon>()
+               .uri shouldBe Uri.parse("content://image/2")
+
+            subtitle shouldBe "\uD83D\uDCF7 Group Chat A"
+         }
    }
 
    @Test
@@ -905,12 +908,50 @@ class NotificationParserTest {
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
-         .shouldNotBeNull()
-         .largeImage
-         .shouldNotBeNull()
-         .shouldBeInstanceOf<Icon>()
-         .type shouldBe Icon.TYPE_BITMAP
+         .shouldNotBeNull().apply {
+            largeImage
+               .shouldNotBeNull()
+               .shouldBeInstanceOf<Icon>()
+               .type shouldBe Icon.TYPE_BITMAP
+
+            subtitle shouldBe "\uD83D\uDCF7 Title"
+         }
    }
+
+   @Test
+   fun doNotAddCameraEmojiIfTitleAlreadyContainsIt() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setStyle(
+            NotificationCompat.MessagingStyle(Person.Builder().setName("Group Chat A").build())
+               .setConversationTitle("Group Chat A \uD83D\uDCF7")
+               .addMessage(
+                  NotificationCompat.MessagingStyle.Message("Message 2", 1L, Person.Builder().setName("Alice").build())
+                     .setData("image/png", "content://image/1".toUri())
+               )
+               .addMessage(
+                  NotificationCompat.MessagingStyle.Message("Message 2", 2L, Person.Builder().setName("Alice").build())
+                     .setData("image/jpg", "content://image/2".toUri())
+               )
+               .addMessage(
+                  NotificationCompat.MessagingStyle.Message("Message 3", 3L, Person.Builder().setName("Bob").build())
+                     .setData("text/plain", "content://logs".toUri())
+               )
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
+         .shouldNotBeNull().apply {
+            largeImage
+               .shouldNotBeNull()
+               .shouldBeInstanceOf<Icon>()
+               .uri shouldBe Uri.parse("content://image/2")
+
+            subtitle shouldBe "Group Chat A \uD83D\uDCF7"
+         }
+   }
+
 
    private fun createDefaultSilentChannel(): Any? {
       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {

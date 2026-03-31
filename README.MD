@@ -118,6 +118,12 @@ By selecting the Snooze action and then selecting the time, notification will "d
 
 Note: only supported on Android 8 and newer.
 
+### Show image
+
+If a notification has an image attached, its subtitle will have a 📷 icon.
+
+In this case, you can select `Show image` action, which will show the image on the watch full-screen
+
 ## On the phone
 
 ### Mute / Hide an app
