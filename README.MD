@@ -40,6 +40,9 @@ Pausing system helps with controlling bursty noisy notifications like a group ch
 #### Snoozing
 Don't want to deal with the notification right now? Just snooze it for later (Android 8+ only).
 
+#### Picture display
+A friend sent you a picture and you don't want to pull out your phone? You can check it out on your watch.
+
 #### Periodic vibration
 Original vibration happened while you were distracted, and you did not notice it? App can keep buzzing for it periodically until you notice it.
 
