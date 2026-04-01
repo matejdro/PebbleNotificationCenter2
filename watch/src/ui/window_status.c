@@ -3,6 +3,7 @@
 #include "window_preferences.h"
 #include "layers/status_bar.h"
 #include "commons/connection/bucket_sync.h"
+#include "connection/packets.h"
 #include "window_notification/window_notification.h"
 
 static TextLayer* main_text;
@@ -116,7 +117,14 @@ static void window_status_show(const char* text, bool switch_on_load)
 
 void window_status_show_empty()
 {
-    window_status_show("No notifications.", true);
+    if (launch_reason() == APP_LAUNCH_PHONE)
+    {
+        send_close_me();
+    }
+    else
+    {
+        window_status_show("No notifications.", true);
+    }
 }
 
 void window_status_show_error(const char* text)

@@ -216,15 +216,7 @@ void notification_window_ingest_bucket_metadata()
 
     if (count_without_settings == 0)
     {
-        if (launch_reason() == APP_LAUNCH_PHONE)
-        {
-            send_close_me();
-        }
-        else
-        {
-            window_stack_pop(true);
-            window_status_show_empty();
-        }
+        window_status_show_empty();
 
         return;
     }
