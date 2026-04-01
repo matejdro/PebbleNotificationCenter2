@@ -201,7 +201,7 @@ jobs:
         working-directory: mobile
         if: "${{ env.BUILD_MOBILE == 'true' }}"
       - name: "Generate new Screenshot Tests"
-        run: "config/generate-screenshots.sh master"
+        run: "config/generate-screenshots.sh main"
         working-directory: mobile
         if: "${{ env.BUILD_MOBILE == 'true' }}"
       - name: "Run Screenshot Tests"
