@@ -170,6 +170,26 @@ Every rule has a bunch of settings that you can apply when rule's conditions pas
 
 Settings are applied sequentially to all passing rules from top to bottom. You can reorder the rules by drag-dropping them in the rules list to change the order of applying.
 
+# Frequently asked questions (FAQ)
+
+### Why am I getting double notifications?
+
+NC will pop up notifications in addition to the native Pebble notifications. You need to disable native notifications to avoid doubling. You can do that in two ways:
+
+1. In the phone Pebble app, disable notifications
+2. On the watch under Settings -> Notifications -> set `Filter` to `Allow phone calls only` (NC does not show phone call notifications, so you want to keep those)
+
+### How can I only show some apps with NC?
+
+By default NC will show all apps, except for those explicitly hidden. You can invert this by:
+
+1. Set `Master switch` in the `Default settings` rule to `Mute`
+2. For every app / regex, you want to include, create a new rule, add desired app / regex and set its `Master Switch` to `Show`
+
+### Does NC show phone notifications?
+
+No, NC only shows regular "text" notifications. Phone notifications should still be handled by the Pebble app.
+
 # Contributing
 
 See [CONTRIBUTING](CONTRIBUTING.MD)
