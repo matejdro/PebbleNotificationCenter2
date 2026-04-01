@@ -56,12 +56,22 @@ Don't you hate when your phone also makes noise / vibrate in addition to the wat
 
 ## On the watch
 
-![Image](docs/guide.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./docs/guide_dark.png">
+  <img src="./docs/guide.png">
+</picture>
 
 ### Status icons
 
-* Hourglass (![Image](docs/busy.png)) - The app is loading data in the background. You can generally keep using the app while this is going on.
-* Phone disconnected (![Image](docs/disconnected.png)) - The Watch has been disconnected from the phone. You can still use the app to read excerpts of the previously-synced notifications, but you cannot execute any actions
+* Hourglass (<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./docs/busy_dark.png">
+  <img src="./docs/busy.png">
+</picture>)
+ - The app is loading data in the background. You can generally keep using the app while this is going on.
+* Phone disconnected (<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./docs/disconnected_dark.png">
+  <img src="./docs/disconnected.png">
+</picture>) - The Watch has been disconnected from the phone. You can still use the app to read excerpts of the previously-synced notifications, but you cannot execute any actions
 * Error (E) - Something has gone wrong. Please make a GitHub issue with the reproduction steps.
 
 ### Notification list indicators
