@@ -22,4 +22,5 @@
     <string name="reason_group_summary">Group summary notification</string>
     <string name="reason_local_only">Local only notification</string>
     <string name="reason_media">Media notification</string>
+    <string name="open_on_phone">Open on phone</string>
 </resources>

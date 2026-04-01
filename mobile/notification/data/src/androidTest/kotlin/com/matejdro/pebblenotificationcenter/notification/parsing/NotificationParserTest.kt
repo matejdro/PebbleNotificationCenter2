@@ -955,6 +955,27 @@ class NotificationParserTest {
          }
    }
 
+   @Test
+   fun parseContentIntentAsOpenOnPhoneAction() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setContentIntent(PendingIntentCompat.getActivity(context, 0, Intent(), 0, false))
+         .build()
+
+      val nativeActions = notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
+         .shouldNotBeNull()
+         .nativeActions
+
+      nativeActions
+         .map { it.text }
+         .shouldContainExactly("Open on phone")
+
+      nativeActions
+         .map { it.remoteInputResultKey }
+         .shouldContainExactly(null)
+   }
+
    private fun createDefaultSilentChannel(): Any? {
       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
          return null

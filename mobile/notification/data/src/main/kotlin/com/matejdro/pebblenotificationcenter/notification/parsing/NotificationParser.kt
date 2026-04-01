@@ -13,6 +13,7 @@ import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 import androidx.core.os.BundleCompat
 import com.matejdro.pebblenotificationcenter.notification.NotificationConstants
+import com.matejdro.pebblenotificationcenter.notification.R
 import com.matejdro.pebblenotificationcenter.notification.api.AppNameProvider
 import com.matejdro.pebblenotificationcenter.notification.model.NativeAction
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
@@ -184,7 +185,7 @@ class NotificationParser(
    }
 
    private fun Notification.parseActions(): List<NativeAction> {
-      return actions.orEmpty().mapNotNull { action ->
+      val normalActions = actions.orEmpty().mapNotNull { action ->
          val remoteInput = action.remoteInputs?.firstOrNull()
          val actionIntent = action.actionIntent ?: return@mapNotNull null
 
@@ -196,6 +197,17 @@ class NotificationParser(
             allowFreeFormInput = remoteInput?.allowFreeFormInput != false
          )
       }
+
+      val openOnPhoneAction = listOfNotNull(
+         contentIntent?.let { contentIntent ->
+            NativeAction(
+               text = context.getString(R.string.open_on_phone),
+               pendingIntent = contentIntent,
+            )
+         }
+      )
+
+      return normalActions + openOnPhoneAction
    }
 
    private fun CharSequence.removeUselessCharacaters(): String {
