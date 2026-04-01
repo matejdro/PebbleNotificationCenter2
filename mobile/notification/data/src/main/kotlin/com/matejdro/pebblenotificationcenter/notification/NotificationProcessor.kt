@@ -336,6 +336,10 @@ class NotificationProcessor(
       return nextVibration.getAndSet(null)
    }
 
+   fun peekNextVibration(): IntArray? {
+      return nextVibration.get()
+   }
+
    override fun resetNextVibration(value: IntArray) {
       nextVibration.compareAndSet(null, value)
    }

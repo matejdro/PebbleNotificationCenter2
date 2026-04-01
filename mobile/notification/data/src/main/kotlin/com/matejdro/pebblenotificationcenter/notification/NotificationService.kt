@@ -6,6 +6,7 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import com.matejdro.pebblenotificationcenter.bluetooth.WatchappOpenController
 import com.matejdro.pebblenotificationcenter.common.di.NavigationInjectingApplication
 import com.matejdro.pebblenotificationcenter.notification.di.NotificationInject
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
@@ -16,11 +17,12 @@ import dev.zacsweers.metro.Inject
 import dispatch.core.DefaultCoroutineScope
 import io.rebble.pebblekit2.client.PebbleInfoRetriever
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -49,6 +51,9 @@ class NotificationService : NotificationListenerService() {
 
    @Inject
    private lateinit var notificationServiceStatus: NotificationServiceStatus
+
+   @Inject
+   private lateinit var watchOpenController: WatchappOpenController
 
    private val mutex = Mutex()
 
@@ -96,7 +101,7 @@ class NotificationService : NotificationListenerService() {
          }
       }
 
-      controlListenerHints()
+      controlListenerHintsAndOpenOnReconnect()
    }
 
    override fun onNotificationPosted(sbn: StatusBarNotification) {
@@ -145,36 +150,64 @@ class NotificationService : NotificationListenerService() {
          null
       }
 
-   private fun controlListenerHints() = coroutineScope.launch {
+   private fun controlListenerHintsAndOpenOnReconnect() {
       val anyWatchConnected = pebbleInfoRetriever.getConnectedWatches().map { it.isNotEmpty() }.distinctUntilChanged()
-         .onEach { logcat { "Watch connected: $it" } }
 
+      controlListenerHints(anyWatchConnected)
+      openOnReconnect(anyWatchConnected)
+   }
+
+   private fun controlListenerHints(
+      anyWatchConnected: Flow<Boolean>,
+   ) {
       val mutePhoneFlow = preferenceStore.data.map { preferences ->
          preferences[GlobalPreferenceKeys.mutePhone]
       }.distinctUntilChanged()
 
-      mutePhoneFlow.flatMapLatest { mutePhone ->
-         if (mutePhone) {
-            anyWatchConnected.map { connected ->
-               var listenerHints = 0
-               if (connected) {
-                  listenerHints = listenerHints or HINT_HOST_DISABLE_NOTIFICATION_EFFECTS
-               }
+      coroutineScope.launch {
+         mutePhoneFlow.flatMapLatest { mutePhone ->
+            if (mutePhone) {
+               anyWatchConnected.map { connected ->
+                  var listenerHints = 0
+                  if (connected) {
+                     listenerHints = listenerHints or HINT_HOST_DISABLE_NOTIFICATION_EFFECTS
+                  }
 
-               listenerHints
-            }.distinctUntilChanged()
-         } else {
-            flowOf(0)
-         }
-      }
-         .collect { listenerHints ->
-            try {
-               waitForCompanionDeviceManager()
-               requestListenerHints(listenerHints)
-            } catch (e: SecurityException) {
-               errorReporter.report(e)
+                  listenerHints
+               }.distinctUntilChanged()
+            } else {
+               flowOf(0)
             }
          }
+            .collect { listenerHints ->
+               try {
+                  waitForCompanionDeviceManager()
+                  requestListenerHints(listenerHints)
+               } catch (e: SecurityException) {
+                  errorReporter.report(e)
+               }
+            }
+      }
+   }
+
+   private fun openOnReconnect(anyWatchConnected: Flow<Boolean>) {
+      coroutineScope.launch {
+         var prevConnected: Boolean? = null
+         anyWatchConnected.collect { connected ->
+            logcat { "Watch connected: $connected" }
+
+            if (connected &&
+               prevConnected == false &&
+               notificationProcessor.peekNextVibration() != null &&
+               preferenceStore.data.first()[GlobalPreferenceKeys.notifyOnReconnect]
+            ) {
+               logcat { "Missed notifications while the watch was disconnected. Reopening..." }
+               watchOpenController.openWatchapp()
+            }
+
+            prevConnected = connected
+         }
+      }
    }
 
    private suspend fun waitForCompanionDeviceManager(): Boolean {

@@ -216,6 +216,17 @@ private fun ToolsScreenContent(
          }
 
          item(span = { GridItemSpan(maxLineSpan) }) {
+            SwitchPreference(
+               state.preferences[GlobalPreferenceKeys.notifyOnReconnect],
+               onValueChange = {
+                  updatePreference(GlobalPreferenceKeys.notifyOnReconnect, it)
+               },
+               title = { Text(stringResource(R.string.setting_notify_on_reconnect)) },
+               summary = { Text(stringResource(R.string.setting_notify_on_reconnect_description)) }
+            )
+         }
+
+         item(span = { GridItemSpan(maxLineSpan) }) {
             Text(
                stringResource(R.string.version, state.versionName),
                Modifier

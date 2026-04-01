@@ -10,4 +10,6 @@ object GlobalPreferenceKeys {
    val actionOrder = StringListPreferenceKeyWithDefault("action_order", emptyList())
 
    val autoCloseSeconds = IntPreferenceKeyWithDefault("auto_close", 0)
+
+   val notifyOnReconnect = BooleanPreferenceKeyWithDefault("notify_on_reconnect", true)
 }

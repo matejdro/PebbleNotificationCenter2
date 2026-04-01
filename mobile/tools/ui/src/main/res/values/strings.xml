@@ -15,4 +15,8 @@
     <string name="setting_auto_close_description">%1$d\n\nAuto close the notification popup after this many seconds. Pressing any
         button will stop the timer until the next notification. Set to 0 to disable.
     </string>
+    <string name="setting_notify_on_reconnect">Open missed notifications on reconnect</string>
+    <string name="setting_notify_on_reconnect_description">If phone received any non-muted notifications during watch disconnect,
+        it will show them on the watch after it reconnects
+    </string>
 </resources>
