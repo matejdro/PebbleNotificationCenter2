@@ -11,4 +11,15 @@
     <string name="snooze">Snooze</string>
     <string name="minutes_suffix_short">%1$d min</string>
     <string name="show_image">Show image</string>
+    <string name="reason_app_startup">NC starting up</string>
+    <string name="reason_watch_mute">\'Mute watch\' enabled</string>
+    <string name="reason_paused">Notification paused</string>
+    <string name="reason_master_switch">Master switch in the rule</string>
+    <string name="reason_silent_notification">Silent notification</string>
+    <string name="reason_dnd">Do not disturb on the phone active</string>
+    <string name="reason_identical">Identical to the previous notification</string>
+    <string name="reason_ongoing">Ongoing notification</string>
+    <string name="reason_group_summary">Group summary notification</string>
+    <string name="reason_local_only">Local only notification</string>
+    <string name="reason_media">Media notification</string>
 </resources>

@@ -8,6 +8,9 @@ import androidx.datastore.preferences.core.emptyPreferences
 import com.matejdro.pebblenotificationcenter.bluetooth.FakeWatchSyncer
 import com.matejdro.pebblenotificationcenter.bluetooth.FakeWatchappOpenController
 import com.matejdro.pebblenotificationcenter.common.test.InMemoryDataStore
+import com.matejdro.pebblenotificationcenter.notification.history.FakeHistoryInserter
+import com.matejdro.pebblenotificationcenter.notification.history.HideReason
+import com.matejdro.pebblenotificationcenter.notification.history.MuteReason
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.NativeAction
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
@@ -24,6 +27,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldHaveAtLeastSize
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.collections.shouldNotContain
@@ -51,6 +55,8 @@ class NotificationProcessorTest {
 
    private val pauseController = FakePauseController()
 
+   private val historyInserter = FakeHistoryInserter()
+
    private val processor = NotificationProcessor(
       context,
       watchSyncer,
@@ -58,6 +64,7 @@ class NotificationProcessorTest {
       RuleResolver(rulesRepository),
       globalPreferences,
       pauseController,
+      historyInserter,
       androidVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM
    )
 
@@ -233,6 +240,7 @@ class NotificationProcessorTest {
 
       openController.watchappOpened shouldBe false
       processor.pollNextVibration() shouldBe null
+      historyInserter.insertedEntries.shouldHaveSize(1).first().muteReason shouldBe MuteReason.SILENT_NOTIFICATION
    }
 
    @Test
@@ -256,6 +264,7 @@ class NotificationProcessorTest {
 
       openController.watchappOpened shouldBe true
       processor.pollNextVibration().shouldNotBeNull()
+      historyInserter.insertedEntries.shouldHaveSize(1).first().muteReason shouldBe null
    }
 
    @Test
@@ -276,6 +285,7 @@ class NotificationProcessorTest {
 
       openController.watchappOpened shouldBe false
       processor.pollNextVibration() shouldBe null
+      historyInserter.insertedEntries.shouldHaveSize(1).first().muteReason shouldBe MuteReason.DO_NOT_DISTURB
    }
 
    @Test
@@ -324,6 +334,7 @@ class NotificationProcessorTest {
       )
       processor.getNotificationByKey("key").shouldNotBeNull()
          .vibrated shouldBe true
+      historyInserter.insertedEntries.shouldHaveSize(1).first().muteReason shouldBe null
    }
 
    @Test
@@ -343,6 +354,7 @@ class NotificationProcessorTest {
 
       openController.watchappOpened shouldBe false
       processor.pollNextVibration() shouldBe null
+      historyInserter.insertedEntries.shouldHaveSize(1).first().muteReason shouldBe MuteReason.APP_STARTUP
    }
 
    @Test
@@ -365,6 +377,7 @@ class NotificationProcessorTest {
       processor.onNotificationPosted(notification)
       openController.watchappOpened shouldBe false
       processor.pollNextVibration() shouldBe null
+      historyInserter.insertedEntries.shouldHaveAtLeastSize(1).last().muteReason shouldBe MuteReason.IDENTICAL_TEXT
    }
 
    @Test
@@ -528,6 +541,7 @@ class NotificationProcessorTest {
       processor.onNotificationPosted(notification)
 
       watchSyncer.syncedNotifications.shouldBeEmpty()
+      historyInserter.insertedEntries.shouldHaveSize(1).first().hideReason shouldBe HideReason.MASTER_SWITCH
    }
 
    @Test
@@ -552,6 +566,7 @@ class NotificationProcessorTest {
 
       openController.watchappOpened shouldBe false
       processor.pollNextVibration().shouldBeNull()
+      historyInserter.insertedEntries.shouldHaveSize(1).first().muteReason shouldBe MuteReason.MASTER_SWITCH
    }
 
    @Test
@@ -594,6 +609,7 @@ class NotificationProcessorTest {
       processor.onNotificationPosted(notification)
 
       watchSyncer.syncedNotifications.shouldBeEmpty()
+      historyInserter.insertedEntries.shouldHaveSize(1).first().hideReason shouldBe HideReason.ONGOING_NOTIFICATION
    }
 
    @Test
@@ -635,6 +651,7 @@ class NotificationProcessorTest {
       processor.onNotificationPosted(notification)
 
       watchSyncer.syncedNotifications.shouldBeEmpty()
+      historyInserter.insertedEntries.shouldHaveSize(1).first().hideReason shouldBe HideReason.GROUP_SUMMARY_NOTIFICATION
    }
 
    @Test
@@ -676,6 +693,7 @@ class NotificationProcessorTest {
       processor.onNotificationPosted(notification)
 
       watchSyncer.syncedNotifications.shouldBeEmpty()
+      historyInserter.insertedEntries.shouldHaveSize(1).first().hideReason shouldBe HideReason.LOCAL_ONLY_NOTIFICATION
    }
 
    @Test
@@ -717,6 +735,7 @@ class NotificationProcessorTest {
       processor.onNotificationPosted(notification)
 
       watchSyncer.syncedNotifications.shouldBeEmpty()
+      historyInserter.insertedEntries.shouldHaveSize(1).first().hideReason shouldBe HideReason.MEDIA_NOTIFICATION
    }
 
    @Test
@@ -867,6 +886,7 @@ class NotificationProcessorTest {
 
       openController.watchappOpened shouldBe false
       processor.pollNextVibration().shouldBeNull()
+      historyInserter.insertedEntries.shouldHaveSize(1).first().muteReason shouldBe MuteReason.WATCH_MUTE
    }
 
    @Test
@@ -942,6 +962,7 @@ class NotificationProcessorTest {
 
       openController.watchappOpened shouldBe false
       processor.pollNextVibration().shouldBeNull()
+      historyInserter.insertedEntries.shouldHaveSize(1).first().muteReason shouldBe MuteReason.PAUSE
    }
 
    @Test
@@ -1127,6 +1148,7 @@ class NotificationProcessorTest {
 
       openController.watchappOpened shouldBe false
       processor.pollNextVibration().shouldBeNull()
+      historyInserter.insertedEntries.shouldHaveSize(1).first().muteReason shouldBe MuteReason.PAUSE
    }
 
    @Test
@@ -1363,7 +1385,8 @@ class NotificationProcessorTest {
          RuleResolver(rulesRepository),
          globalPreferences,
          pauseController,
-         androidVersion = Build.VERSION_CODES.N
+         historyInserter,
+         androidVersion = Build.VERSION_CODES.N,
       )
 
       val notification = ParsedNotification(
@@ -1419,5 +1442,52 @@ class NotificationProcessorTest {
       processor.resetNextVibration(intArrayOf(3, 2, 1))
 
       processor.pollNextVibration() shouldBe intArrayOf(1, 2, 3)
+   }
+
+   @Test
+   fun `It should forward received notifications to the history inserter`() = runTest {
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305),
+         isSilent = false
+      )
+
+      processor.onNotificationPosted(notification)
+
+      historyInserter.insertedEntries.shouldContainExactly(
+         FakeHistoryInserter.InsertedEntry(
+            notification,
+            emptyList(),
+            null,
+            null,
+         )
+      )
+   }
+
+   @Test
+   fun `It should forward list of resolved rules to the history inserter`() = runTest {
+      rulesRepository.insert("Rule A")
+      rulesRepository.insert("Rule B")
+
+      rulesRepository.updateRulePreferences(2, RuleOption.conditionAppPackage setTo "com.invalidapp")
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification)
+
+      historyInserter.insertedEntries.shouldHaveSize(1).first().affectedRules.shouldContainExactly("Rule B")
    }
 }

@@ -1,0 +1,9 @@
+CREATE TABLE dbHistory (
+    id INTEGER PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    subtitle TEXT NOT NULL,
+    time INTEGER NOT NULL,
+    affectedRules TEXT DEFAULT NULL,
+    muteReason TEXT DEFAULT NULL,
+    hideReason TEXT DEFAULT NULL
+);

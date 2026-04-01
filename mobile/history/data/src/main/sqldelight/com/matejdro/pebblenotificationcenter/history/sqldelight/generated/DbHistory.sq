@@ -1,0 +1,18 @@
+CREATE TABLE dbHistory (
+    id INTEGER PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    subtitle TEXT NOT NULL,
+    time INTEGER NOT NULL,
+    affectedRules TEXT DEFAULT NULL,
+    muteReason TEXT DEFAULT NULL,
+    hideReason TEXT DEFAULT NULL
+);
+
+selectAll:
+    SELECT * FROM dbHistory ORDER BY time DESC;
+
+insert:
+    INSERT INTO dbHistory (title, subtitle, time, affectedRules, muteReason, hideReason) VALUES ?;
+
+deleteOldItems:
+    DELETE FROM dbHistory WHERE id NOT IN (SELECT id FROM dbHistory ORDER BY time DESC LIMIT 100);

@@ -7,6 +7,9 @@ import androidx.datastore.preferences.core.Preferences
 import com.matejdro.pebblenotificationcenter.bluetooth.WatchSyncer
 import com.matejdro.pebblenotificationcenter.bluetooth.WatchappOpenController
 import com.matejdro.pebblenotificationcenter.common.di.AndroidVersion
+import com.matejdro.pebblenotificationcenter.notification.history.HideReason
+import com.matejdro.pebblenotificationcenter.notification.history.HistoryInserter
+import com.matejdro.pebblenotificationcenter.notification.history.MuteReason
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.PauseStatus
@@ -36,6 +39,7 @@ class NotificationProcessor(
    private val ruleResolver: RuleResolver,
    private val globalPreferenceStore: DataStore<Preferences>,
    private val pauseController: PauseController,
+   private val historyInserter: HistoryInserter,
    @AndroidVersion
    private val androidVersion: Int,
 ) : NotificationRepository {
@@ -51,7 +55,9 @@ class NotificationProcessor(
          logcat { "   ${setting.key} = ${setting.value}" }
       }
 
-      if (shouldHide(parsedNotification, settings)) {
+      val hideReason = shouldHide(parsedNotification, settings)
+      if (hideReason != null) {
+         historyInserter.insertHistoryEntry(parsedNotification, affectedRules, hideReason, null)
          onNotificationDismissed(parsedNotification.key)
          return
       }
@@ -66,7 +72,7 @@ class NotificationProcessor(
       val actions = processActions(parsedNotification, pauseStatus)
 
       val previousNotification = notificationIdsByKeys[parsedNotification.key]?.let { notifications[it] }
-      val vibrationPattern = getVibrationPattern(
+      val (muteReason, vibrationPattern) = getVibrationPattern(
          previousNotification,
          parsedNotification,
          suppressVibration,
@@ -98,6 +104,7 @@ class NotificationProcessor(
          openController.openWatchapp()
       }
 
+      historyInserter.insertHistoryEntry(parsedNotification, affectedRules, null, muteReason)
       notifications[bucketId] = processedNotification
       notificationIdsByKeys[parsedNotification.key] = bucketId
    }
@@ -105,38 +112,38 @@ class NotificationProcessor(
    private fun shouldHide(
       notification: ParsedNotification,
       preferences: Preferences,
-   ): Boolean {
+   ): HideReason? {
       if (notification.forceVibrate) {
          logcat { "Force notification: always show" }
-         return false
+         return null
       }
 
       if (preferences[RuleOption.masterSwitch] == MasterSwitch.HIDE) {
          logcat { "Hiding: master switch is hidden" }
-         return true
+         return HideReason.MASTER_SWITCH
       }
 
       if (notification.isOngoing && preferences[RuleOption.hideOngoingNotifications]) {
          logcat { "Hiding: ongoing" }
-         return true
+         return HideReason.ONGOING_NOTIFICATION
       }
 
       if (notification.groupSummary && preferences[RuleOption.hideGroupSummaryNotifications]) {
          logcat { "Hiding: group summary" }
-         return true
+         return HideReason.GROUP_SUMMARY_NOTIFICATION
       }
 
       if (notification.localOnly && preferences[RuleOption.hideLocalOnlyNotifications]) {
          logcat { "Hiding: local only" }
-         return true
+         return HideReason.LOCAL_ONLY_NOTIFICATION
       }
 
       if (notification.media && preferences[RuleOption.hideMediaNotifications]) {
          logcat { "Hiding: media" }
-         return true
+         return HideReason.MEDIA_NOTIFICATION
       }
 
-      return false
+      return null
    }
 
    @Suppress("CyclomaticComplexMethod", "CognitiveComplexMethod") // Lots of successive checks
@@ -146,7 +153,7 @@ class NotificationProcessor(
       suppressVibration: Boolean,
       preferences: Preferences,
       pausedBeforeInsert: PauseStatus,
-   ): IntArray? {
+   ): Pair<MuteReason?, IntArray?> {
       val pattern = (
          notification.overrideVibrationPattern
             ?: parseVibrationPattern(preferences[RuleOption.vibrationPattern])
@@ -157,37 +164,37 @@ class NotificationProcessor(
 
       if (notification.forceVibrate) {
          logcat { "Force notification: always vibrate" }
-         return pattern
+         return null to pattern
       }
 
       if (suppressVibration) {
          logcat { "Not vibrating: suppressVibration flag" }
-         return null
+         return MuteReason.APP_STARTUP to null
       }
 
       if (globalPreferenceStore.data.first()[GlobalPreferenceKeys.muteWatch]) {
          logcat { "Not vibrating: watch muted" }
-         return null
+         return MuteReason.WATCH_MUTE to null
       }
 
       if (pausedBeforeInsert.any) {
          logcat { "Not vibrating: paused" }
-         return null
+         return MuteReason.PAUSE to null
       }
 
       if (preferences[RuleOption.masterSwitch] == MasterSwitch.MUTE) {
          logcat { "Not vibrating: master switch" }
-         return null
+         return MuteReason.MASTER_SWITCH to null
       }
 
       if (notification.isSilent && preferences[RuleOption.muteSilentNotifications]) {
          logcat { "Not vibrating: silent notification" }
-         return null
+         return MuteReason.SILENT_NOTIFICATION to null
       }
 
       if (notification.isFilteredByDoNotDisturb && preferences[RuleOption.muteDndNotifications]) {
          logcat { "Not vibrating: DND filter" }
-         return null
+         return MuteReason.DO_NOT_DISTURB to null
       }
 
       val identicalText = previousNotification != null &&
@@ -197,10 +204,10 @@ class NotificationProcessor(
 
       if (identicalText && preferences[RuleOption.muteIdenticalNotifications]) {
          logcat { "Not vibrating: identical text notification" }
-         return null
+         return MuteReason.IDENTICAL_TEXT to null
       }
 
-      return pattern
+      return null to pattern
    }
 
    @Suppress("CognitiveComplexMethod") // A bunch of ifs for separate actions. Clearer when left together.

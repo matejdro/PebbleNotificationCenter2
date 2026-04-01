@@ -95,6 +95,7 @@ sqldelight {
          packageName.set("com.matejdro.pebblenotificationcenter")
          schemaOutputDirectory.set(file("src/main/sqldelight/databases"))
 
+         dependency(project(projects.history.data.path))
          dependency(project(projects.rules.data.path))
       }
    }
@@ -108,6 +109,8 @@ dependencies {
    implementation(projects.commonAndroid)
    implementation(projects.commonNavigation)
    implementation(projects.commonCompose)
+   implementation(projects.history.data)
+   implementation(projects.history.ui)
    implementation(projects.home.ui)
    implementation(projects.logging.api)
    implementation(projects.logging.crashreport)

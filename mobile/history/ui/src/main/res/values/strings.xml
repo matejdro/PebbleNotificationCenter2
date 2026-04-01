@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="active_rules">Active rules:</string>
+    <string name="default_rule">Default Settings</string>
+    <string name="history_notification_muted">Notification was shown, but muted. Reason: %1$s</string>
+    <string name="history_notification_hidden">Notification was not shown. Reason: %1$s</string>
+    <string name="history_notification_shown">Notification was shown on the watch normally</string>
+</resources>

@@ -32,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.pebblenotificationcenter.home.ui.R
 import com.matejdro.pebblenotificationcenter.navigation.instructions.ReplaceTabContentWith
+import com.matejdro.pebblenotificationcenter.navigation.keys.HistoryScreenKey
 import com.matejdro.pebblenotificationcenter.navigation.keys.HomeScreenKey
 import com.matejdro.pebblenotificationcenter.navigation.keys.RuleListScreenKey
 import com.matejdro.pebblenotificationcenter.navigation.keys.ToolsScreenKey
@@ -102,6 +103,13 @@ private fun NavigationBarContent(
          )
 
          NavigationBarItem(
+            selected = selectedScreenKey is HistoryScreenKey,
+            onClick = { navigate(ReplaceTabContentWith(HistoryScreenKey)) },
+            icon = { Icon(painter = painterResource(id = R.drawable.history), contentDescription = null) },
+            label = { Text(stringResource(R.string.history)) }
+         )
+
+         NavigationBarItem(
             selected = selectedScreenKey is ToolsScreenKey,
             onClick = { navigate(ReplaceTabContentWith(ToolsScreenKey)) },
             icon = { Icon(painter = painterResource(id = R.drawable.tools), contentDescription = null) },
@@ -124,6 +132,13 @@ private fun NavigationRailContent(
             onClick = { navigate(ReplaceTabContentWith(RuleListScreenKey)) },
             icon = { Icon(painter = painterResource(id = sharedR.drawable.rule), contentDescription = null) },
             label = { Text(stringResource(R.string.rules)) }
+         )
+
+         NavigationRailItem(
+            selected = selectedScreenKey is HistoryScreenKey,
+            onClick = { navigate(ReplaceTabContentWith(HistoryScreenKey)) },
+            icon = { Icon(painter = painterResource(id = R.drawable.history), contentDescription = null) },
+            label = { Text(stringResource(R.string.history)) }
          )
 
          NavigationRailItem(
@@ -160,7 +175,7 @@ internal fun HomePhonePreview() {
                      .background(Color.Red)
                )
             },
-            RuleListScreenKey,
+            HistoryScreenKey,
          ),
          navigate = {},
       )
