@@ -75,7 +75,7 @@ jobs:
                     
           if [[ $VERSION_MINORPATCH -ge 100 ]] then
             VERSION_MAJOR=$(($VERSION_MAJOR+1))
-            VERSION_MINORPATCH=$((VERSION_MINORPATCH-100))
+            VERSION_MINORPATCH=0
           fi
           
           VERSION="$VERSION_MAJOR.$VERSION_MINORPATCH"
