@@ -190,10 +190,7 @@ void notification_window_ingest_bucket_metadata()
         const uint8_t id = buckets->data[i].id;
         const uint8_t flags = buckets->data[i].flags;
 
-        uint8_t on_watch_flags[] = {0};
-        persist_read_data(STORAGE_BUCKET_FLAGS_ID_MIN + id, on_watch_flags, 1);
-
-        if ((flags & 0x01) != 0 && on_watch_flags[0] != 1)
+        if (is_notification_unread(flags, id))
         {
             window_notification_data.dot_states[count_without_settings] = UNREAD;
         }
@@ -396,4 +393,12 @@ void window_notification_data_deinit()
 {
     bucket_sync_set_bucket_list_change_callback(NULL);
     bucket_sync_clear_bucket_data_change_callback(on_bucket_updated, NULL);
+}
+
+bool is_notification_unread(const uint8_t bucket_flags, const uint8_t id)
+{
+    uint8_t on_watch_flags[] = {0};
+    persist_read_data(STORAGE_BUCKET_FLAGS_ID_MIN + id, on_watch_flags, 1);
+
+    return (bucket_flags & 0x01) != 0 && on_watch_flags[0] != 1;
 }

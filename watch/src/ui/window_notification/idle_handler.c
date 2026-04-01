@@ -1,5 +1,6 @@
 #include "idle_handler.h"
 
+#include "data_loading.h"
 #include "commons/bytes.h"
 #include "commons/connection/bucket_sync.h"
 #include "connection/packets.h"
@@ -38,7 +39,10 @@ static bool any_notification_wants_periodic_vibration(void)
     const BucketList* bucket_list = bucket_sync_get_bucket_list();
     for (int i = 0; i < bucket_list->count; i++)
     {
-        if ((bucket_list->data[i].flags) & 0x04)
+        const BucketMetadata bucket_metadata = bucket_list->data[i];
+        const bool notification_has_periodic_vibration = (bucket_metadata.flags) & 0x04;
+
+        if (notification_has_periodic_vibration && is_notification_unread(bucket_metadata.flags, bucket_metadata.id))
         {
             return true;
         }

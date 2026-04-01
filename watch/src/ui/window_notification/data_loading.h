@@ -7,3 +7,4 @@ void window_notification_data_receive_show_submenu(const uint8_t* data, size_t d
 void window_notification_data_app_started();
 void window_notification_data_init();
 void window_notification_data_deinit();
+bool is_notification_unread(uint8_t bucket_flags, uint8_t id);
