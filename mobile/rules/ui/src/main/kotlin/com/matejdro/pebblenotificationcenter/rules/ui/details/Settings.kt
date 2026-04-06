@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
+import com.matejdro.pebblenotificationcenter.navigation.keys.TaskerTaskSetScreenKey
 import com.matejdro.pebblenotificationcenter.navigation.util.rememberNavigationPopup
 import com.matejdro.pebblenotificationcenter.rules.PebbleFont
 import com.matejdro.pebblenotificationcenter.rules.RuleOption
@@ -80,15 +81,6 @@ internal fun ColumnScope.Settings(
          summary = { Text(stringResource(R.string.setting_periodic_vibration_description)) }
       )
 
-      StringListPreference(
-         navigator,
-         stringResource(R.string.setting_mute_silent),
-         updatePreference,
-         RuleOption.replyCannedTexts,
-         stringResource(R.string.setting_mute_silent_description),
-         preferences
-      )
-
       val fontNames = remember {
          PebbleFont.entries.map { font ->
             font.name.split("_").joinToString(" ") { name -> name.lowercase().replaceFirstChar { it.uppercase() } }
@@ -113,6 +105,17 @@ internal fun ColumnScope.Settings(
          fontNames,
       )
 
+      PreferenceCategory({ Text(stringResource(R.string.actions)) })
+
+      StringListPreference(
+         navigator,
+         stringResource(R.string.setting_mute_silent),
+         updatePreference,
+         RuleOption.replyCannedTexts,
+         stringResource(R.string.setting_mute_silent_description),
+         preferences
+      )
+
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
          IntListPreference(
             navigator,
@@ -123,6 +126,8 @@ internal fun ColumnScope.Settings(
             preferences
          )
       }
+
+      TaskerTaskListPreference(navigator, updatePreference, preferences)
 
       PreferenceCategory({ Text(stringResource(R.string.pausing)) })
 
@@ -213,6 +218,36 @@ private fun StringListPreference(
       },
       onClick = {
          dialog.trigger(updatedPreferences[preference].toList())
+      }
+   )
+}
+
+@Composable
+private fun TaskerTaskListPreference(
+   navigator: Navigator,
+   updatePreference: SetPreference,
+   preferences: Preferences,
+) {
+   val updatedPreferences by rememberUpdatedState(preferences)
+
+   val title by rememberUpdatedState(stringResource(R.string.setting_tasker_actions))
+
+   val dialog = navigator.rememberNavigationPopup(
+      navigationKey = { initialList: Set<String>, resultKey: ResultKey<Set<String>> ->
+         TaskerTaskSetScreenKey(title, initialList, resultKey)
+      },
+      onResult = {
+         updatePreference(RuleOption.taskerTaskActions, it)
+      }
+   )
+
+   Preference(
+      title = { Text(title) },
+      summary = {
+         Text(stringResource(R.string.setting_tasker_actions_description))
+      },
+      onClick = {
+         dialog.trigger(updatedPreferences[RuleOption.taskerTaskActions])
       }
    )
 }

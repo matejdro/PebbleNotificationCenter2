@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_no_tasker">Cannot open Task selector. Is the Tasker installed?</string>
+    <string name="tasker_variables" formatted="false">
+        You can use those variables in a task that is triggered by NC:\n\n
+        %ncpackage = package of the app that sent notification\n
+        %ncid = ID of the notification\n
+        %nctag = Tag of the notification\n
+        %nctitle = Title of the notification\n
+        %ncsubtitle = Subtitle of the notification\n
+        %nctext = Text of the notification
+    </string>
+</resources>

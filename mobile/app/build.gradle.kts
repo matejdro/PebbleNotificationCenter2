@@ -124,6 +124,9 @@ dependencies {
    implementation(projects.rules.data)
    implementation(projects.rules.ui)
    implementation(projects.tools.ui)
+   implementation(projects.tasker.api)
+   implementation(projects.tasker.data)
+   implementation(projects.tasker.ui)
    implementation(projects.sharedResources)
 
    implementation(libs.androidx.activity.compose)

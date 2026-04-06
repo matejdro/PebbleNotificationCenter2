@@ -69,7 +69,7 @@ class NotificationProcessor(
       }
       val pauseStatus = pauseController.computePauseStatus(parsedNotification)
 
-      val actions = processActions(parsedNotification, pauseStatus)
+      val actions = processActions(parsedNotification, pauseStatus, settings)
 
       val previousNotification = notificationIdsByKeys[parsedNotification.key]?.let { notifications[it] }
       val (muteReason, vibrationPattern) = getVibrationPattern(
@@ -211,7 +211,11 @@ class NotificationProcessor(
    }
 
    @Suppress("CognitiveComplexMethod") // A bunch of ifs for separate actions. Clearer when left together.
-   private fun processActions(parsedNotification: ParsedNotification, pauseStatus: PauseStatus): List<Action> {
+   private fun processActions(
+      parsedNotification: ParsedNotification,
+      pauseStatus: PauseStatus,
+      settings: Preferences,
+   ): List<Action> {
       val ncActions = buildList {
          add(Action.Dismiss(title = context.getString(R.string.dismiss), id = size.toUByte()))
 
@@ -221,6 +225,10 @@ class NotificationProcessor(
 
          if (parsedNotification.largeImage != null) {
             add(Action.ShowImage(title = context.getString(R.string.show_image), id = size.toUByte()))
+         }
+
+         for (taskerTask in settings[RuleOption.taskerTaskActions]) {
+            add(Action.TaskerTask(taskerTask, size.toUByte()))
          }
 
          add(

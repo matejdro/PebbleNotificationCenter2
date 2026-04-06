@@ -311,7 +311,7 @@ private fun AddButtons(
             }
             .padding(16.dp)
       ) {
-         Icon(painterResource(R.drawable.ic_add), stringResource(R.string.new_rule))
+         Icon(painterResource(sharedR.drawable.ic_add), stringResource(R.string.new_rule))
       }
    }
 }

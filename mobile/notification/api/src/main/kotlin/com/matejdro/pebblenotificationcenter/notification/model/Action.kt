@@ -76,4 +76,6 @@ sealed class Action {
 
    data class Snooze(override val title: String, override val id: UByte) : Action()
    data class ShowImage(override val title: String, override val id: UByte) : Action()
+
+   data class TaskerTask(override val title: String, override val id: UByte) : Action()
 }

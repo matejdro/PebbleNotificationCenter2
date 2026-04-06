@@ -12,6 +12,7 @@ import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotific
 import com.matejdro.pebblenotificationcenter.rules.RuleOption
 import com.matejdro.pebblenotificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.submenus.ReplySubmenuPayload
+import com.matejdro.pebblenotificationcenter.tasker.TaskerTaskStarter
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import logcat.logcat
@@ -27,6 +28,7 @@ class ActionHandlerImpl(
    private val resources: Resources,
    private val pauseController: PauseController,
    private val imageSender: ImageSender,
+   private val taskerTaskStarter: TaskerTaskStarter,
 ) : ActionHandler {
    override suspend fun handleAction(notificationId: Int, actionId: Int): Boolean {
       val notification = notificationRepository.getNotification(notificationId)
@@ -75,6 +77,10 @@ class ActionHandlerImpl(
 
          is Action.ShowImage -> {
             handleShowImageAction(notification)
+         }
+
+         is Action.TaskerTask -> {
+            taskerTaskStarter.startTask(action.title, notification.systemData)
          }
       }
    }

@@ -50,6 +50,9 @@ include(":navigation-impl")
 include(":rules:api")
 include(":rules:data")
 include(":rules:ui")
+include(":tasker:api")
+include(":tasker:data")
+include(":tasker:ui")
 include(":tools:ui")
 
 // Projects from PebbleCommons

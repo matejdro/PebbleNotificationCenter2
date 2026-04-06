@@ -15,6 +15,7 @@ import com.matejdro.pebblenotificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
 import com.matejdro.pebblenotificationcenter.rules.RuleOption
 import com.matejdro.pebblenotificationcenter.rules.keys.setTo
 import com.matejdro.pebblenotificationcenter.submenus.ReplySubmenuPayload
+import com.matejdro.pebblenotificationcenter.tasker.FakeTaskerTaskStarter
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -39,6 +40,8 @@ class ActionHandlerImplTest {
 
    private val imageSender = FakeImageSender()
 
+   private val taskerTaskStarter = FakeTaskerTaskStarter()
+
    private val handler = ActionHandlerImpl(
       repo,
       servicecontroller,
@@ -46,7 +49,8 @@ class ActionHandlerImplTest {
       RuleResolver(rulesRepository),
       resources,
       pauseController,
-      imageSender
+      imageSender,
+      taskerTaskStarter,
    )
 
    @BeforeEach
@@ -538,6 +542,35 @@ class ActionHandlerImplTest {
       handler.handleAction(2, 0) shouldBe true
       imageSender.lastSentIcon shouldBe icon
       servicecontroller.lastTriggeredIntent shouldBe null
+   }
+
+   @Test
+   fun `Trigger tasker task`() = runTest {
+      insertDefaultRules()
+
+      repo.putNotification(
+         2,
+         ProcessedNotification(
+            ParsedNotification(
+               "keyNotification",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+            ),
+            actions = listOf(
+               Action.TaskerTask(
+                  title = "TheTask",
+                  id = 0u,
+               )
+            ),
+            bucketId = 2
+         ),
+      )
+
+      handler.handleAction(2, 0) shouldBe true
+      taskerTaskStarter.startedTasks.shouldContainExactly("TheTask")
    }
 
    private suspend fun insertDefaultRules() {

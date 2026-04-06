@@ -181,7 +181,10 @@ private fun NumberListScreenContent(
                         )
 
                         Button(onClick = { delete(entry.index) }) {
-                           Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.delete_rule))
+                           Icon(
+                              painterResource(sharedR.drawable.ic_delete),
+                              contentDescription = stringResource(R.string.delete_rule)
+                           )
                         }
                      }
                   }
@@ -217,7 +220,7 @@ private fun NumberListScreenContent(
                } else {
                   item {
                      Button(onClick = { addTextFieldShown.value = true }) {
-                        Icon(painterResource(R.drawable.ic_add), contentDescription = stringResource(R.string.add))
+                        Icon(painterResource(sharedR.drawable.ic_add), contentDescription = stringResource(sharedR.string.add))
                      }
                   }
                }

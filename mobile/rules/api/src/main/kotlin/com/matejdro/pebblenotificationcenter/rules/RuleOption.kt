@@ -35,6 +35,11 @@ object RuleOption {
       listOf(10, 30, 60, 90)
    )
 
+   val taskerTaskActions = StringSetPreferenceKeyWithDefault(
+      "tasker_task_actions",
+      emptySet()
+   )
+
    val titleFont = EnumPreferenceKeyWithDefault("font_title", PebbleFont.GOTHIC_24_BOLD)
    val subtitleFont = EnumPreferenceKeyWithDefault("font_subtitle", PebbleFont.GOTHIC_14_BOLD)
    val bodyFont = EnumPreferenceKeyWithDefault("font_body", PebbleFont.GOTHIC_14)

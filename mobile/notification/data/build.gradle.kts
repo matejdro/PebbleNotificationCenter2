@@ -20,6 +20,7 @@ dependencies {
    api(projects.history.api)
    api(projects.notification.api)
    api(projects.rules.api)
+   api(projects.tasker.api)
    api(libs.androidx.datastore.preferences)
    api(libs.dispatch)
 
@@ -33,6 +34,7 @@ dependencies {
    testImplementation(testFixtures(projects.bluetooth.api))
    testImplementation(testFixtures(projects.notification.api))
    testImplementation(testFixtures(projects.rules.api))
+   testImplementation(testFixtures(projects.tasker.api))
    testImplementation(libs.kotlinova.core.test)
 
    androidTestImplementation(libs.androidx.test.runner)

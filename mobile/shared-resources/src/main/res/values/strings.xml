@@ -3,4 +3,6 @@
     <string name="app_name">Notification Center for Pebble</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
+    <string name="add">Add</string>
+    <string name="delete">Delete</string>
 </resources>

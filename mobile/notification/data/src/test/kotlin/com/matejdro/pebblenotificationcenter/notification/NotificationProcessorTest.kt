@@ -1490,4 +1490,29 @@ class NotificationProcessorTest {
 
       historyInserter.insertedEntries.shouldHaveSize(1).first().affectedRules.shouldContainExactly("Rule B")
    }
+
+   @Test
+   fun `It should add tasker actions`() = runTest {
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.taskerTaskActions setTo setOf("Task A", "Task B")
+      )
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification)
+
+      processor.getNotification(1).shouldNotBeNull().actions.zeroIds().shouldContainAll(
+         Action.TaskerTask("Task A", 0u),
+         Action.TaskerTask("Task B", 0u),
+      )
+   }
 }

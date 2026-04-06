@@ -46,6 +46,7 @@ import si.inova.kotlinova.core.activity.requireActivity
 import si.inova.kotlinova.navigation.navigator.Navigator
 import si.inova.kotlinova.navigation.screens.InjectNavigationScreen
 import si.inova.kotlinova.navigation.screens.Screen
+import com.matejdro.pebblenotificationcenter.sharedresources.R as sharedR
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @InjectNavigationScreen
@@ -174,7 +175,7 @@ private fun RuleDetailsScreenContent(
                }
 
                IconButton(onClick = delete) {
-                  Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.delete_rule))
+                  Icon(painterResource(sharedR.drawable.ic_delete), contentDescription = stringResource(R.string.delete_rule))
                }
             }
          }
