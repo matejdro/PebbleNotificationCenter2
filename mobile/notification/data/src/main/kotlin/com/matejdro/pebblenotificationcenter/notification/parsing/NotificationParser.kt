@@ -224,4 +224,4 @@ private fun parseVibrationPattern(notification: Notification): List<Short>? {
 }
 
 private const val MAX_TITLE_LENGTH = 20
-private val CONTROL_CHARACTERS = Regex("\\p{Cf}")
+private val CONTROL_CHARACTERS = Regex("\\p{Cf}|\\p{M}")
