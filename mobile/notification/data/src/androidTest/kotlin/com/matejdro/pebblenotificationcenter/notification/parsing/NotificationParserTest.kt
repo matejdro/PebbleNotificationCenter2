@@ -236,6 +236,8 @@ class NotificationParserTest {
          "Description",
          Instant.ofEpochMilli(1234L),
          channel = testChannelOrNull(),
+         id = 123,
+         tag = "tags",
       )
    }
 
@@ -530,6 +532,7 @@ class NotificationParserTest {
          "Description",
          Instant.ofEpochMilli(4321L),
          channel = testChannelOrNull(),
+         id = 123
       )
    }
 

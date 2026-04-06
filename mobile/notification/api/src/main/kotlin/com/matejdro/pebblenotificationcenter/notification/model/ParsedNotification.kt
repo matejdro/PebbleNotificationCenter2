@@ -35,6 +35,8 @@ data class ParsedNotification(
 
    // Android type of this is android.graphics.drawable.Icon
    val largeImage: Any? = null,
+   val id: Int = 0,
+   val tag: String? = null,
 )
 
 data class NativeAction(

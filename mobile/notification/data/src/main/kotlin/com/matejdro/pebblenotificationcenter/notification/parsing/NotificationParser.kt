@@ -62,6 +62,8 @@ class NotificationParser(
 
       return ParsedNotification(
          key = sbn.key,
+         id = sbn.id,
+         tag = sbn.tag,
          pkg = sbn.packageName,
          title = title,
          subtitle = subtitleWithCameraEmoji,
