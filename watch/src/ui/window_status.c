@@ -12,6 +12,14 @@ static CustomStatusBarLayer* status_bar;
 static const char* status_text;
 static bool auto_switch = false;
 
+static void close_on_empty_and_no_sync()
+{
+    if (!bucket_sync_is_currently_syncing)
+    {
+        send_close_me();
+    }
+}
+
 static void on_bucket_data_update(const BucketMetadata bucket_metadata, void* context)
 {
     if (auto_switch && bucket_metadata.id != 1)
@@ -71,6 +79,7 @@ static void window_hide(Window* window)
 {
     custom_status_bar_set_active(status_bar, false);
     bucket_sync_clear_bucket_data_change_callback(on_bucket_data_update, NULL);
+    bucket_sync_register_second_syncing_status_changed_callback(NULL);
 }
 
 static void window_unload(Window* window)
@@ -119,7 +128,14 @@ void window_status_show_empty()
 {
     if (launch_reason() == APP_LAUNCH_PHONE)
     {
-        send_close_me();
+        if (bucket_sync_is_currently_syncing)
+        {
+            bucket_sync_register_second_syncing_status_changed_callback(close_on_empty_and_no_sync);
+        }
+        else
+        {
+            send_close_me();
+        }
     }
     else
     {
