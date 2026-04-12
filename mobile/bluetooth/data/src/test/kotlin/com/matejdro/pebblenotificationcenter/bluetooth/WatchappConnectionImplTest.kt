@@ -458,6 +458,42 @@ class WatchappConnectionImplTest {
       watchMetadata.screenHeight shouldBe 400
    }
 
+   @Test
+   fun `Send re-init request packet if watch does not send hello in few seconds`() = scope.runTest {
+      delay(6.seconds)
+
+      sender.sentData.shouldContainExactly(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt8(12u),
+         )
+      )
+   }
+
+   @Test
+   fun `Do not send re-init request  after watch has already sent init`() = scope.runTest {
+      connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(0u),
+            1u to PebbleDictionaryItem.UInt32(PROTOCOL_VERSION + 1u),
+            2u to PebbleDictionaryItem.UInt32(1u),
+            3u to PebbleDictionaryItem.UInt32(1000u),
+         )
+      )
+      runCurrent()
+      sender.sentPackets.clear()
+
+      delay(10.seconds)
+
+      sender.sentData.shouldBeEmpty()
+   }
+
+   @Test
+   fun `Do not send re-init request before several seconds`() = scope.runTest {
+      delay(4.seconds)
+
+      sender.sentData.shouldBeEmpty()
+   }
+
    private suspend fun receiveStandardHelloPacket(version: UInt = 0u, bufferSize: UInt = 1000u, flags: UInt = 0u): ReceiveResult =
       connection.onPacketReceived(
          mapOf(

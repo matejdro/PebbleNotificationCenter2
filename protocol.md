@@ -103,6 +103,10 @@ When user requests an image from the phone, one or more packets 11 will be sent,
     * 0x02 - 1 when this is the last packet in the image sequence, 0 otherwise
   * Image data (bytes, encoded indexed png for color watches or grayscale png for black-and-white watches)
 
+### Request re-init (packet 12)
+
+When sent, watch should re-send the welcome packet (packet 0) to the phone
+
 ## Watch -> Phone
 
 ### Watch Welcome (packet 0)

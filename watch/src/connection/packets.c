@@ -23,7 +23,6 @@ static int close_retries_left = 3;
 
 void packets_init()
 {
-    bluetooth_register_reconnect_callback(send_watch_welcome);
     bluetooth_register_receive_watch_packet(receive_watch_packet);
 }
 
@@ -155,6 +154,9 @@ static void receive_watch_packet(const DictionaryIterator* received)
         break;
     case 11:
         receive_image_packet(received);
+        break;
+    case 12:
+        send_watch_welcome();
         break;
     default:
         break;

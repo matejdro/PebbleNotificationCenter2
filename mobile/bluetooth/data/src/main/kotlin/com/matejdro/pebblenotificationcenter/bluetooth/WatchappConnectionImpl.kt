@@ -26,15 +26,18 @@ import io.rebble.pebblekit2.common.model.PebbleDictionaryItem.UInt8
 import io.rebble.pebblekit2.common.model.ReceiveResult
 import io.rebble.pebblekit2.common.model.WatchIdentifier
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import logcat.logcat
 import okio.Buffer
+import kotlin.time.Duration.Companion.seconds
 
 @Inject
 @ContributesBinding(WatchappConnectionScope::class)
 @Suppress("MagicNumber") // Packet processing involves a lot of numbers, it would be less readable to make consts
 class WatchappConnectionImpl(
-   coroutineScope: CoroutineScope,
+   private val coroutineScope: CoroutineScope,
    private val watchappOpenController: WatchappOpenController,
    private val packetQueue: PacketQueue,
    private val bucketSyncWatchLoop: BucketSyncWatchLoop,
@@ -47,10 +50,14 @@ class WatchappConnectionImpl(
    private val watchMetadata: WatchMetadata,
 ) : WatchAppConnection {
 
+   private var reInitRequestJob: Job? = null
+
    init {
       coroutineScope.launch {
          packetQueue.runQueue()
       }
+
+      sendReinitRequestAfterAWhile()
    }
 
    override suspend fun onPacketReceived(data: PebbleDictionary): ReceiveResult {
@@ -95,6 +102,8 @@ class WatchappConnectionImpl(
    }
 
    private suspend fun processWatchWelcomePacket(data: PebbleDictionary): ReceiveResult {
+      reInitRequestJob?.cancel()
+
       val watchProtocolVersion = data.requireUint(1u)
       if (watchProtocolVersion != PROTOCOL_VERSION.toUInt()) {
          logcat { "Mismatch protocol version $watchProtocolVersion" }
@@ -204,6 +213,22 @@ class WatchappConnectionImpl(
       packetQueue.sendPacket(packet, priority = PRIORITY_VIBRATION)
    }
 
+   private fun sendReinitRequestAfterAWhile() {
+      // If the phone only got briefly disconnected, it will lose all state on the phone, while the watch still thinks
+      // it's connected. Send a re-init request packet to get the watch to re-establish the sync
+
+      reInitRequestJob = coroutineScope.launch {
+         delay(RE_INIT_REQUEST_WAIT)
+
+         logcat { "We did not receive init packet. Request one from the watch." }
+
+         val packet = mapOf(
+            0u to PebbleDictionaryItem.UInt8(12u),
+         )
+         packetQueue.sendPacket(packet)
+      }
+   }
+
    @Inject
    @ContributesBinding(AppScope::class)
    class Factory(
@@ -220,6 +245,8 @@ internal const val PRIORITY_WATCH_TEXT = 1
 
 // This should be sent last, so user has everything visible before watch vibrates
 internal const val PRIORITY_VIBRATION = -1
+
+private val RE_INIT_REQUEST_WAIT = 5.seconds
 
 private fun <K, V> mapOfNotNull(vararg pairs: Pair<K, V>?): Map<K, V> =
    pairs.filterNotNull().toMap()
