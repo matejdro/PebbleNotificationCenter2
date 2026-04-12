@@ -53,7 +53,7 @@ class WatchSyncerImplTest {
          )
       )
 
-      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()) shouldBe BucketUpdate(
          1u,
          listOf(2u),
          listOf(
@@ -114,7 +114,7 @@ class WatchSyncerImplTest {
          )
       )
 
-      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()) shouldBe BucketUpdate(
          1u,
          listOf(2u),
          listOf(
@@ -162,7 +162,7 @@ class WatchSyncerImplTest {
          )
       )
 
-      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()) shouldBe BucketUpdate(
          1u,
          listOf(2u),
          listOf(
@@ -223,7 +223,7 @@ class WatchSyncerImplTest {
          )
       )
 
-      bucketSyncRepository.awaitNextUpdate(0u).activeBuckets shouldBe listOf<UShort>(3u, 2u)
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()).activeBuckets shouldBe listOf<UShort>(3u, 2u)
    }
 
    @Test
@@ -258,7 +258,7 @@ class WatchSyncerImplTest {
       watchSyncer.clearNotification("1")
       delay(1.seconds)
 
-      bucketSyncRepository.awaitNextUpdate(0u).activeBuckets.shouldContainExactly(3u)
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()).activeBuckets.shouldContainExactly(3u)
    }
 
    @Test
@@ -293,7 +293,7 @@ class WatchSyncerImplTest {
       watchSyncer.clearAllNotifications()
       delay(1.seconds)
 
-      bucketSyncRepository.awaitNextUpdate(0u).activeBuckets.shouldBeEmpty()
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()).activeBuckets.shouldBeEmpty()
    }
 
    @Test
@@ -315,7 +315,7 @@ class WatchSyncerImplTest {
          emptyPreferences()
       )
 
-      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()) shouldBe BucketUpdate(
          toVersion = 1u,
          activeBuckets = listOf(2u),
          activeBucketFlags = listOf(1u),
@@ -394,7 +394,7 @@ class WatchSyncerImplTest {
          emptyPreferences(),
       )
 
-      bucketSyncRepository.awaitNextUpdate(0u).activeBucketFlags.shouldContainExactly(0u)
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()).activeBucketFlags.shouldContainExactly(0u)
    }
 
    @Test
@@ -431,7 +431,7 @@ class WatchSyncerImplTest {
          emptyPreferences(),
       )
 
-      bucketSyncRepository.checkForNextUpdate(1u).shouldBeNull()
+      bucketSyncRepository.checkForNextUpdate(1u, emptyList()).shouldBeNull()
    }
 
    @Test
@@ -449,7 +449,7 @@ class WatchSyncerImplTest {
          )
       )
 
-      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()) shouldBe BucketUpdate(
          1u,
          listOf(2u),
          listOf(
@@ -489,7 +489,7 @@ class WatchSyncerImplTest {
    fun `Send default preferences`() = scope.runTest {
       init(enablePreferences = true)
 
-      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()) shouldBe BucketUpdate(
          1u,
          listOf(1u),
          listOf(
@@ -515,7 +515,7 @@ class WatchSyncerImplTest {
       }
       delay(2.seconds)
 
-      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()) shouldBe BucketUpdate(
          2u,
          listOf(1u),
          listOf(
@@ -541,7 +541,7 @@ class WatchSyncerImplTest {
       }
       delay(2.seconds)
 
-      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()) shouldBe BucketUpdate(
          2u,
          listOf(1u),
          listOf(
@@ -567,7 +567,7 @@ class WatchSyncerImplTest {
       }
       delay(2.seconds)
 
-      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()) shouldBe BucketUpdate(
          2u,
          listOf(1u),
          listOf(
@@ -602,7 +602,7 @@ class WatchSyncerImplTest {
          emptyPreferences()
       )
 
-      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()) shouldBe BucketUpdate(
          toVersion = 1u,
          activeBuckets = listOf(2u),
          activeBucketFlags = listOf(2u),
@@ -668,7 +668,7 @@ class WatchSyncerImplTest {
          emptyPreferences(),
       )
 
-      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()) shouldBe BucketUpdate(
          toVersion = 1u,
          activeBuckets = listOf(2u),
          activeBucketFlags = listOf(2u),
@@ -737,7 +737,7 @@ class WatchSyncerImplTest {
          preferences
       )
 
-      bucketSyncRepository.awaitNextUpdate(0u) shouldBe BucketUpdate(
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()) shouldBe BucketUpdate(
          1u,
          listOf(2u),
          listOf(
@@ -806,7 +806,7 @@ class WatchSyncerImplTest {
          preferences
       )
 
-      bucketSyncRepository.awaitNextUpdate(0u)
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList())
          .activeBucketFlags shouldBe listOf(4u.toUByte())
    }
 
@@ -833,7 +833,7 @@ class WatchSyncerImplTest {
          preferences
       )
 
-      bucketSyncRepository.awaitNextUpdate(0u)
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList())
          .activeBucketFlags shouldBe listOf(0u.toUByte())
    }
 

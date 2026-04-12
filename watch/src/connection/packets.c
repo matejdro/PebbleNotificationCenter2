@@ -20,6 +20,7 @@ static void receive_vibrate_packet(const DictionaryIterator* iterator);
 static void receive_image_packet(const DictionaryIterator* iterator);
 
 static int close_retries_left = 3;
+static uint8_t active_buckets_holder[MAX_BUCKETS];
 
 void packets_init()
 {
@@ -28,6 +29,12 @@ void packets_init()
 
 void send_watch_welcome()
 {
+    const BucketList* active_buckets = bucket_sync_get_bucket_list();
+    for (int i = 0; i < active_buckets->count; i++)
+    {
+        active_buckets_holder[i] = active_buckets->data[i].id;
+    }
+
     DictionaryIterator* iterator;
     app_message_outbox_begin(&iterator);
     dict_write_uint8(iterator, 0, 0);
@@ -37,6 +44,7 @@ void send_watch_welcome()
     dict_write_uint8(iterator, 4, PBL_IF_COLOR_ELSE(1, 0));
     dict_write_uint16(iterator, 5, PBL_DISPLAY_WIDTH);
     dict_write_uint16(iterator, 6, PBL_DISPLAY_HEIGHT);
+    dict_write_data(iterator, 7, active_buckets_holder, active_buckets->count);
     bluetooth_app_message_outbox_send();
 }
 

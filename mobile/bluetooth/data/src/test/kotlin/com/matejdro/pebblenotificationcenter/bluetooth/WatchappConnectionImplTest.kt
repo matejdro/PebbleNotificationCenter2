@@ -58,18 +58,20 @@ class WatchappConnectionImplTest {
 
    private val watchMetadata = WatchMetadata()
 
+   private val bucketSyncWatchLoop = BucketSyncWatchLoopImpl(
+      scope.backgroundScope,
+      packetQueue,
+      bucketSyncRepository,
+      watchappOpenController,
+      FakeBackgroundSyncNotifier(),
+      watch,
+   )
+
    private val connection = WatchappConnectionImpl(
       scope.backgroundScope,
       watchappOpenController,
       packetQueue,
-      BucketSyncWatchLoopImpl(
-         scope.backgroundScope,
-         packetQueue,
-         bucketSyncRepository,
-         watchappOpenController,
-         FakeBackgroundSyncNotifier(),
-         watch,
-      ),
+      bucketSyncWatchLoop,
       notificationDetailsPusher,
       actionHandler,
       submenuActionHandler,
@@ -494,7 +496,23 @@ class WatchappConnectionImplTest {
       sender.sentData.shouldBeEmpty()
    }
 
-   private suspend fun receiveStandardHelloPacket(version: UInt = 0u, bufferSize: UInt = 1000u, flags: UInt = 0u): ReceiveResult =
+   @Test
+   fun `Pass currently active packets in init packet`() = scope.runTest {
+      bucketSyncRepository.updateBucket(1u, byteArrayOf(1))
+      bucketSyncRepository.updateBucket(2u, byteArrayOf(2))
+
+      receiveStandardHelloPacket(bufferSize = 38u, currentlyActiveBuckets = byteArrayOf(4, 5))
+      runCurrent()
+
+      bucketSyncWatchLoop.lastActiveBuckets shouldBe listOf(4u.toUByte(), 5u.toUByte())
+   }
+
+   private suspend fun receiveStandardHelloPacket(
+      version: UInt = 0u,
+      bufferSize: UInt = 1000u,
+      flags: UInt = 0u,
+      currentlyActiveBuckets: ByteArray = byteArrayOf(),
+   ): ReceiveResult =
       connection.onPacketReceived(
          mapOf(
             0u to PebbleDictionaryItem.UInt32(0u),
@@ -502,6 +520,7 @@ class WatchappConnectionImplTest {
             2u to PebbleDictionaryItem.UInt32(version),
             3u to PebbleDictionaryItem.UInt32(bufferSize),
             4u to PebbleDictionaryItem.UInt32(flags),
+            7u to PebbleDictionaryItem.Bytes(currentlyActiveBuckets),
          )
       )
 }

@@ -120,6 +120,7 @@ Sent from the watch when the app is opened.
   * 0x01 - 1 when the watch has a color screen, 0 otherwise
 * `5` - Width of the watch screen (uint16)
 * `6` - Height of the watch screen (uint16)
+* `7` - List of bucket ids currently active on the watch (byte array)
 
 ### Notification opened notification (packet 4)
 

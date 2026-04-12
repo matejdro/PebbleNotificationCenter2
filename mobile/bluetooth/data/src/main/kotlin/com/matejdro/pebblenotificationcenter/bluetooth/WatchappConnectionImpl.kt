@@ -128,6 +128,13 @@ class WatchappConnectionImpl(
          ?.let {
             watchMetadata.screenHeight = it.value.toInt()
          }
+
+      val activeBuckets = data[7u]
+         ?.let { it as? PebbleDictionaryItem.Bytes }
+         ?.value
+         ?.map { it.toUByte() }
+         .orEmpty()
+
       logcat { "Watch data: version=$watchVersion, buffer size=${watchMetadata.watchBufferSize}" }
 
       val flags = data.requireUint(4u)
@@ -141,7 +148,8 @@ class WatchappConnectionImpl(
          ),
          watchVersion,
          watchMetadata.watchBufferSize,
-         onBucketsChanged = { pushVibration() }
+         onBucketsChanged = { pushVibration() },
+         currentlyActiveBuckets = activeBuckets,
       )
 
       return ReceiveResult.Ack
