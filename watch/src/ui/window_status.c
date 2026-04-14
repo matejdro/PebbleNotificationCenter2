@@ -20,12 +20,17 @@ static void close_on_empty_and_no_sync()
     }
 }
 
+static void switch_to_notification_window()
+{
+    window_stack_pop(true);
+    window_notification_show();
+}
+
 static void on_bucket_data_update(const BucketMetadata bucket_metadata, void* context)
 {
     if (auto_switch && bucket_metadata.id != 1)
     {
-        window_stack_pop(true);
-        window_notification_show();
+        switch_to_notification_window();
     }
 }
 
@@ -71,6 +76,16 @@ static void window_show(Window* window)
 
     if (auto_switch)
     {
+        BucketList* buckets = bucket_sync_get_bucket_list();
+        for (int i = 0; i < buckets->count; i++)
+        {
+            if (buckets->data[i].id != 1)
+            {
+                app_timer_register(50, switch_to_notification_window, NULL);
+                return;
+            }
+        }
+
         bucket_sync_set_bucket_data_change_callback(on_bucket_data_update, NULL);
     }
 }
