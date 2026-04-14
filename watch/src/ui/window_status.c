@@ -131,6 +131,7 @@ void window_status_show_empty()
         if (bucket_sync_is_currently_syncing)
         {
             bucket_sync_register_second_syncing_status_changed_callback(close_on_empty_and_no_sync);
+            window_status_show("No notifications.", true);
         }
         else
         {
