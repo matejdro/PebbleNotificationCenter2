@@ -23,6 +23,14 @@ class NotificationChannelManager(private val context: Context) {
 
          notificationManager.createNotificationChannel(
             NotificationChannel(
+               NotificationsKeys.CHANNEL_ID_TASKER_SERVICE,
+               context.getString(R.string.channel_background_work),
+               NotificationManager.IMPORTANCE_LOW
+            )
+         )
+
+         notificationManager.createNotificationChannel(
+            NotificationChannel(
                NotificationsKeys.CHANNEL_ID_ERRORS,
                context.getString(R.string.channel_errors),
                NotificationManager.IMPORTANCE_HIGH

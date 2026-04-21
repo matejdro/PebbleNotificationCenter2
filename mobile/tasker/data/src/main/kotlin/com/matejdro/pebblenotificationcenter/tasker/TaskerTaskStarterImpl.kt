@@ -4,7 +4,7 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
-import com.matejdro.notificationcenter.tasker.data.R
+import com.matejdro.notificationcenter.tasker.R
 import com.matejdro.pebblenotificationcenter.common.NotificationsKeys
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import dev.zacsweers.metro.AppScope

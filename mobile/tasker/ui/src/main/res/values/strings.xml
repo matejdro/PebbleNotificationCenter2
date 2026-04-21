@@ -10,4 +10,7 @@
         %ncsubtitle = Subtitle of the notification\n
         %nctext = Text of the notification
     </string>
+    <string name="toggle_mute">Toggle mute</string>
+    <string name="enable">Enable \"%1$s\"</string>
+    <string name="disable">Disable \"%1$s\"</string>
 </resources>

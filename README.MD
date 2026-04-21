@@ -52,6 +52,10 @@ You can still read excerpts of your notifications while the watch is not connect
 #### Dynamic phone mute
 Don't you hate when your phone also makes noise / vibrate in addition to the watch's vibration? You can have auto-phone-mute that mutes your phone automatically whenever a watch is connected. Also, toggleable directly from the watch.
 
+#### Toggle mute via Tasker
+
+Disable/enable Mute via [Tasker](https://tasker.joaoapps.com/) automation tool. Mute your watch automatically based on any rules.
+
 # Usage
 
 ## On the watch

@@ -10,6 +10,7 @@ import com.matejdro.pebblenotificationcenter.logging.TinyLogLoggingThread
 import com.matejdro.pebblenotificationcenter.navigation.scenes.TabListDetailScene
 import com.matejdro.pebblenotificationcenter.notification.di.NotificationInject
 import com.matejdro.pebblenotificationcenter.receiving.PebbleListenerService
+import com.matejdro.pebblenotificationcenter.tasker.TaskerServiceInjector
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Multibinds
@@ -40,7 +41,7 @@ interface MainApplicationGraph : ApplicationGraph {
 }
 
 @Suppress("ComplexInterface") // DI
-interface ApplicationGraph : NavigationInjectingGraph, NotificationInject {
+interface ApplicationGraph : NavigationInjectingGraph, NotificationInject, TaskerServiceInjector {
    fun getErrorReporter(): ErrorReporter
    fun getDefaultCoroutineScope(): DefaultCoroutineScope
    override fun getNavigationInjectionFactory(): NavigationInjection.Factory

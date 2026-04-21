@@ -60,6 +60,7 @@ import si.inova.kotlinova.navigation.instructions.navigateTo
 import si.inova.kotlinova.navigation.navigator.Navigator
 import si.inova.kotlinova.navigation.screens.InjectNavigationScreen
 import si.inova.kotlinova.navigation.screens.Screen
+import com.matejdro.pebblenotificationcenter.sharedresources.R as sharedR
 
 @InjectNavigationScreen
 @ContributesScreenBinding
@@ -160,8 +161,8 @@ private fun ToolsScreenContent(
                onValueChange = {
                   updatePreference(GlobalPreferenceKeys.muteWatch, it)
                },
-               title = { Text(stringResource(R.string.setting_mute_watch)) },
-               summary = { Text(stringResource(R.string.setting_mute_watch_description)) }
+               title = { Text(stringResource(sharedR.string.setting_mute_watch)) },
+               summary = { Text(stringResource(sharedR.string.setting_mute_watch_description)) }
             )
          }
 
@@ -171,8 +172,8 @@ private fun ToolsScreenContent(
                onValueChange = {
                   updatePreference(GlobalPreferenceKeys.mutePhone, it)
                },
-               title = { Text(stringResource(R.string.setting_mute_phone)) },
-               summary = { Text(stringResource(R.string.setting_mute_phone_description)) }
+               title = { Text(stringResource(sharedR.string.setting_mute_phone)) },
+               summary = { Text(stringResource(sharedR.string.setting_mute_phone_description)) }
             )
          }
 

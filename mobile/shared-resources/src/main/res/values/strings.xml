@@ -5,4 +5,11 @@
     <string name="cancel">Cancel</string>
     <string name="add">Add</string>
     <string name="delete">Delete</string>
+
+    <string name="setting_mute_watch">Mute watch</string>
+    <string name="setting_mute_watch_description">When enabled, watch will not vibrate for any notifications</string>
+    <string name="setting_mute_phone">Mute phone</string>
+    <string name="setting_mute_phone_description">When enabled and the watch is connected, phone will not vibrate or make sounds
+        for any notifications
+    </string>
 </resources>

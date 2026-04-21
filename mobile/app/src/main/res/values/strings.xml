@@ -2,4 +2,5 @@
     <string name="channel_errors">Errors</string>
     <string name="open_settings">Open Settings</string>
     <string name="tests">Tests</string>
+    <string name="channel_background_work">Background work</string>
 </resources>
