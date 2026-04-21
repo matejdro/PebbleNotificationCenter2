@@ -101,7 +101,7 @@ void window_notification_ui_redraw_scroller_content()
     body.bounds.size = graphics_text_layout_get_content_size(
         body.text,
         body.font,
-        GRect(HORIZONTAL_TEXT_PADDING, 0, scroller_width, 3000),
+        GRect(HORIZONTAL_TEXT_PADDING, 0, scroller_width - HORIZONTAL_TEXT_PADDING * 2, 3000),
         GTextOverflowModeWordWrap,
         GTextAlignmentLeft
     );
