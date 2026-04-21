@@ -25,11 +25,13 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -222,6 +224,21 @@ private fun NotificationAccessPermissionCompanion(
          null
       )
    }
+
+   var showInstructions by remember { mutableStateOf(false) }
+   if (showInstructions) {
+      AlertDialog(
+         onDismissRequest = { showInstructions = false },
+         confirmButton = {
+            TextButton(onClick = { associateWithCompanionManager() }) { Text("OK") }
+         },
+         title = { Text(stringResource(R.string.permission_notification_access_title)) },
+         text = {
+            Text(stringResource(R.string.permission_notification_access_companion_instructions))
+         }
+      )
+   }
+
    Card(Modifier.fillMaxWidth()) {
       Column(
          Modifier.padding(8.dp),
@@ -233,7 +250,7 @@ private fun NotificationAccessPermissionCompanion(
          if (permissionGranted) {
             Text("✅")
          } else {
-            Button(onClick = { associateWithCompanionManager() }) { Text(stringResource(grant)) }
+            Button(onClick = { showInstructions = true }) { Text(stringResource(grant)) }
          }
       }
    }
