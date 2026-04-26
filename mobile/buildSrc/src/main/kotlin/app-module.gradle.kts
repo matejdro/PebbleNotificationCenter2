@@ -38,10 +38,18 @@ android {
          val mainOutput =
             variant.outputs.single { it.outputType == VariantOutputConfiguration.OutputType.SINGLE }
 
+         // TODO
          val gitHashProvider = providers.of(GitCommandValueSource::class.java) {}
          val baseVersionName = defaultConfig.versionName
          val buildNumberProvider = providers.environmentVariable("BUILD_NUMBER")
          val overrideVersionName = providers.environmentVariable("VERSION")
+            .orElse(
+               // A bit weird syntax as a workaround for the https://github.com/gradle/gradle/issues/30792
+               buildNumberProvider.map { "$baseVersionName-$it" }
+                  .orElse(gitHashProvider.map { gitHash -> "$baseVersionName-local-$gitHash" })
+            )
+
+         val overrideVersionCode = providers.environmentVariable("VERSION")
             .orElse(
                // A bit weird syntax as a workaround for the https://github.com/gradle/gradle/issues/30792
                buildNumberProvider.map { "$baseVersionName-$it" }
