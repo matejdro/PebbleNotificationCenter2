@@ -31,6 +31,7 @@ import com.matejdro.pebblenotificationcenter.rules.keys.StringListPreferenceKeyW
 import com.matejdro.pebblenotificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.rules.ui.R
 import com.matejdro.pebblenotificationcenter.rules.ui.dialogs.IntListScreenKey
+import com.matejdro.pebblenotificationcenter.rules.ui.dialogs.RegexReplacementSetScreenKey
 import com.matejdro.pebblenotificationcenter.rules.ui.dialogs.StringListScreenKey
 import com.matejdro.pebblenotificationcenter.rules.ui.dialogs.VibrationPatternScreenKey
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
@@ -104,6 +105,8 @@ internal fun ColumnScope.Settings(
          stringResource(R.string.preference_font_body),
          fontNames,
       )
+
+      RegexReplacementSetPreference(navigator, updatePreference, preferences)
 
       PreferenceCategory({ Text(stringResource(R.string.actions)) })
 
@@ -279,6 +282,35 @@ private fun IntListPreference(
       },
       onClick = {
          dialog.trigger(updatedPreferences[preference].toList())
+      }
+   )
+}
+
+@Composable
+private fun RegexReplacementSetPreference(
+   navigator: Navigator,
+   updatePreference: SetPreference,
+   preferences: Preferences,
+) {
+   val updatedPreferences by rememberUpdatedState(preferences)
+   val preference = RuleOption.regexReplacements
+
+   val dialog = navigator.rememberNavigationPopup(
+      navigationKey = { initialList: Set<Pair<String, String>>, resultKey: ResultKey<Set<Pair<String, String>>> ->
+         RegexReplacementSetScreenKey(initialList, resultKey)
+      },
+      onResult = {
+         updatePreference(preference, it)
+      }
+   )
+
+   Preference(
+      title = { Text(stringResource(R.string.preference_regex_replacement)) },
+      summary = {
+         Text(stringResource(R.string.preference_regex_replacement_description))
+      },
+      onClick = {
+         dialog.trigger(updatedPreferences[preference])
       }
    )
 }

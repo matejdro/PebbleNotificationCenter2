@@ -1515,4 +1515,30 @@ class NotificationProcessorTest {
          Action.TaskerTask("Task B", 0u),
       )
    }
+
+   @Test
+   fun `It should add replace regex in title, subtitle and body`() = runTest {
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.regexReplacements setTo setOf("T" to "t", "B" to "b")
+      )
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification)
+
+      assertSoftly(processor.getNotification(1).shouldNotBeNull().systemData) {
+         title shouldBe "title"
+         subtitle shouldBe "stitle"
+         body shouldBe "body"
+      }
+   }
 }

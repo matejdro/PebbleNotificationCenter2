@@ -75,6 +75,23 @@ class StringListPreferenceKeyWithDefault(name: String, default: List<String>) :
 }
 
 @Stable
+class StringPairSetPreferenceKeyWithDefault(name: String, default: Set<Pair<String, String>>) :
+   ProxyPreferenceKeyWithDefault<Set<Pair<String, String>>, Set<String>>(name, default) {
+   override val key: Preferences.Key<Set<String>>
+      get() = stringSetPreferencesKey(name)
+
+   override fun serialize(value: Set<Pair<String, String>>): Set<String> {
+      return value.mapTo(HashSet()) { it.first + STRING_SEPARATOR + it.second }
+   }
+
+   override fun deserialize(value: Set<String>): Set<Pair<String, String>> {
+      return value.mapTo(HashSet()) {
+         it.split(STRING_SEPARATOR).let { list -> list.elementAt(0) to list.elementAt(1) }
+      }
+   }
+}
+
+@Stable
 class IntListPreferenceKeyWithDefault(name: String, default: List<Int>) :
    ProxyPreferenceKeyWithDefault<List<Int>, String>(name, default) {
    override val key: Preferences.Key<String>

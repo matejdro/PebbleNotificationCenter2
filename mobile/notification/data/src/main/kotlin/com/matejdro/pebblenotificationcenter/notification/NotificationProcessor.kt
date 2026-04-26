@@ -80,8 +80,15 @@ class NotificationProcessor(
          pauseStatusBeforeInsert
       )
 
+      val regexesToReplace = settings[RuleOption.regexReplacements]
+      val regexReplacedParsedNotification = parsedNotification.copy(
+         title = replaceRegexes(parsedNotification.title, regexesToReplace),
+         subtitle = replaceRegexes(parsedNotification.subtitle, regexesToReplace),
+         body = replaceRegexes(parsedNotification.body, regexesToReplace),
+      )
+
       val initialProcessedNotification = ProcessedNotification(
-         parsedNotification,
+         regexReplacedParsedNotification,
          0,
          actions,
          unread = !suppressVibration,
@@ -104,7 +111,7 @@ class NotificationProcessor(
          openController.openWatchapp()
       }
 
-      historyInserter.insertHistoryEntry(parsedNotification, affectedRules, null, muteReason)
+      historyInserter.insertHistoryEntry(regexReplacedParsedNotification, affectedRules, null, muteReason)
       notifications[bucketId] = processedNotification
       notificationIdsByKeys[parsedNotification.key] = bucketId
    }

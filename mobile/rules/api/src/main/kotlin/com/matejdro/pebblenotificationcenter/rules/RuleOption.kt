@@ -5,6 +5,7 @@ import com.matejdro.pebblenotificationcenter.rules.keys.EnumPreferenceKeyWithDef
 import com.matejdro.pebblenotificationcenter.rules.keys.IntListPreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.NullableStringPreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.StringListPreferenceKeyWithDefault
+import com.matejdro.pebblenotificationcenter.rules.keys.StringPairSetPreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.StringPreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.StringSetPreferenceKeyWithDefault
 
@@ -54,4 +55,9 @@ object RuleOption {
    val hideGroupSummaryNotifications = BooleanPreferenceKeyWithDefault("hide_group_summary_notifications", true)
    val hideLocalOnlyNotifications = BooleanPreferenceKeyWithDefault("hide_local_only_notifications", true)
    val hideMediaNotifications = BooleanPreferenceKeyWithDefault("hide_media_notifications", true)
+
+   val regexReplacements = StringPairSetPreferenceKeyWithDefault(
+      "regex_replacements",
+      emptySet()
+   )
 }
