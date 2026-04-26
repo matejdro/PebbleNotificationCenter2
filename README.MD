@@ -136,7 +136,7 @@ Note: only supported on Android 8 and newer.
 
 ### Show image
 
-If a notification has an image attached, its subtitle will have a `[PIC]` prefix.
+If a notification has an image attached, its subtitle will have a 📷 icon.
 
 In this case, you can select `Show image` action, which will show the image on the watch full-screen
 

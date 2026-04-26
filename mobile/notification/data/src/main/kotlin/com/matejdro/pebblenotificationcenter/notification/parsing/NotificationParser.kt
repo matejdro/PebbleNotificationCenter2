@@ -54,8 +54,8 @@ class NotificationParser(
             ?.let { Icon.createWithBitmap(it) }
          ?: BundleCompat.getParcelable<Icon>(notification.extras, NotificationCompat.EXTRA_PICTURE_ICON, Icon::class.java)
 
-      val subtitleWithPicPrefix = if (largeImage != null) {
-         "[PIC] $subtitle"
+      val subtitleWithCameraEmoji = if (!subtitle.contains("\uD83D\uDCF7") && largeImage != null) {
+         "\uD83D\uDCF7 $subtitle"
       } else {
          subtitle
       }
@@ -66,7 +66,7 @@ class NotificationParser(
          tag = sbn.tag,
          pkg = sbn.packageName,
          title = title,
-         subtitle = subtitleWithPicPrefix,
+         subtitle = subtitleWithCameraEmoji,
          body = text.orEmpty(),
          timestamp = Instant.ofEpochMilli(notification.parseMessagingStyleTimestamp() ?: timestampMillis),
          isSilent = isSilent,
