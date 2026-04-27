@@ -213,7 +213,6 @@ private fun NotificationAccessPermissionCompanion(
             @Suppress("DEPRECATION")
             @Deprecated("Deprecated in Java")
             override fun onDeviceFound(intentSender: IntentSender) {
-               super.onDeviceFound(intentSender)
                context.startIntentSender(intentSender, null, 0, 0, 0)
             }
 
