@@ -42,7 +42,15 @@ static bool any_notification_wants_periodic_vibration(void)
         const BucketMetadata bucket_metadata = bucket_list->data[i];
         const bool notification_has_periodic_vibration = (bucket_metadata.flags) & 0x04;
 
-        if (notification_has_periodic_vibration && is_notification_unread(bucket_metadata.flags, bucket_metadata.id))
+        // Special state: After notification shown, it is marked as unread immediately, but the UI is still showing it as
+        // unread (since we are not sure if user has seen it yet). In this case, we also have to trigger periodic vibration
+        const bool temporary_unread = bucket_metadata.id == window_notification_data.currently_selected_bucket &&
+            window_notification_data.dot_states[window_notification_data.currently_selected_bucket_index] == UNREAD;
+
+        if (
+            notification_has_periodic_vibration &&
+            (temporary_unread || is_notification_unread(bucket_metadata.flags, bucket_metadata.id))
+        )
         {
             return true;
         }
