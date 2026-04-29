@@ -10,7 +10,7 @@
   "minimumReleaseAgeBehaviour": "timestamp-optional",
   "gradle": {
     "managerFilePatterns": [
-      "config/libs.toml"
+      "mobile/config/libs.toml"
     ]
   },
   "schedule": [
