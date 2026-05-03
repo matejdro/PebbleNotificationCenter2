@@ -64,4 +64,4 @@ class ImageSenderImpl(
    }
 }
 
-private const val MAX_IMAGE_BYTES = 16000
+private const val MAX_IMAGE_BYTES = 24000
