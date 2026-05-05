@@ -176,6 +176,8 @@ Every rule has a bunch of settings that you can apply when rule's conditions pas
 
 Settings are applied sequentially to all passing rules from top to bottom. You can reorder the rules by drag-dropping them in the rules list to change the order of applying.
 
+When a rule is created, it does not apply any settings (all of its settings are inherited from above rules by default). Only once you change any setting inside the rule, will that setting start applying.
+
 # Frequently asked questions (FAQ)
 
 ### Why am I getting double notifications?
