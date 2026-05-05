@@ -7,8 +7,8 @@ import androidx.core.content.FileProvider
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import com.matejdro.pebble.common.logging.FileLoggingController
 import com.matejdro.pebblenotificationcenter.common.logging.ActionLogger
-import com.matejdro.pebblenotificationcenter.logging.FileLoggingController
 import com.matejdro.pebblenotificationcenter.navigation.keys.ToolsScreenKey
 import com.matejdro.pebblenotificationcenter.rules.keys.PreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.set

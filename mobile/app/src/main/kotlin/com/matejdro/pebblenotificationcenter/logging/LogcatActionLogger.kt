@@ -1,4 +1,4 @@
-package com.matejdro.pebblenotificationcenter.reporting
+package com.matejdro.pebblenotificationcenter.logging
 
 import com.matejdro.pebblenotificationcenter.common.logging.ActionLogger
 import dev.zacsweers.metro.AppScope

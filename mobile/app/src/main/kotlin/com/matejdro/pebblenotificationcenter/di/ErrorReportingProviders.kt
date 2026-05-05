@@ -1,10 +1,10 @@
 package com.matejdro.pebblenotificationcenter.di
 
 import android.content.Context
+import com.matejdro.pebble.common.crashreport.CrashReportService
+import com.matejdro.pebble.common.logging.TinyLogLoggingThread
 import com.matejdro.pebblenotificationcenter.BuildConfig
 import com.matejdro.pebblenotificationcenter.common.exceptions.CrashOnDebugException
-import com.matejdro.pebblenotificationcenter.crashreport.CrashReportService
-import com.matejdro.pebblenotificationcenter.logging.TinyLogLoggingThread
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides

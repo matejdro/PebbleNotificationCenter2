@@ -7,19 +7,22 @@ import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
 import android.os.strictmode.Violation
 import android.util.Log
+import androidx.compose.runtime.Composable
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.work.Configuration
 import androidx.work.WorkManager
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
+import com.matejdro.pebble.common.crashreport.CrashWindowThemeProvider
+import com.matejdro.pebble.common.logging.TinyLogKermitWriter
+import com.matejdro.pebble.common.logging.TinyLogLogcatLogger
 import com.matejdro.pebblenotificationcenter.common.di.NavigationInjectingApplication
 import com.matejdro.pebblenotificationcenter.di.ApplicationGraph
 import com.matejdro.pebblenotificationcenter.di.MainApplicationGraph
 import com.matejdro.pebblenotificationcenter.logging.ErrorReportingKermitWriter
-import com.matejdro.pebblenotificationcenter.logging.TinyLogKermitWriter
-import com.matejdro.pebblenotificationcenter.logging.TinyLogLogcatLogger
 import com.matejdro.pebblenotificationcenter.notifications.NotificationChannelManager
+import com.matejdro.pebblenotificationcenter.ui.theme.NotificationCenterTheme
 import dev.zacsweers.metro.createGraphFactory
 import dispatch.core.DefaultDispatcherProvider
 import dispatch.core.defaultDispatcher
@@ -31,7 +34,7 @@ import si.inova.kotlinova.core.dispatchers.AccessCallbackDispatcherProvider
 import java.io.File
 import co.touchlab.kermit.Logger as KermitLogger
 
-open class NotificationCenterApplication : Application(), NavigationInjectingApplication {
+open class NotificationCenterApplication : Application(), NavigationInjectingApplication, CrashWindowThemeProvider {
    override val applicationGraph: ApplicationGraph by lazy {
       createGraphFactory<MainApplicationGraph.Factory>().create(this)
    }
@@ -216,6 +219,11 @@ open class NotificationCenterApplication : Application(), NavigationInjectingApp
       return activityManager.runningAppProcesses?.any {
          it.pid == myPid && packageName == it.processName
       } == true
+   }
+
+   @Composable
+   override fun ApplyTheme(content: @Composable (() -> Unit)) {
+      NotificationCenterTheme(content = content)
    }
 }
 

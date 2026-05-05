@@ -2,11 +2,11 @@ package com.matejdro.pebblenotificationcenter.di
 
 import android.app.Application
 import com.matejdro.bucketsync.background.BackgroundSyncNotifier
+import com.matejdro.pebble.common.logging.FileLoggingController
+import com.matejdro.pebble.common.logging.TinyLogLoggingThread
 import com.matejdro.pebblenotificationcenter.MainViewModel
 import com.matejdro.pebblenotificationcenter.bluetooth.WatchSyncer
 import com.matejdro.pebblenotificationcenter.common.di.NavigationInjectingGraph
-import com.matejdro.pebblenotificationcenter.logging.FileLoggingController
-import com.matejdro.pebblenotificationcenter.logging.TinyLogLoggingThread
 import com.matejdro.pebblenotificationcenter.navigation.scenes.TabListDetailScene
 import com.matejdro.pebblenotificationcenter.notification.di.NotificationInject
 import com.matejdro.pebblenotificationcenter.receiving.PebbleListenerService
