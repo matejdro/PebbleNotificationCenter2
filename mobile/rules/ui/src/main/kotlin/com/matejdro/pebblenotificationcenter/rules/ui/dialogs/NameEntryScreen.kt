@@ -184,11 +184,11 @@ data class NameEntryScreenKey(
 ) : ScreenKey(), DialogKey {
 
    @Serializable
-   sealed class Result {
+   sealed interface Result {
       @Serializable
-      data object ThirdButtonClicked : Result()
+      data object ThirdButtonClicked : Result
 
       @Serializable
-      data class Text(val text: String) : Result()
+      data class Text(val text: String) : Result
    }
 }
