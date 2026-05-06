@@ -2,7 +2,7 @@
 accompanist = "0.37.3"
 android-securityLints = "1.0.4"
 # See https://developer.android.com/jetpack/androidx/releases/compose-kotlin
-androidGradleCacheFix = "3.0.2"
+androidGradleCacheFix = "3.0.3"
 androidGradlePlugin = "8.13.2"
 androidx-activity-compose = "1.12.4"
 androidx-compose-material3 = "1.4.0"
