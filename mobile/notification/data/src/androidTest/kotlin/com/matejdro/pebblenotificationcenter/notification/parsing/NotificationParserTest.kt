@@ -190,6 +190,29 @@ class NotificationParserTest {
    }
 
    @Test
+   fun ignoreMessagingStyleWithNoMessages() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setStyle(
+            NotificationCompat.MessagingStyle(Person.Builder().setName("Group Chat A").build())
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Title",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
+      )
+   }
+
+   @Test
    fun parseInboxStyle() {
       val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setStyle(

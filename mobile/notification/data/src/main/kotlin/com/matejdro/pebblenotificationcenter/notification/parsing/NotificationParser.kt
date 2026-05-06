@@ -149,6 +149,9 @@ class NotificationParser(
       val messagingStyle = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(this) ?: return (null to null)
 
       val messages = (messagingStyle.messages + messagingStyle.historicMessages).sortedByDescending { it.timestamp }
+      if (messages.isEmpty()) {
+         return (null to null)
+      }
 
       var lastName: CharSequence? = null
       var firstImage: Uri? = null
@@ -176,6 +179,9 @@ class NotificationParser(
       val messagingStyle = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(this) ?: return null
 
       val messages = (messagingStyle.messages + messagingStyle.historicMessages)
+      if (messages.isEmpty()) {
+         return null
+      }
 
       return messages.maxOf { it.timestamp }
    }
