@@ -36,7 +36,7 @@ kotlin-serializationRuntime = "1.10.0"
 kotlinova = "4.0.3"
 ksp = "2.3.7"
 logcat = "0.4"
-metro = "0.10.1"
+metro = "1.0.0"
 moduleGraphAssert = "2.9.1"
 okio = "3.16.4"
 orgJson = "20251224"
@@ -119,6 +119,7 @@ kotlinova-core-test = { module = "si.inova.kotlinova:core-test", version.ref = "
 kotlinova-gradle = { module = "si.inova.kotlinova:gradle", version.ref = "kotlinova" }
 kotlinova-navigation = { module = "si.inova.kotlinova:navigation", version.ref = "kotlinova" }
 kotlinova-navigation-compiler = { module = "si.inova.kotlinova:navigation-compiler", version.ref = "kotlinova" }
+kotlinova-navigation-deeplink = { module = "si.inova.kotlinova:navigation-deeplink", version.ref = "kotlinova" }
 kotlinova-navigation-detekt = { module = "si.inova.kotlinova:navigation-detekt", version.ref = "kotlinova" }
 kotlinova-navigation-navigation3 = { module = "si.inova.kotlinova:navigation-navigation3", version.ref = "kotlinova" }
 kotlinova-navigation-test = { module = "si.inova.kotlinova:navigation-test", version.ref = "kotlinova" }
