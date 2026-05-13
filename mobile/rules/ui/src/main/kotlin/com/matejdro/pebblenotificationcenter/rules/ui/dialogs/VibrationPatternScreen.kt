@@ -3,6 +3,7 @@ package com.matejdro.pebblenotificationcenter.rules.ui.dialogs
 import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.os.Build
+import android.os.Bundle
 import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -44,7 +45,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
-import androidx.core.os.bundleOf
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.pebblenotificationcenter.common.NotificationsKeys.CHANNEL_ID_TESTS
 import com.matejdro.pebblenotificationcenter.common.NotificationsKeys.NOTIFICATION_ID_PATTERN_TEST
@@ -86,10 +86,10 @@ class VibrationPatternScreen(private val navigator: Navigator) : Screen<Vibratio
                .setContentText(resources.getString(R.string.feel_the_new_pattern))
                .setSmallIcon(R.drawable.ic_watch_vibrate)
                .addExtras(
-                  bundleOf(
-                     NotificationConstants.KEY_FORCE_VIBRATE to true,
-                     NotificationConstants.KEY_VIBRATION_PATTERN to pattern.toShortArray(),
-                  )
+                  Bundle().apply {
+                     putBoolean(NotificationConstants.KEY_FORCE_VIBRATE, true)
+                     putShortArray(NotificationConstants.KEY_VIBRATION_PATTERN, pattern.toShortArray())
+                  }
                )
 
             val notificationManager = context.getSystemService<NotificationManager>()!!

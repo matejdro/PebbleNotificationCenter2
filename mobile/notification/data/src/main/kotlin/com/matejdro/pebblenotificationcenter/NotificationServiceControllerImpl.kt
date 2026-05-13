@@ -6,9 +6,9 @@ import android.content.ClipData
 import android.content.ClipDescription
 import android.content.Intent
 import android.os.Build
+import android.os.Bundle
 import android.os.Process
 import androidx.annotation.RequiresApi
-import androidx.core.os.bundleOf
 import com.matejdro.pebblenotificationcenter.notification.NotificationService
 import com.matejdro.pebblenotificationcenter.notification.NotificationServiceController
 import com.matejdro.pebblenotificationcenter.notification.model.LightNotificationChannel
@@ -60,7 +60,7 @@ class NotificationServiceControllerImpl : NotificationServiceController {
 
       pendingIntent as PendingIntent
 
-      val resultsData = bundleOf(remoteInputKey to text)
+      val resultsData = Bundle().apply { putString(remoteInputKey, text) }
       val remoteInputIntent = Intent().apply {
          putExtra(RemoteInput.EXTRA_RESULTS_DATA, resultsData)
       }
