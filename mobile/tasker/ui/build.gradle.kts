@@ -20,7 +20,6 @@ dependencies {
    implementation(projects.commonCompose)
    implementation(projects.sharedResources)
    implementation(projects.tasker.api)
-   implementation(libs.androidx.core)
    implementation(libs.androidx.activity.compose)
    implementation(libs.androidx.navigation3)
    implementation(libs.composePreference)
