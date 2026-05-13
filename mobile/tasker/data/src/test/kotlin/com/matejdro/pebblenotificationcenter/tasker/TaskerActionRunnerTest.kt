@@ -1,6 +1,6 @@
 package com.matejdro.pebblenotificationcenter.tasker
 
-import androidx.core.os.bundleOf
+import android.os.Bundle
 import androidx.datastore.preferences.core.emptyPreferences
 import com.matejdro.pebblenotificationcenter.common.test.InMemoryDataStore
 import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
@@ -17,11 +17,11 @@ class TaskerActionRunnerTest {
    @Test
    fun `Toggle phone mute`() = runTest {
       runner.run(
-         bundleOf(
-            BundleKeys.ACTION to TaskerAction.TOGGLE_MUTE.name,
-            BundleKeys.MUTE_PHONE to true,
-            BundleKeys.MUTE_WATCH to false,
-         )
+         Bundle().apply {
+            putString(BundleKeys.ACTION, TaskerAction.TOGGLE_MUTE.name)
+            putBoolean(BundleKeys.MUTE_PHONE, true)
+            putBoolean(BundleKeys.MUTE_WATCH, false)
+         }
       )
 
       datastore.data.first().get(GlobalPreferenceKeys.mutePhone) shouldBe true
@@ -31,11 +31,11 @@ class TaskerActionRunnerTest {
    @Test
    fun `Toggle watch mute`() = runTest {
       runner.run(
-         bundleOf(
-            BundleKeys.ACTION to TaskerAction.TOGGLE_MUTE.name,
-            BundleKeys.MUTE_PHONE to false,
-            BundleKeys.MUTE_WATCH to true,
-         )
+         Bundle().apply {
+            putString(BundleKeys.ACTION, TaskerAction.TOGGLE_MUTE.name)
+            putBoolean(BundleKeys.MUTE_PHONE, false)
+            putBoolean(BundleKeys.MUTE_WATCH, true)
+         }
       )
 
       datastore.data.first().get(GlobalPreferenceKeys.mutePhone) shouldBe false

@@ -124,8 +124,10 @@ class MainActivity : ComponentActivity() {
                            }
                         )
                      ),
-                     sceneStrategy = rememberTabListDetailSceneStrategy(tabListDetailSceneFactory) then
+                     sceneStrategies = listOf(
+                        rememberTabListDetailSceneStrategy(tabListDetailSceneFactory),
                         remember { DialogSceneStrategy() }
+                     )
                   )
 
                   mainDeepLinkHandler.HandleNewIntentDeepLinks(this@MainActivity, backstack)
