@@ -1,5 +1,6 @@
 package com.matejdro.pebblenotificationcenter.tasker.screens.togglemute
 
+import android.os.Bundle
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,7 +16,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.core.os.bundleOf
 
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
 import com.matejdro.notificationcenter.tasker.ui.R
@@ -51,11 +51,11 @@ class ToggleMuteScreen : Screen<ToggleMuteScreenKey>() {
       }
 
       BackHandler {
-         val bundle = bundleOf(
-            BundleKeys.ACTION to TaskerAction.TOGGLE_MUTE.name,
-            BundleKeys.MUTE_WATCH to muteWatch,
-            BundleKeys.MUTE_PHONE to mutePhone,
-         )
+         val bundle = Bundle().apply {
+            putString(BundleKeys.ACTION, TaskerAction.TOGGLE_MUTE.name)
+            putBoolean(BundleKeys.MUTE_WATCH, muteWatch)
+            putBoolean(BundleKeys.MUTE_PHONE, mutePhone)
+         }
 
          val muteWatchTitle = activity.getString(sharedR.string.setting_mute_watch)
          val watchMessage = if (muteWatch) {
