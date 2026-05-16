@@ -30,11 +30,12 @@ class NotificationParser(
       sbn: StatusBarNotification,
       channel: Any?,
       ranking: NotificationListenerService.Ranking? = null,
+      showMessagingStyleChronologically: Boolean = false,
    ): ParsedNotification? {
       val notification = sbn.notification
       val title = appNameProvider.getAppName(sbn.packageName)
 
-      val (imageUri, messagingStyleText) = notification.parseMessagingStyle()
+      val (imageUri, messagingStyleText) = notification.parseMessagingStyle(showMessagingStyleChronologically)
       val (subtitle, text) = parseSubtitleAndBody(notification, messagingStyleText)
 
       if (subtitle.isBlank() && text.isNullOrBlank()) {
@@ -145,10 +146,16 @@ class NotificationParser(
       return channelId to isSilent
    }
 
-   private fun Notification.parseMessagingStyle(): Pair<Uri?, String?> {
+   private fun Notification.parseMessagingStyle(showChronologically: Boolean): Pair<Uri?, String?> {
       val messagingStyle = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(this) ?: return (null to null)
 
-      val messages = (messagingStyle.messages + messagingStyle.historicMessages).sortedByDescending { it.timestamp }
+      val messages = (messagingStyle.messages + messagingStyle.historicMessages).let { unsortedMessages ->
+         if (showChronologically) {
+            unsortedMessages.sortedBy { it.timestamp }
+         } else {
+            unsortedMessages.sortedByDescending { it.timestamp }
+         }
+      }
       if (messages.isEmpty()) {
          return (null to null)
       }

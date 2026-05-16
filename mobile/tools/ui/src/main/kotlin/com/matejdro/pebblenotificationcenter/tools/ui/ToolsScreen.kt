@@ -218,6 +218,17 @@ private fun ToolsScreenContent(
 
          item(span = { GridItemSpan(maxLineSpan) }) {
             SwitchPreference(
+               state.preferences[GlobalPreferenceKeys.showMessagingStyleChronologically],
+               onValueChange = {
+                  updatePreference(GlobalPreferenceKeys.showMessagingStyleChronologically, it)
+               },
+               title = { Text(stringResource(R.string.setting_messaging_style_chronological)) },
+               summary = { Text(stringResource(R.string.setting_messaging_style_chronological_description)) }
+            )
+         }
+
+         item(span = { GridItemSpan(maxLineSpan) }) {
+            SwitchPreference(
                state.preferences[GlobalPreferenceKeys.notifyOnReconnect],
                onValueChange = {
                   updatePreference(GlobalPreferenceKeys.notifyOnReconnect, it)
