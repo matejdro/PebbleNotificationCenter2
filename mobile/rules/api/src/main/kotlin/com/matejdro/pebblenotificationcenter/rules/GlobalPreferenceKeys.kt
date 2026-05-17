@@ -10,6 +10,7 @@ object GlobalPreferenceKeys {
    val actionOrder = StringListPreferenceKeyWithDefault("action_order", emptyList())
 
    val autoCloseSeconds = IntPreferenceKeyWithDefault("auto_close", 0)
+   val showMessagingStyleChronologically = BooleanPreferenceKeyWithDefault("show_messaging_style_chronologically", false)
 
    val notifyOnReconnect = BooleanPreferenceKeyWithDefault("notify_on_reconnect", true)
 }

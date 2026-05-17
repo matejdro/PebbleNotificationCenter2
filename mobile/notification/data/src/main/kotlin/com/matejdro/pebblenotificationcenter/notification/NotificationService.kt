@@ -122,7 +122,12 @@ class NotificationService : NotificationListenerService() {
       val ranking = Ranking()
       currentRanking.getRanking(sbn.key, ranking)
 
-      return notificationParser.parse(sbn, getNotificationChannel(sbn), ranking)
+      return notificationParser.parse(
+         sbn,
+         getNotificationChannel(sbn),
+         ranking,
+         preferenceStore.data.first()[GlobalPreferenceKeys.showMessagingStyleChronologically]
+      )
    }
 
    override fun onNotificationRemoved(sbn: StatusBarNotification) {
