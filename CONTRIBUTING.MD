@@ -77,6 +77,13 @@ custom {
 
 To create screenshot tests for your compose screen:
 
-1. Make preview functions public
+1. Make the preview functions internal
 2. Add `showkase` plugin to the module of the screen you want to test
-2. Add `@ShowkaseComposable(group = "Test")` annotation to the preview of the screen you want to test
+3. Add `@ShowkaseComposable(group = "Test")` annotation to the preview of the screen you want to test
+4. Run `./gradlew recordPaparazziDebug`
+
+## Updating screenshot tests
+
+To update screenshot tests:
+
+1. Run `./gradlew recordPaparazziDebug`
