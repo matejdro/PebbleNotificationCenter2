@@ -120,6 +120,7 @@ dependencies {
    implementation(projects.notification.data)
    implementation(projects.bucketsync.api)
    implementation(projects.bucketsync.data)
+   implementation(projects.history.api)
    implementation(projects.rules.api)
    implementation(projects.rules.data)
    implementation(projects.rules.ui)
