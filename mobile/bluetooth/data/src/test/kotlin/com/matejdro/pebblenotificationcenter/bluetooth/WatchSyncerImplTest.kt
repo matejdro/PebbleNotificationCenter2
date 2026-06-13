@@ -559,6 +559,32 @@ class WatchSyncerImplTest {
    }
 
    @Test
+   fun `Send updated large status bar font preference`() = scope.runTest {
+      init(enablePreferences = true)
+      delay(2.seconds)
+
+      preferences.edit {
+         it[GlobalPreferenceKeys.largeStatusBarFont] = true
+      }
+      delay(2.seconds)
+
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()) shouldBe BucketUpdate(
+         2u,
+         listOf(1u),
+         listOf(
+            Bucket(
+               1u,
+               byteArrayOf(
+                  0b00010000, // Only large status bar font enabled
+                  0,
+                  0,
+               )
+            )
+         )
+      )
+   }
+
+   @Test
    fun `Send updated auto close`() = scope.runTest {
       init(enablePreferences = true)
       delay(2.seconds)
