@@ -139,53 +139,55 @@ private fun RuleDetailsScreenContent(
    setPreference: SetPreference,
    changeRegex: (index: Int, whitelist: Boolean) -> Unit,
    addRegex: (whitelist: Boolean) -> Unit,
-) = with(LocalSharedTransitionScope.current) {
-   val largeDevice: Boolean = windowSizeClass != WindowWidthSizeClass.Compact
+) {
+   with(LocalSharedTransitionScope.current) {
+      val largeDevice: Boolean = windowSizeClass != WindowWidthSizeClass.Compact
 
-   Column(
-      Modifier
-         .fillMaxWidth()
-         .verticalScroll(state = rememberScrollState())
-         .safeDrawingPadding()
-   ) {
-      TopAppBar(
-         title = {
-            Text(
-               state.ruleMetadata.name,
-               Modifier.run {
-                  if (!largeDevice) {
-                     sharedElement(
-                        rememberSharedContentState("ruleName-${state.ruleMetadata.id}"),
-                        LocalNavAnimatedContentScope.current,
-                     )
-                  } else {
-                     this
+      Column(
+         Modifier
+            .fillMaxWidth()
+            .verticalScroll(state = rememberScrollState())
+            .safeDrawingPadding()
+      ) {
+         TopAppBar(
+            title = {
+               Text(
+                  state.ruleMetadata.name,
+                  Modifier.run {
+                     if (!largeDevice) {
+                        sharedElement(
+                           rememberSharedContentState("ruleName-${state.ruleMetadata.id}"),
+                           LocalNavAnimatedContentScope.current,
+                        )
+                     } else {
+                        this
+                     }
+                  },
+               )
+            },
+            actions = {
+               if (state.ruleMetadata.id != RULE_ID_DEFAULT_SETTINGS) {
+                  IconButton(onClick = rename) {
+                     Icon(painterResource(R.drawable.ic_rename), contentDescription = stringResource(R.string.rename_rule))
                   }
-               },
-            )
-         },
-         actions = {
-            if (state.ruleMetadata.id != RULE_ID_DEFAULT_SETTINGS) {
-               IconButton(onClick = rename) {
-                  Icon(painterResource(R.drawable.ic_rename), contentDescription = stringResource(R.string.rename_rule))
-               }
 
-               IconButton(onClick = copy) {
-                  Icon(painterResource(R.drawable.ic_copy), contentDescription = stringResource(R.string.copy_rule))
-               }
+                  IconButton(onClick = copy) {
+                     Icon(painterResource(R.drawable.ic_copy), contentDescription = stringResource(R.string.copy_rule))
+                  }
 
-               IconButton(onClick = delete) {
-                  Icon(painterResource(sharedR.drawable.ic_delete), contentDescription = stringResource(R.string.delete_rule))
+                  IconButton(onClick = delete) {
+                     Icon(painterResource(sharedR.drawable.ic_delete), contentDescription = stringResource(R.string.delete_rule))
+                  }
                }
             }
-         }
-      )
+         )
 
-      Conditions(state, changeTargetApp, changeRegex, addRegex)
+         Conditions(state, changeTargetApp, changeRegex, addRegex)
 
-      HorizontalDivider(color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(vertical = 16.dp))
+         HorizontalDivider(color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(vertical = 16.dp))
 
-      Settings(navigator, state.preferences, setPreference)
+         Settings(navigator, state.preferences, setPreference)
+      }
    }
 }
 

@@ -160,63 +160,65 @@ private fun RuleListScreenContent(
    setOrder: (Int, Int) -> Unit,
    openDetails: (Int) -> Unit,
    addButtonsShown: Boolean = false,
-) = with(LocalSharedTransitionScope.current) {
-   Scaffold(
-      Modifier.fillMaxSize(),
-      contentWindowInsets = WindowInsets(),
-      floatingActionButton = {
-         AddButtons(
-            addMuteRule,
-            addHideRule,
-            addEmptyRule,
-            addButtonsShown
-         )
-      },
-   ) { paddingValues ->
-      val listState = rememberLazyListState()
-      ReorderableListContainer(state.rules, listState) { rules ->
-         LazyColumn(
-            contentPadding = WindowInsets.safeDrawing.asPaddingValues(),
-            modifier = Modifier.padding(paddingValues)
-         ) {
-            itemsWithDivider(rules, key = { it.id }) { rule ->
-               ReorderableListItem(
-                  rule.id,
-                  rule,
-                  minReorderableIndex = RULE_ID_DEFAULT_SETTINGS,
-                  enabled = rule.id > RULE_ID_DEFAULT_SETTINGS,
-                  setOrder = setOrder
-               ) { modifier, isDragging ->
-                  Text(
-                     rule.name,
-                     modifier
-                        .clickable(onClick = { openDetails(rule.id) })
-                        .run {
-                           if (rule.id == selectedRuleId) {
-                              background(MaterialTheme.colorScheme.primary)
-                           } else {
-                              this
+) {
+   with(LocalSharedTransitionScope.current) {
+      Scaffold(
+         Modifier.fillMaxSize(),
+         contentWindowInsets = WindowInsets(),
+         floatingActionButton = {
+            AddButtons(
+               addMuteRule,
+               addHideRule,
+               addEmptyRule,
+               addButtonsShown
+            )
+         },
+      ) { paddingValues ->
+         val listState = rememberLazyListState()
+         ReorderableListContainer(state.rules, listState) { rules ->
+            LazyColumn(
+               contentPadding = WindowInsets.safeDrawing.asPaddingValues(),
+               modifier = Modifier.padding(paddingValues)
+            ) {
+               itemsWithDivider(rules, key = { it.id }) { rule ->
+                  ReorderableListItem(
+                     rule.id,
+                     rule,
+                     minReorderableIndex = RULE_ID_DEFAULT_SETTINGS,
+                     enabled = rule.id > RULE_ID_DEFAULT_SETTINGS,
+                     setOrder = setOrder
+                  ) { modifier, isDragging ->
+                     Text(
+                        rule.name,
+                        modifier
+                           .clickable(onClick = { openDetails(rule.id) })
+                           .run {
+                              if (rule.id == selectedRuleId) {
+                                 background(MaterialTheme.colorScheme.primary)
+                              } else {
+                                 this
+                              }
                            }
-                        }
-                        .padding(32.dp)
-                        .fillMaxWidth()
-                        .animateItem()
-                        .run {
-                           if (!isDragging()) {
-                              sharedElement(
-                                 rememberSharedContentState("ruleName-${rule.id}"),
-                                 LocalNavAnimatedContentScope.current
-                              )
-                           } else {
-                              this
-                           }
+                           .padding(32.dp)
+                           .fillMaxWidth()
+                           .animateItem()
+                           .run {
+                              if (!isDragging()) {
+                                 sharedElement(
+                                    rememberSharedContentState("ruleName-${rule.id}"),
+                                    LocalNavAnimatedContentScope.current
+                                 )
+                              } else {
+                                 this
+                              }
+                           },
+                        color = if (rule.id == selectedRuleId) {
+                           MaterialTheme.colorScheme.onPrimary
+                        } else {
+                           MaterialTheme.colorScheme.onSurface
                         },
-                     color = if (rule.id == selectedRuleId) {
-                        MaterialTheme.colorScheme.onPrimary
-                     } else {
-                        MaterialTheme.colorScheme.onSurface
-                     },
-                  )
+                     )
+                  }
                }
             }
          }
