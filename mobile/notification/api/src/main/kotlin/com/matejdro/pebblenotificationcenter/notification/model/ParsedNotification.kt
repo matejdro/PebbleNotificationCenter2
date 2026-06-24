@@ -37,6 +37,12 @@ data class ParsedNotification(
    val largeImage: Any? = null,
    val id: Int = 0,
    val tag: String? = null,
+   /**
+    * The raw conversation/group title (e.g. a group chat's participant list) that was merged into [body] because it
+    * was too long to fit as a subtitle; empty when the title fit as the subtitle. Used to strip it out of the body
+    * when a rule has "hide subtitle" enabled.
+    */
+   val conversationTitle: String = "",
 )
 
 data class NativeAction(

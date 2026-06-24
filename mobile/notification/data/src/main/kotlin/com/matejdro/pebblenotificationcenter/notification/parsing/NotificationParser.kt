@@ -36,7 +36,7 @@ class NotificationParser(
       val title = appNameProvider.getAppName(sbn.packageName)
 
       val (imageUri, messagingStyleText) = notification.parseMessagingStyle(showMessagingStyleChronologically)
-      val (subtitle, text) = parseSubtitleAndBody(notification, messagingStyleText)
+      val (conversationTitle, subtitle, text) = parseSubtitleAndBody(notification, messagingStyleText)
 
       if (subtitle.isBlank() && text.isNullOrBlank()) {
          return null
@@ -69,6 +69,7 @@ class NotificationParser(
          title = title,
          subtitle = subtitleWithCameraEmoji,
          body = text.orEmpty(),
+         conversationTitle = conversationTitle,
          timestamp = Instant.ofEpochMilli(notification.parseMessagingStyleTimestamp() ?: timestampMillis),
          isSilent = isSilent,
          isFilteredByDoNotDisturb = ranking?.matchesInterruptionFilter() == false,
@@ -89,7 +90,7 @@ class NotificationParser(
    private fun parseSubtitleAndBody(
       notification: Notification,
       messagingStyleText: String?,
-   ): Pair<String, String?> {
+   ): ParsedSubtitleBody {
       val extras = notification.extras
 
       val subtitle = (
@@ -111,16 +112,21 @@ class NotificationParser(
             )
             ?.removeUselessCharacaters()
 
-      val updatedSubtitle: CharSequence
-      val updatedText: CharSequence?
+      val conversationTitle: String
+      val updatedSubtitle: String
+      val updatedText: String?
       if (subtitle.length > MAX_TITLE_LENGTH) {
+         // The title is too long to fit as a subtitle, so it is merged into the body. Keep the raw title so
+         // callers can strip it from the body when "hide subtitle" is enabled.
+         conversationTitle = subtitle
          updatedSubtitle = ""
          updatedText = if (text != null) "$subtitle\n$text" else subtitle
       } else {
+         conversationTitle = ""
          updatedSubtitle = subtitle
          updatedText = text
       }
-      return updatedSubtitle to updatedText
+      return ParsedSubtitleBody(conversationTitle = conversationTitle, subtitle = updatedSubtitle, body = updatedText)
    }
 
    private fun processChannel(notification: Notification, channel: Any?): Pair<String?, Boolean> {
@@ -240,3 +246,9 @@ private fun parseVibrationPattern(notification: Notification): List<Short>? {
 
 private const val MAX_TITLE_LENGTH = 20
 private val CONTROL_CHARACTERS = Regex("\\p{Cf}|\\p{M}")
+
+private data class ParsedSubtitleBody(
+   val conversationTitle: String,
+   val subtitle: String,
+   val body: String?,
+)

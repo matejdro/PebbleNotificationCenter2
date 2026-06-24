@@ -103,6 +103,55 @@ class NotificationProcessorTest {
    }
 
    @Test
+   fun `It should blank the subtitle when hide subtitle is enabled`() = runTest {
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.hideSubtitle setTo true
+      )
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification)
+
+      val synced = watchSyncer.syncedNotifications.first().systemData
+      assertSoftly {
+         synced.subtitle shouldBe ""
+         synced.body shouldBe "Body"
+      }
+   }
+
+   @Test
+   fun `It should strip the conversation title from the body when hide subtitle is enabled`() = runTest {
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.hideSubtitle setTo true
+      )
+
+      // A long group title is merged into the body by the parser (subtitle left blank); hiding the subtitle must
+      // also remove that title line from the body, otherwise a group chat still shows the participant list.
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "",
+         "Group Chat: Alice, Bob, Carol\nAlice: Hello",
+         Instant.ofEpochSecond(1_767_554_305),
+         conversationTitle = "Group Chat: Alice, Bob, Carol",
+      )
+
+      processor.onNotificationPosted(notification)
+
+      watchSyncer.syncedNotifications.first().systemData.body shouldBe "Alice: Hello"
+   }
+
+   @Test
    fun `It should forward notification deletions to the watch syncer`() = runTest {
       val notification = ParsedNotification(
          "key",
