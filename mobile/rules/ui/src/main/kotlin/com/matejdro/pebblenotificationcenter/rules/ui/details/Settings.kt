@@ -108,6 +108,13 @@ internal fun ColumnScope.Settings(
 
       RegexReplacementSetPreference(navigator, updatePreference, preferences)
 
+      SwitchPreference(
+         value = preferences[RuleOption.hideFromHistory],
+         onValueChange = { updatePreference(RuleOption.hideFromHistory, it) },
+         title = { Text(stringResource(R.string.preference_hide_from_history)) },
+         summary = { Text(stringResource(R.string.preference_hide_from_history_description)) }
+      )
+
       PreferenceCategory({ Text(stringResource(R.string.actions)) })
 
       StringListPreference(

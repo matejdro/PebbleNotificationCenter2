@@ -1495,6 +1495,28 @@ class NotificationProcessorTest {
    }
 
    @Test
+   fun `It should do not insert entries filtered by the no history rule into history`() = runTest {
+      rulesRepository.insert("Rule A")
+      rulesRepository.insert("Rule B")
+
+      rulesRepository.updateRulePreferences(2, RuleOption.hideFromHistory setTo true)
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "sTitle",
+         "Body",
+         // 19:18:25 GMT | Sunday, January 4, 2026
+         Instant.ofEpochSecond(1_767_554_305)
+      )
+
+      processor.onNotificationPosted(notification)
+
+      historyInserter.insertedEntries.shouldBeEmpty()
+   }
+
+   @Test
    fun `It should add tasker actions`() = runTest {
       rulesRepository.updateRulePreferences(
          RULE_ID_DEFAULT_SETTINGS,

@@ -57,7 +57,7 @@ class NotificationProcessor(
 
       val hideReason = shouldHide(parsedNotification, settings)
       if (hideReason != null) {
-         historyInserter.insertHistoryEntry(parsedNotification, affectedRules, hideReason, null)
+         insertIntoHistory(settings, parsedNotification, affectedRules, hideReason, null)
          onNotificationDismissed(parsedNotification.key)
          return
       }
@@ -111,7 +111,7 @@ class NotificationProcessor(
          openController.openWatchapp()
       }
 
-      historyInserter.insertHistoryEntry(regexReplacedParsedNotification, affectedRules, null, muteReason)
+      insertIntoHistory(settings, regexReplacedParsedNotification, affectedRules, hideReason, muteReason)
       notifications[bucketId] = processedNotification
       notificationIdsByKeys[parsedNotification.key] = bucketId
    }
@@ -397,6 +397,18 @@ class NotificationProcessor(
          else -> {
             action
          }
+      }
+   }
+
+   private suspend fun insertIntoHistory(
+      settings: Preferences,
+      regexReplacedParsedNotification: ParsedNotification,
+      affectedRules: List<String>,
+      hideReason: HideReason?,
+      muteReason: MuteReason?,
+   ) {
+      if (!settings[RuleOption.hideFromHistory]) {
+         historyInserter.insertHistoryEntry(regexReplacedParsedNotification, affectedRules, hideReason, muteReason)
       }
    }
 }

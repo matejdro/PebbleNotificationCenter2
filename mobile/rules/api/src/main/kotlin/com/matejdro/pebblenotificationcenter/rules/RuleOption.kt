@@ -40,6 +40,7 @@ object RuleOption {
       "tasker_task_actions",
       emptySet()
    )
+   val hideFromHistory = BooleanPreferenceKeyWithDefault("hide_from_history", false)
 
    val titleFont = EnumPreferenceKeyWithDefault("font_title", PebbleFont.GOTHIC_24_BOLD)
    val subtitleFont = EnumPreferenceKeyWithDefault("font_subtitle", PebbleFont.GOTHIC_14_BOLD)
