@@ -378,7 +378,7 @@ private fun VibrationPatternPreference(
 
 @Preview(heightDp = 2000, showBackground = true)
 @Composable
-@ShowkaseComposable(group = "test")
+@ShowkaseComposable(group = "test", tags = ["tall"])
 internal fun AllPreferencesPreview() {
    PreviewTheme {
       Column {

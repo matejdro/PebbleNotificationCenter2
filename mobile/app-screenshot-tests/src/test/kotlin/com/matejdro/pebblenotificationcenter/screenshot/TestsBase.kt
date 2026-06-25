@@ -76,6 +76,18 @@ abstract class TestsBase {
             testKey.showkaseBrowserComponent.component()
          }
       }
+
+      val tags = testKey.showkaseBrowserComponent.tags
+      val tall = tags.contains("tall")
+
+      if (tall) {
+         paparazzi.unsafeUpdateConfig(
+            PIXEL_5.copy(
+               screenHeight = 10_000
+            )
+         )
+      }
+
       val previewName = testKey.toString()
       require(previewName.isNotBlank()) { "Test name should not be blank for ${testKey.key}" }
 
@@ -90,18 +102,23 @@ abstract class TestsBase {
       paparazzi.snapshot("${previewName}_night") {
          composable()
       }
-      paparazzi.unsafeUpdateConfig(
-         PIXEL_5.copy(
-            ydpi = 600,
-            xdpi = 300,
-            screenWidth = 300 * 440 / 160,
-            screenHeight = 600 * 440 / 160,
-            nightMode = NightMode.NOTNIGHT
+
+      if (!tall) {
+         paparazzi.unsafeUpdateConfig(
+            PIXEL_5.copy(
+               ydpi = 600,
+               xdpi = 300,
+               screenWidth = 300 * 440 / 160,
+               screenHeight = 600 * 440 / 160,
+               nightMode = NightMode.NOTNIGHT
+            )
          )
-      )
-      paparazzi.snapshot("${previewName}_small") {
-         composable()
+
+         paparazzi.snapshot("${previewName}_small") {
+            composable()
+         }
       }
+
       paparazzi.unsafeUpdateConfig(
          PIXEL_5.copy(
             fontScale = 1.5f
