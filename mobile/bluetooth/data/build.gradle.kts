@@ -22,6 +22,7 @@ dependencies {
    implementation(libs.pngj)
 
    testImplementation(testFixtures(projects.common))
+   testImplementation(testFixtures(projects.bluetoothCommon))
    testImplementation(testFixtures(projects.bluetooth.api))
    testImplementation(projects.bucketsync.test)
    testImplementation(projects.bucketsync.data)

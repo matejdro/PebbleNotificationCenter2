@@ -1,5 +1,6 @@
 package com.matejdro.pebblenotificationcenter.bluetooth
 
+import com.matejdro.pebble.bluetooth.common.test.FakePebbleInfoRetriever
 import com.matejdro.pebble.bluetooth.common.test.FakePebbleSender
 import com.matejdro.pebblenotificationcenter.bluetooth.api.WATCHAPP_UUID
 import io.kotest.matchers.collections.shouldBeEmpty
