@@ -78,6 +78,7 @@ class NotificationProcessorTest {
       context.resources.putString(R.string.app_suffix) { "${it.elementAt(0)} (App)" }
       context.resources.putString(R.string.snooze, "Snooze")
       context.resources.putString(R.string.show_image, "Show image")
+      context.resources.putString(R.string.hide_from_watch, "Hide from watch")
 
       runBlocking {
          rulesRepository.insert("Default Rule")
@@ -221,6 +222,7 @@ class NotificationProcessorTest {
          Action.Snooze("Snooze", 1u),
          Action.PauseApp("Pause app", 2u),
          Action.PauseConversation("Pause conversation", 3u),
+         Action.HideFromWatch("Hide from watch", 4u),
       )
    }
 
@@ -1405,6 +1407,7 @@ class NotificationProcessorTest {
          Action.Dismiss("Dismiss", 0u),
          Action.PauseApp("Pause app", 1u),
          Action.PauseConversation("Pause conversation", 2u),
+         Action.HideFromWatch("Hide from watch", 3u),
       )
    }
 

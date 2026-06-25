@@ -78,4 +78,6 @@ sealed interface Action {
    data class ShowImage(override val title: String, override val id: UByte) : Action
 
    data class TaskerTask(override val title: String, override val id: UByte) : Action
+
+   data class HideFromWatch(override val title: String, override val id: UByte) : Action
 }

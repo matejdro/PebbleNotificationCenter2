@@ -35,6 +35,7 @@ class ActionOrderRepositoryImpl(
       context.getString(R.string.unpause_app),
       context.getString(R.string.pause_conversation),
       context.getString(R.string.unpause_conversation),
+      context.getString(R.string.hide_from_watch),
    )
 
    private var checkedForDefaultItems: Boolean = false
@@ -45,6 +46,7 @@ class ActionOrderRepositoryImpl(
          .onEach { list ->
             if (!checkedForDefaultItems) {
                val anyMissing = defaultOrder.any { !list.contains(it) }
+               println("anyMissing: $anyMissing")
                if (anyMissing) {
                   insertDefaultItems()
                }
@@ -65,7 +67,7 @@ class ActionOrderRepositoryImpl(
                }
             }
          }
-         prefs[GlobalPreferenceKeys.actionOrder] = newList
+         prefs[GlobalPreferenceKeys.actionOrder] = newList.distinct()
       }
    }
 
@@ -76,7 +78,7 @@ class ActionOrderRepositoryImpl(
             remove(value)
             add(toIndex, value)
          }
-         prefs[GlobalPreferenceKeys.actionOrder] = newList.toList()
+         prefs[GlobalPreferenceKeys.actionOrder] = newList.toList().distinct()
       }
    }
 
@@ -93,7 +95,7 @@ class ActionOrderRepositoryImpl(
                   add(unknownIndexOrder, element)
                }
             }
-            prefs[GlobalPreferenceKeys.actionOrder] = newList
+            prefs[GlobalPreferenceKeys.actionOrder] = newList.distinct()
          }[GlobalPreferenceKeys.actionOrder]
       } else {
          orderList

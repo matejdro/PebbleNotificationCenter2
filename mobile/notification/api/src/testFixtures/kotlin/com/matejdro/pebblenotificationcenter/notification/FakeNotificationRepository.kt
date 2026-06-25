@@ -42,4 +42,8 @@ class FakeNotificationRepository : NotificationRepository {
    override suspend fun notifyPackagePauseStatusChanged(pkg: String) {
       notifiedPackageStatusesChanged.add(pkg)
    }
+
+   override suspend fun onNotificationDismissed(key: String) {
+      notifications.remove(notifications.entries.first { it.value!!.systemData.key == key }.key)
+   }
 }

@@ -29,6 +29,7 @@ class ActionOrderRepositoryImplTest {
       context.resources.putString(R.string.other_actions, "Other actions")
       context.resources.putString(R.string.snooze, "Snooze")
       context.resources.putString(R.string.show_image, "Show image")
+      context.resources.putString(R.string.hide_from_watch, "Hide from watch")
 
       repo = ActionOrderRepositoryImpl(context, preferenceStore)
    }
@@ -47,6 +48,7 @@ class ActionOrderRepositoryImplTest {
             "Unpause app",
             "Pause conversation",
             "Unpause conversation",
+            "Hide from watch",
          )
       }
    }
@@ -61,6 +63,7 @@ class ActionOrderRepositoryImplTest {
             "Unpause app",
             "Pause conversation",
             "Unpause conversation",
+            "Hide from watch",
          )
       }
 
@@ -74,6 +77,7 @@ class ActionOrderRepositoryImplTest {
             "Unpause app",
             "Pause conversation",
             "Unpause conversation",
+            "Hide from watch",
             "Dismiss",
             "Snooze",
          )
@@ -92,6 +96,7 @@ class ActionOrderRepositoryImplTest {
             "Unpause app",
             "Pause conversation",
             "Unpause conversation",
+            "Hide from watch",
          )
       }
 
@@ -107,6 +112,7 @@ class ActionOrderRepositoryImplTest {
             "Unpause app",
             "Pause conversation",
             "Unpause conversation",
+            "Hide from watch",
             "Dismiss",
          )
       }
@@ -128,6 +134,7 @@ class ActionOrderRepositoryImplTest {
             "Unpause app",
             "Pause conversation",
             "Unpause conversation",
+            "Hide from watch",
          )
       }
    }
@@ -148,6 +155,7 @@ class ActionOrderRepositoryImplTest {
             "Dismiss",
             "Pause conversation",
             "Unpause conversation",
+            "Hide from watch",
          )
       }
    }
@@ -227,6 +235,7 @@ class ActionOrderRepositoryImplTest {
             "Unpause app",
             "Pause conversation",
             "Unpause conversation",
+            "Hide from watch",
          )
       }
    }

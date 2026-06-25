@@ -12,6 +12,7 @@ fun Action.zeroId(): Action {
       is Action.Snooze -> copy(id = 0u)
       is Action.ShowImage -> copy(id = 0u)
       is Action.TaskerTask -> copy(id = 0u)
+      is Action.HideFromWatch -> copy(id = 0u)
    }
 }
 

@@ -258,6 +258,8 @@ class NotificationProcessor(
                id = size.toUByte()
             )
          )
+
+         add(Action.HideFromWatch(title = context.getString(R.string.hide_from_watch), id = size.toUByte()))
       }
 
       val appActions = parsedNotification.nativeActions.mapIndexed { index, action ->
@@ -316,7 +318,7 @@ class NotificationProcessor(
       }
    }
 
-   suspend fun onNotificationDismissed(key: String) {
+   override suspend fun onNotificationDismissed(key: String) {
       val notificationId = notificationIdsByKeys.remove(key)
       if (notificationId != null) {
          val processedNotification = notifications.remove(notificationId)

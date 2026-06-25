@@ -82,6 +82,11 @@ class ActionHandlerImpl(
          is Action.TaskerTask -> {
             taskerTaskStarter.startTask(action.title, notification.systemData)
          }
+
+         is Action.HideFromWatch -> {
+            notificationRepository.onNotificationDismissed(notification.systemData.key)
+            true
+         }
       }
    }
 

@@ -573,6 +573,32 @@ class ActionHandlerImplTest {
       taskerTaskStarter.startedTasks.shouldContainExactly("TheTask")
    }
 
+   @Test
+   fun `Hide action should remove the action from the repository`() = runTest {
+      insertDefaultRules()
+
+      repo.putNotification(
+         2,
+         ProcessedNotification(
+            ParsedNotification(
+               "keyNotification",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+            ),
+            actions = listOf(
+               Action.HideFromWatch("Hide", 0u)
+            )
+         ),
+      )
+
+      handler.handleAction(2, 0) shouldBe true
+
+      repo.getNotification(2) shouldBe null
+   }
+
    private suspend fun insertDefaultRules() {
       rulesRepository.insert("Default Rule")
    }

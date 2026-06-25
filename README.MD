@@ -140,6 +140,10 @@ If a notification has an image attached, its subtitle will have a 📷 icon.
 
 In this case, you can select `Show image` action, which will show the image on the watch full-screen
 
+### Hide from watch
+
+This notification will hide the notification from the watch, while keeping it on the phone. If notification is updated or re-notified on the phone, it will re-appear on the watch.
+
 ## On the phone
 
 ### Mute / Hide an app
