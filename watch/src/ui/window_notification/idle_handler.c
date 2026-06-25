@@ -63,7 +63,11 @@ static void maybe_start_periodic_vibration_timer();
 
 static void handle_periodic_vibration()
 {
-    vibes_enqueue_custom_pattern(PERIODIC_VIBRATION_PATTERN);
+    if (!quiet_time_is_active())
+    {
+        vibes_enqueue_custom_pattern(PERIODIC_VIBRATION_PATTERN);
+    }
+
     maybe_start_periodic_vibration_timer();
 }
 

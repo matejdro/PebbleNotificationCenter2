@@ -252,14 +252,17 @@ static void receive_vibrate_packet(const DictionaryIterator* iterator)
         segments[i] = read_uint16_from_byte_array(data, i * 2);
     }
 
-    const VibePattern vibe_pattern = {
-        .durations = segments,
-        .num_segments = num_segments,
-    };
-    vibes_cancel();
-    vibes_enqueue_custom_pattern(vibe_pattern);
-
     idle_handler_notify_received_new_vibration();
+
+    if (!quiet_time_is_active())
+    {
+        const VibePattern vibe_pattern = {
+            .durations = segments,
+            .num_segments = num_segments,
+        };
+        vibes_cancel();
+        vibes_enqueue_custom_pattern(vibe_pattern);
+    }
 }
 
 static void receive_submenu_packet(const DictionaryIterator* iterator)
