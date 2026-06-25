@@ -15,4 +15,6 @@ object GlobalPreferenceKeys {
    val notifyOnReconnect = BooleanPreferenceKeyWithDefault("notify_on_reconnect", true)
 
    val scrollWrapAround = BooleanPreferenceKeyWithDefault("wrap_around_scroll", true)
+
+   val turnOnBacklight = BooleanPreferenceKeyWithDefault("turn_on_backlight", false)
 }

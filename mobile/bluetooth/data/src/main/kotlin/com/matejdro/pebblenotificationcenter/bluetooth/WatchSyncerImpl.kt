@@ -158,6 +158,9 @@ class WatchSyncerImpl(
             if (!preferences[GlobalPreferenceKeys.scrollWrapAround]) {
                flags = flags or 0x04
             }
+            if (preferences[GlobalPreferenceKeys.turnOnBacklight]) {
+               flags = flags or 0x08
+            }
 
             val autoClose = preferences[GlobalPreferenceKeys.autoCloseSeconds]
 

@@ -18,5 +18,6 @@ void reload_preferences()
     preferences.watch_muted = (bucket_data[0] & 0x01) != 0;
     preferences.phone_muted = (bucket_data[0] & 0x02) != 0;
     preferences.no_scroll_wrap = (bucket_data[0] & 0x04) != 0;
+    preferences.enable_backlight_on_vibration = (bucket_data[0] & 0x08) != 0;
     preferences.auto_close_timeout = read_uint16_from_byte_array(bucket_data, 1);
 }

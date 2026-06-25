@@ -610,6 +610,32 @@ class WatchSyncerImplTest {
    }
 
    @Test
+   fun `Send updated backlight setting`() = scope.runTest {
+      init(enablePreferences = true)
+      delay(2.seconds)
+
+      preferences.edit {
+         it[GlobalPreferenceKeys.turnOnBacklight] = true
+      }
+      delay(2.seconds)
+
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()) shouldBe BucketUpdate(
+         2u,
+         listOf(1u),
+         listOf(
+            Bucket(
+               1u,
+               byteArrayOf(
+                  0b00001000, // Flag enabled
+                  0,
+                  0,
+               )
+            )
+         )
+      )
+   }
+
+   @Test
    fun `Set paused flag when the notification is app paused`() = scope.runTest {
       init()
       watchSyncer.syncNotification(

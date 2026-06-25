@@ -6,6 +6,7 @@
 #include "notification_details_fetcher.h"
 #include "../ui/window_status.h"
 #include "commons/bytes.h"
+#include "data/preferences.h"
 #include "ui/window_image.h"
 #include "ui/window_notification/data_loading.h"
 #include "ui/window_notification/idle_handler.h"
@@ -274,6 +275,11 @@ static void receive_vibrate_packet(const DictionaryIterator* iterator)
         };
         vibes_cancel();
         vibes_enqueue_custom_pattern(vibe_pattern);
+
+        if (preferences.enable_backlight_on_vibration)
+        {
+            light_enable_interaction();
+        }
     }
 }
 

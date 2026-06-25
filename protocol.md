@@ -168,6 +168,7 @@ Bucket data:
   * 0x01 - Watch mute on or off
   * 0x02 - Phone mute on or off
   * 0x04 - When set, scrolling wrap-around is disabled
+  * 0x08 - When set, watch will turn on backlight on vibration
 * Auto close seconds (uint16)
   * 0 means disabled
 

@@ -21,4 +21,8 @@
     <string name="setting_wrap_around_description">When enabled, pressing DOWN button on the bottom of the notification will
         scroll to the top instead of moving to the next notification
     </string>
+    <string name="setting_turn_on_backlight">Light backlight on vibration</string>
+    <string name="setting_turn_on_backlight_description">When enabled, watch will automatically turn on the backlight every time
+        it vibrates for a new notification.
+    </string>
 </resources>

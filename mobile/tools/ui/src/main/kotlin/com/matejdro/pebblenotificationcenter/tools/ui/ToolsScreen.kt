@@ -250,6 +250,17 @@ private fun ToolsScreenContent(
          }
 
          item(span = { GridItemSpan(maxLineSpan) }) {
+            SwitchPreference(
+               state.preferences[GlobalPreferenceKeys.turnOnBacklight],
+               onValueChange = {
+                  updatePreference(GlobalPreferenceKeys.turnOnBacklight, it)
+               },
+               title = { Text(stringResource(R.string.setting_turn_on_backlight)) },
+               summary = { Text(stringResource(R.string.setting_turn_on_backlight_description)) }
+            )
+         }
+
+         item(span = { GridItemSpan(maxLineSpan) }) {
             Text(
                stringResource(R.string.version, state.versionName),
                Modifier
