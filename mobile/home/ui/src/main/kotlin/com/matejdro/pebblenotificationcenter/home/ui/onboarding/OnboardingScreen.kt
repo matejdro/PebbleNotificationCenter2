@@ -230,7 +230,10 @@ private fun NotificationAccessPermissionCompanion(
       AlertDialog(
          onDismissRequest = { showInstructions = false },
          confirmButton = {
-            TextButton(onClick = { associateWithCompanionManager() }) { Text("OK") }
+            TextButton(onClick = {
+               showInstructions = false
+               associateWithCompanionManager()
+            }) { Text("OK") }
          },
          title = { Text(stringResource(R.string.permission_notification_access_title)) },
          text = {
