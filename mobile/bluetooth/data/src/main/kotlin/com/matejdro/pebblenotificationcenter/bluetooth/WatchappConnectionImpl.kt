@@ -11,6 +11,7 @@ import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionGraph
 import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionScope
 import com.matejdro.pebble.bluetooth.common.util.requireUint
 import com.matejdro.pebble.bluetooth.common.util.writeUShort
+import com.matejdro.pebblenotificationcenter.bluetooth.images.ImageSender
 import com.matejdro.pebblenotificationcenter.notification.ActionHandler
 import com.matejdro.pebblenotificationcenter.notification.NotificationRepository
 import com.matejdro.pebblenotificationcenter.notification.NotificationServiceController
@@ -50,6 +51,7 @@ class WatchappConnectionImpl(
    private val preferenceStore: DataStore<Preferences>,
    private val watchMetadata: WatchMetadata,
    private val serviceController: NotificationServiceController,
+   private val imageSender: ImageSender,
 ) : WatchAppConnection {
 
    private var reInitRequestJob: Job? = null
@@ -99,6 +101,10 @@ class WatchappConnectionImpl(
          14u -> {
             serviceController.reloadAllNotifications()
             ReceiveResult.Ack
+         }
+
+         15u -> {
+            if (handleResendImageAction(data)) ReceiveResult.Ack else ReceiveResult.Nack
          }
 
          else -> {
@@ -227,6 +233,15 @@ class WatchappConnectionImpl(
          1u to PebbleDictionaryItem.Bytes(buffer.readByteArray())
       )
       packetQueue.sendPacket(packet, priority = PRIORITY_VIBRATION)
+   }
+
+   private suspend fun handleResendImageAction(data: PebbleDictionary): Boolean {
+      val notificationId = data.requireUint(1u)
+      val fill = data.requireUint(2u) == 1u
+      val notification = notificationRepository.getNotification(notificationId.toInt()) ?: return false
+      val image = notification.systemData.largeImage ?: return false
+      imageSender.showImageOnTheWatch(notificationId = notificationId.toUByte(), icon = image, fill = fill)
+      return true
    }
 
    private fun sendReinitRequestAfterAWhile() {

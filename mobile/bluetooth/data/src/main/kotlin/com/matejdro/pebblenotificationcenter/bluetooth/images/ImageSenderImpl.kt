@@ -18,10 +18,10 @@ class ImageSenderImpl(
    private val watchMetadata: WatchMetadata,
 ) : ImageSender {
    @Suppress("MagicNumber") // Protocol constants
-   override suspend fun showImageOnTheWatch(icon: Any) {
+   override suspend fun showImageOnTheWatch(notificationId: UByte, icon: Any, fill: Boolean) {
       icon as Icon
 
-      val pebbleBitmapData = drawableExtractor.convertIconToBitmapBytes(icon)
+      val pebbleBitmapData = drawableExtractor.convertIconToBitmapBytes(icon, fill)
       if (pebbleBitmapData.size > MAX_IMAGE_BYTES) {
          error("Image too large: ${pebbleBitmapData.size}")
       }
@@ -49,6 +49,7 @@ class ImageSenderImpl(
          }
 
          val header = byteArrayOf(
+            notificationId.toByte(),
             (pebbleBitmapData.size shr 8).toByte(),
             pebbleBitmapData.size.toByte(),
             flags.toByte(),

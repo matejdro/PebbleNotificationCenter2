@@ -251,9 +251,6 @@ void window_notification_ui_scroll_by(const int16_t amount, const bool repeating
         max_scroll = 0;
     }
 
-    APP_LOG(APP_LOG_LEVEL_INFO, "Max scroll %d %d %d %d", max_scroll, current_position,
-            scroll_layer_get_content_size(scroll_layer).h, layer_get_bounds(scroll_layer_get_layer(scroll_layer)).size.h);
-
     if (amount > 0 && !repeating && current_position == 0)
     {
         if (preferences.no_scroll_wrap)

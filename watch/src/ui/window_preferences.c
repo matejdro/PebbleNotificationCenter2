@@ -54,7 +54,6 @@ static void reset_hidden()
 static void update_data()
 {
     reload_preferences();
-    APP_LOG(APP_LOG_LEVEL_INFO, "Update data %d", preferences.watch_muted);
 
 
     if (preferences.watch_muted)

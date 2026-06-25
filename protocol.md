@@ -98,6 +98,7 @@ Sent from the phone after the packet 4
 When user requests an image from the phone, one or more packets 11 will be sent, containing image data.
 
 * `1` - Data (byte array)
+  * Notification ID (uint8) 
   * Total size of the image bytes (uint16) 
   * Flags (uint8)
     * 0x01 - 1 when this is the first packet in the image sequence, 0 otherwise
@@ -154,6 +155,13 @@ Sent from the watch when it wants to close. Phone app will open the last app, cl
 ### Reload all notifications (packet 14)
 
 Sent from the watch to re-show all hidden notifications
+
+### Re-send image (packet 15)
+
+Sent from the watch to change the crop level of the image
+
+* `1` - id of the seen bucket (uint8)
+* `2` - Whether to send cropped image (1) or non-cropped (0) (uint8)
 
 # Buckets
 

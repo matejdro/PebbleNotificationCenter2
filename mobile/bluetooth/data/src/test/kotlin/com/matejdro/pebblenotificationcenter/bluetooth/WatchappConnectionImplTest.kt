@@ -1,5 +1,6 @@
 package com.matejdro.pebblenotificationcenter.bluetooth
 
+import android.graphics.drawable.Icon
 import androidx.datastore.preferences.core.emptyPreferences
 import com.matejdro.bucketsync.BucketSyncWatchLoopImpl
 import com.matejdro.bucketsync.FakeBucketSyncRepository
@@ -10,10 +11,13 @@ import com.matejdro.pebble.bluetooth.common.test.FakePebbleSender
 import com.matejdro.pebble.bluetooth.common.test.sentData
 import com.matejdro.pebblenotificationcenter.FakeNotificationServiceController
 import com.matejdro.pebblenotificationcenter.bluetooth.api.WATCHAPP_UUID
+import com.matejdro.pebblenotificationcenter.bluetooth.images.FakeImageSender
 import com.matejdro.pebblenotificationcenter.common.test.InMemoryDataStore
 import com.matejdro.pebblenotificationcenter.notification.FakeActionHandler
 import com.matejdro.pebblenotificationcenter.notification.FakeNotificationRepository
 import com.matejdro.pebblenotificationcenter.notification.FakeSubmenuActionHandler
+import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
 import com.matejdro.pebblenotificationcenter.rules.keys.get
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -34,6 +38,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import si.inova.kotlinova.core.test.TestScopeWithDispatcherProvider
 import si.inova.kotlinova.core.test.time.virtualTimeProvider
+import java.time.Instant
 import kotlin.time.Duration.Companion.seconds
 
 class WatchappConnectionImplTest {
@@ -58,6 +63,7 @@ class WatchappConnectionImplTest {
    private val globalPreferences = InMemoryDataStore(emptyPreferences())
    private val serviceController = FakeNotificationServiceController()
 
+   private val imageSender = FakeImageSender()
    private val watchMetadata = WatchMetadata()
 
    private val bucketSyncWatchLoop = BucketSyncWatchLoopImpl(
@@ -82,6 +88,7 @@ class WatchappConnectionImplTest {
       globalPreferences,
       watchMetadata,
       serviceController,
+      imageSender,
    )
 
    @Test
@@ -535,6 +542,80 @@ class WatchappConnectionImplTest {
       result shouldBe ReceiveResult.Ack
 
       sender.sentData.first().shouldContainKey(4u)
+   }
+
+   @Test
+   fun `Send cropped image when requested`() = scope.runTest {
+      val icon = Icon.createWithContentUri("content://image")
+
+      notificationsRepository.putNotification(
+         2,
+         ProcessedNotification(
+            ParsedNotification(
+               "keyNotification",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+               largeImage = icon
+            ),
+            bucketId = 2
+         ),
+      )
+
+      receiveStandardHelloPacket(bufferSize = 123u)
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(15u),
+            1u to PebbleDictionaryItem.UInt32(2u),
+            2u to PebbleDictionaryItem.UInt32(1u),
+         )
+      )
+      runCurrent()
+
+      imageSender.lastSentNotificationId shouldBe 2u
+      imageSender.lastSentIcon shouldBe icon
+      imageSender.lastFilled shouldBe true
+      result shouldBe ReceiveResult.Ack
+   }
+
+   @Test
+   fun `Send non-cropped image when requested`() = scope.runTest {
+      val icon = Icon.createWithContentUri("content://image")
+
+      notificationsRepository.putNotification(
+         2,
+         ProcessedNotification(
+            ParsedNotification(
+               "keyNotification",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+               largeImage = icon
+            ),
+            bucketId = 2
+         ),
+      )
+
+      receiveStandardHelloPacket(bufferSize = 123u)
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(15u),
+            1u to PebbleDictionaryItem.UInt32(2u),
+            2u to PebbleDictionaryItem.UInt32(0u),
+         )
+      )
+      runCurrent()
+
+      imageSender.lastSentNotificationId shouldBe 2u
+      imageSender.lastSentIcon shouldBe icon
+      imageSender.lastFilled shouldBe false
+      result shouldBe ReceiveResult.Ack
    }
 
    private suspend fun receiveStandardHelloPacket(

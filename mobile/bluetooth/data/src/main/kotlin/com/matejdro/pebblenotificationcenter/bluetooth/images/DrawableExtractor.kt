@@ -12,7 +12,7 @@ import dev.zacsweers.metro.Inject
 
 interface DrawableExtractor {
    fun convertIconDrawableToBitmapBytes(drawable: Drawable, width: Int, height: Int, colorWatch: Boolean): ByteArray
-   fun convertIconToBitmapBytes(icon: Icon): ByteArray
+   fun convertIconToBitmapBytes(icon: Icon, fill: Boolean): ByteArray
 }
 
 @Inject
@@ -45,29 +45,53 @@ class DrawableExtractorImpl(
       }
    }
 
-   override fun convertIconToBitmapBytes(icon: Icon): ByteArray {
+   override fun convertIconToBitmapBytes(icon: Icon, fill: Boolean): ByteArray {
       val drawable = icon.loadDrawable(context) ?: error("Drawable cannot be loaded. Icon: $icon")
 
       val screenWidth = watchMetadata.screenWidth
       val screenHeight = watchMetadata.screenHeight
-      val targetWidth: Int
-      val targetHeight: Int
-
       val originalWidth: Int = drawable.intrinsicWidth
       val originalHeight: Int = drawable.intrinsicHeight
 
-      if (screenWidth / originalWidth.toFloat() < screenHeight / originalHeight.toFloat()) {
+      val targetWidth: Int
+      val targetHeight: Int
+      if (fill) {
+         val preCropWidth: Int
+         val preCropHeight: Int
+         if (screenWidth / originalWidth.toFloat() > screenHeight / originalHeight.toFloat()) {
+            preCropWidth = screenWidth
+            preCropHeight = originalHeight * screenWidth / originalWidth
+         } else {
+            preCropWidth = originalWidth * screenHeight / originalHeight
+            preCropHeight = screenHeight
+         }
+
          targetWidth = screenWidth
-         targetHeight = originalHeight * screenWidth / originalWidth
-      } else {
-         targetWidth = originalWidth * screenHeight / originalHeight
          targetHeight = screenHeight
+
+         val cropX = (preCropWidth - targetWidth) / 2
+         val cropY = (preCropHeight - targetHeight) / 2
+         drawable.setBounds(
+            -cropX,
+            -cropY,
+            screenWidth + cropX,
+            screenHeight + cropY
+         )
+      } else {
+         if (screenWidth / originalWidth.toFloat() < screenHeight / originalHeight.toFloat()) {
+            targetWidth = screenWidth
+            targetHeight = originalHeight * screenWidth / originalWidth
+         } else {
+            targetWidth = originalWidth * screenHeight / originalHeight
+            targetHeight = screenHeight
+         }
+
+         drawable.setBounds(0, 0, targetWidth, targetHeight)
       }
 
       val bitmap = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
       val canvas = Canvas(bitmap)
 
-      drawable.setBounds(0, 0, targetWidth, targetHeight)
       drawable.draw(canvas)
 
       val finalImage = ImagePixels(bitmap)

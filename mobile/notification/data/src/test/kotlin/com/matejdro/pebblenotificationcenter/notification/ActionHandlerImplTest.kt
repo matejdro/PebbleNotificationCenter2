@@ -540,6 +540,7 @@ class ActionHandlerImplTest {
       )
 
       handler.handleAction(2, 0) shouldBe true
+      imageSender.lastSentNotificationId shouldBe 2u
       imageSender.lastSentIcon shouldBe icon
       servicecontroller.lastTriggeredIntent shouldBe null
    }

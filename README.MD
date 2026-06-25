@@ -140,7 +140,9 @@ Note: only supported on Android 8 and newer.
 
 If a notification has an image attached, its subtitle will have a 📷 icon.
 
-In this case, you can select `Show image` action, which will show the image on the watch full-screen
+In this case, you can select `Show image` action, which will show the image on the watch.
+
+If the image does not fill the watch's screen, you can press SELECT button to zoom in. Then you can press SELECT again to zoom back out.
 
 ### Hide from watch
 

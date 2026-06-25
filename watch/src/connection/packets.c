@@ -159,6 +159,23 @@ bool send_reload_notifications()
     return true;
 }
 
+bool send_request_image(const uint8_t notification_id, const bool crop)
+{
+    DictionaryIterator* iterator;
+    const AppMessageResult res = app_message_outbox_begin(&iterator);
+
+    if (res != APP_MSG_OK)
+    {
+        return false;
+    }
+
+    dict_write_uint8(iterator, 0, 15);
+    dict_write_uint8(iterator, 1, notification_id);
+    dict_write_uint8(iterator, 2, crop ? 1 : 0);
+    bluetooth_app_message_outbox_send();
+    return true;
+}
+
 static void receive_watch_packet(const DictionaryIterator* received)
 {
     const uint8_t packet_id = dict_find(received, 0)->value->uint8;

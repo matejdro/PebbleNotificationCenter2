@@ -1,11 +1,13 @@
 #include "window_image.h"
 
 #include "commons/bytes.h"
+#include "connection/packets.h"
 
 static uint8_t* bitmap_data = NULL;
 static size_t bitmap_data_position = 0;
 static GBitmap* bitmap = NULL;
 static Layer* drawing_layer = NULL;
+static uint8_t notification_id;
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 static void image_layer_paint(Layer* layer, GContext* ctx)
@@ -38,6 +40,34 @@ static void image_layer_paint(Layer* layer, GContext* ctx)
     }
 }
 
+static void button_select_single(ClickRecognizerRef recognizer, void* context)
+{
+    if (bitmap == NULL || drawing_layer == NULL)
+    {
+        vibes_double_pulse();
+        return;
+    }
+
+    const GSize bitmap_size = gbitmap_get_bounds(bitmap).size;
+    const GSize window_size = layer_get_bounds(drawing_layer).size;
+
+    const bool success = send_request_image(notification_id, bitmap_size.w != window_size.w || bitmap_size.h != window_size.h);
+    if (!success)
+    {
+        vibes_double_pulse();
+    }
+    else
+    {
+        gbitmap_destroy(bitmap);
+        bitmap = NULL;
+        layer_mark_dirty(drawing_layer);
+    }
+}
+
+static void buttons_config()
+{
+    window_single_click_subscribe(BUTTON_ID_SELECT, button_select_single);
+}
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 static void window_load(Window* window)
@@ -62,7 +92,8 @@ static void window_unload(Window* window)
 
 void window_image_show(const uint8_t* image_data, const size_t length)
 {
-    const uint8_t flags = image_data[2];
+    notification_id = image_data[0];
+    const uint8_t flags = image_data[3];
     const bool first_packet = (flags & 0x01) != 0;
     const bool last_packet = (flags & 0x02) != 0;
 
@@ -70,20 +101,27 @@ void window_image_show(const uint8_t* image_data, const size_t length)
     {
         bitmap_data_position = 0;
 
-        Window* window = window_create();
+        if (drawing_layer == NULL)
+        {
+            Window* window = window_create();
 
-        window_set_window_handlers(
-            window,
-            (WindowHandlers)
+            window_set_window_handlers(
+                window,
+                (WindowHandlers)
             {
-                .load = window_load,
-                .unload = window_unload,
+                .
+                load = window_load,
+                .
+                unload = window_unload,
             }
-        );
+            )
+            ;
+            window_set_click_config_provider(window, buttons_config);
 
-        window_stack_push(window, true);
+            window_stack_push(window, true);
+        }
 
-        const size_t bitmap_size_bytes = read_uint16_from_byte_array(image_data, 0);
+        const size_t bitmap_size_bytes = read_uint16_from_byte_array(image_data, 1);
         if (bitmap_data != NULL)
         {
             free(bitmap_data);
@@ -92,8 +130,8 @@ void window_image_show(const uint8_t* image_data, const size_t length)
         bitmap_data = malloc(bitmap_size_bytes);
     }
 
-    const size_t png_data_length = length - 3;
-    memcpy(&bitmap_data[bitmap_data_position], &image_data[3], png_data_length);
+    const size_t png_data_length = length - 4;
+    memcpy(&bitmap_data[bitmap_data_position], &image_data[4], png_data_length);
     bitmap_data_position += png_data_length;
 
     if (last_packet)
