@@ -22,6 +22,7 @@ Sent to the watch as the response to the packet 1.
       * Bucket size in bytes (uint8)
       * Bucket data (bytes)
 * `3` - If this key exists, watch should auto-close after sync is completed (uint8)
+* `4` - If this key exists, watch will disable close to last app
 
 (Note: if phone/watch protocol versions do not match, only dictionary entry `1` is sent).
 

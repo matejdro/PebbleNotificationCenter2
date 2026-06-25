@@ -117,4 +117,43 @@ class WatchappOpenControllerImplTest {
       )
       pebbleSender.stoppedApps.shouldBeEmpty()
    }
+
+   @Test
+   fun `Report close to last app needed when opening over watchapp`() = scope.runTest {
+      val otherApp = UUID.fromString("caf5e298-d9e7-44a9-9177-d5ed6acb719a")
+      pebbleInfoRetriever.setActiveApp(WatchIdentifier("TheWatch"), Watchapp(otherApp, "Important app", Watchapp.Type.WATCHAPP))
+
+      controller.openWatchapp()
+
+      controller.shouldCloseToLastApp(WatchIdentifier("TheWatch")) shouldBe true
+   }
+
+   @Test
+   fun `Report close to last app needed when opening over Notification Center`() = scope.runTest {
+      pebbleInfoRetriever.setActiveApp(
+         WatchIdentifier("TheWatch"),
+         Watchapp(WATCHAPP_UUID, "Notification Center", Watchapp.Type.WATCHAPP)
+      )
+
+      controller.openWatchapp()
+
+      controller.shouldCloseToLastApp(WatchIdentifier("TheWatch")) shouldBe false
+   }
+
+   @Test
+   fun `Report close to last app not needed when opening over watchface`() = scope.runTest {
+      val otherApp = UUID.fromString("caf5e298-d9e7-44a9-9177-d5ed6acb719a")
+      pebbleInfoRetriever.setActiveApp(WatchIdentifier("TheWatch"), Watchapp(otherApp, "Important app", Watchapp.Type.WATCHFACE))
+
+      controller.openWatchapp()
+
+      controller.shouldCloseToLastApp(WatchIdentifier("TheWatch")) shouldBe false
+   }
+
+   @Test
+   fun `Report close to last app not needed when opening over unknown app`() = scope.runTest {
+      controller.openWatchapp()
+
+      controller.shouldCloseToLastApp(WatchIdentifier("TheWatch")) shouldBe false
+   }
 }

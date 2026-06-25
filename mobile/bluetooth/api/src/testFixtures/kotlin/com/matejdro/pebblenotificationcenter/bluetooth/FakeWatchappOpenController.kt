@@ -6,6 +6,7 @@ import io.rebble.pebblekit2.common.model.WatchIdentifier
 class FakeWatchappOpenController : WatchappOpenController, BucketSyncWatchappOpenController {
    private var nextWatchappOpenForAutoSync: Boolean = false
    var watchappOpened: Boolean = false
+   var shouldCloseToLastApp: Boolean = true
    var watchappClosedToTheLastApp: WatchIdentifier? = null
 
    override fun isNextWatchappOpenForAutoSync(): Boolean {
@@ -26,5 +27,9 @@ class FakeWatchappOpenController : WatchappOpenController, BucketSyncWatchappOpe
 
    override suspend fun closeWatchappToTheLastApp(watch: WatchIdentifier) {
       watchappClosedToTheLastApp = watch
+   }
+
+   override fun shouldCloseToLastApp(watch: WatchIdentifier): Boolean {
+      return shouldCloseToLastApp
    }
 }

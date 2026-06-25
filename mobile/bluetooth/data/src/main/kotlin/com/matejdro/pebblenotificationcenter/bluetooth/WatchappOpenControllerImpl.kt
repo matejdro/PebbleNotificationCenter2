@@ -10,6 +10,7 @@ import dev.zacsweers.metro.binding
 import io.rebble.pebblekit2.client.PebbleInfoRetriever
 import io.rebble.pebblekit2.client.PebbleSender
 import io.rebble.pebblekit2.common.model.WatchIdentifier
+import io.rebble.pebblekit2.model.Watchapp
 import kotlinx.coroutines.flow.first
 import logcat.logcat
 import java.util.UUID
@@ -42,9 +43,9 @@ class WatchappOpenControllerImpl(
       for (watch in connectedWatches) {
          val watchId = watch.id
 
-         val openedApp = pebbleInfoRetriever.getActiveApp(watchId).first()?.id
-         if (openedApp != WATCHAPP_UUID) {
-            lastOpenedApps[watchId] = openedApp
+         val openedApp = pebbleInfoRetriever.getActiveApp(watchId).first()
+         if (openedApp != null && openedApp.type == Watchapp.Type.WATCHAPP && openedApp.id != WATCHAPP_UUID) {
+            lastOpenedApps[watchId] = openedApp.id
          }
 
          logcat { "Opening app on the $watchId, from ${openedApp ?: "null"}" }
@@ -60,5 +61,9 @@ class WatchappOpenControllerImpl(
       } else {
          pebbleSender.stopAppOnTheWatch(WATCHAPP_UUID, listOf(watch))
       }
+   }
+
+   override fun shouldCloseToLastApp(watch: WatchIdentifier): Boolean {
+      return lastOpenedApps.containsKey(watch)
    }
 }

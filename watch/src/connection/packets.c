@@ -20,6 +20,7 @@ static void receive_vibrate_packet(const DictionaryIterator* iterator);
 static void receive_image_packet(const DictionaryIterator* iterator);
 
 static int close_retries_left = 3;
+static bool close_via_phone = true;
 static uint8_t active_buckets_holder[MAX_BUCKETS];
 
 void packets_init()
@@ -104,6 +105,12 @@ static void on_close_me_finished(const bool success)
 
 void send_close_me()
 {
+    if (!close_via_phone)
+    {
+        window_stack_pop_all(true);
+        return;
+    }
+
     // Even if close clashes with other packets, we don't really care,
     // we don't want to show errors to the user
     ignore_bluetooth_busy_errors = true;
@@ -211,6 +218,11 @@ static void receive_phone_welcome(const DictionaryIterator* iterator)
     Tuple* dict_entry = dict_find(iterator, 2);
 
     bucket_sync_on_start_received(dict_entry->value->data, dict_entry->length);
+
+    if (dict_find(iterator, 4) != NULL)
+    {
+        close_via_phone = false;
+    }
 }
 
 static void receive_sync_restart(const DictionaryIterator* iterator)

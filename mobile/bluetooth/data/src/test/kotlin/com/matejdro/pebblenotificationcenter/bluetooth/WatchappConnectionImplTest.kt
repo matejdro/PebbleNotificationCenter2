@@ -525,6 +525,18 @@ class WatchappConnectionImplTest {
       result shouldBe ReceiveResult.Ack
    }
 
+   @Test
+   fun `Suppress close to last app when not needed`() = scope.runTest {
+      watchappOpenController.shouldCloseToLastApp = false
+
+      val result = receiveStandardHelloPacket(bufferSize = 38u)
+      runCurrent()
+
+      result shouldBe ReceiveResult.Ack
+
+      sender.sentData.first().shouldContainKey(4u)
+   }
+
    private suspend fun receiveStandardHelloPacket(
       version: UInt = 0u,
       bufferSize: UInt = 1000u,

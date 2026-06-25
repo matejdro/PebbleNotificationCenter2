@@ -9,5 +9,7 @@ interface WatchappOpenController {
 
    suspend fun openWatchapp()
 
+   fun shouldCloseToLastApp(watch: WatchIdentifier): Boolean
+
    suspend fun closeWatchappToTheLastApp(watch: WatchIdentifier)
 }
