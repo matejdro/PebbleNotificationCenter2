@@ -3,8 +3,12 @@ package com.matejdro.pebblenotificationcenter.rules.ui.details
 import android.os.Build
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -16,6 +20,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
@@ -41,6 +47,7 @@ import me.zhanghai.compose.preference.LocalPreferenceTheme
 import me.zhanghai.compose.preference.Preference
 import me.zhanghai.compose.preference.PreferenceCategory
 import me.zhanghai.compose.preference.SwitchPreference
+import me.zhanghai.compose.preference.TextFieldPreference
 import me.zhanghai.compose.preference.preferenceTheme
 import si.inova.kotlinova.compose.result.ResultKey
 import si.inova.kotlinova.navigation.navigator.Navigator
@@ -113,6 +120,15 @@ internal fun ColumnScope.Settings(
          onValueChange = { updatePreference(RuleOption.hideFromHistory, it) },
          title = { Text(stringResource(R.string.preference_hide_from_history)) },
          summary = { Text(stringResource(R.string.preference_hide_from_history_description)) }
+      )
+
+      IntPreference(
+         value = preferences[RuleOption.priority],
+         onValueChange = { updatePreference(RuleOption.priority, it) },
+         title = stringResource(R.string.preference_priority),
+         summary = stringResource(R.string.preference_priority_description),
+         min = 0,
+         max = MAX_PRIORITY,
       )
 
       PreferenceCategory({ Text(stringResource(R.string.actions)) })
@@ -382,6 +398,46 @@ private fun VibrationPatternPreference(
       }
    )
 }
+
+@Composable
+private inline fun IntPreference(
+   value: Int,
+   crossinline onValueChange: (Int) -> Unit,
+   title: String,
+   summary: String = "",
+   min: Int = 0,
+   max: Int = Int.MAX_VALUE,
+) {
+   TextFieldPreference(
+      value,
+      valueToText = {
+         it.toString()
+      },
+      textToValue = {
+         it.toIntOrNull()?.coerceIn(min, max) ?: value
+      },
+      onValueChange = {
+         onValueChange(it)
+      },
+      title = { Text(title) },
+      summary = { Text("$value\n\n$summary") },
+      textField = { stringValue, onStringValueChange, onOk ->
+         val intValue = stringValue.text.toIntOrNull()
+
+         OutlinedTextField(
+            value = stringValue,
+            onValueChange = onStringValueChange,
+            modifier = Modifier.fillMaxWidth(),
+            keyboardActions = KeyboardActions { onOk() },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Number),
+            isError = intValue == null || intValue !in min..max,
+            singleLine = true,
+         )
+      }
+   )
+}
+
+private const val MAX_PRIORITY = 100
 
 @Preview(heightDp = 2000, showBackground = true)
 @Composable

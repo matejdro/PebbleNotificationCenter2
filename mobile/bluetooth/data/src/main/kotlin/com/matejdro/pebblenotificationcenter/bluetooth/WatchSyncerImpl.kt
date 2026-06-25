@@ -97,10 +97,11 @@ class WatchSyncerImpl(
 
       val flags: UByte = getNotificationFlags(notification, preferences)
 
+      val sortKey = -epochSecond * preferences[RuleOption.priority]
       val id = bucketSyncRepository.updateBucketDynamic(
          notificationData.key,
          buffer.readByteArray(),
-         sortKey = -epochSecond,
+         sortKey = sortKey,
          flags = flags
       )
 

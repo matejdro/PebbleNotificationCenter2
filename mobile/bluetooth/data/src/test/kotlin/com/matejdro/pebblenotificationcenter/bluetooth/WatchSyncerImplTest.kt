@@ -3,6 +3,7 @@ package com.matejdro.pebblenotificationcenter.bluetooth
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.preferencesOf
 import com.matejdro.bucketsync.BucketSyncRepository
 import com.matejdro.bucketsync.FakeBucketSyncRepository
 import com.matejdro.bucketsync.api.Bucket
@@ -887,6 +888,37 @@ class WatchSyncerImplTest {
 
       bucketSyncRepository.awaitNextUpdate(0u, emptyList())
          .activeBucketFlags shouldBe listOf(0u.toUByte())
+   }
+
+   @Test
+   fun `Sort by priority first`() = scope.runTest {
+      init()
+      watchSyncer.syncNotification(
+         ParsedNotification(
+            "1",
+            "com.app",
+            "Title",
+            "sTitle",
+            "Body",
+            // 19:18:25 GMT | Sunday, January 4, 2026
+            Instant.ofEpochSecond(1_767_554_305),
+         ),
+      )
+
+      watchSyncer.syncNotification(
+         ParsedNotification(
+            "2",
+            "com.app",
+            "Title",
+            "sTitle",
+            "Body",
+            // 19:18:26 GMT | Sunday, January 4, 2026
+            Instant.ofEpochSecond(1_767_554_306)
+         ),
+         preferencesOf(RuleOption.priority.key to 40)
+      )
+
+      bucketSyncRepository.awaitNextUpdate(0u, emptyList()).activeBuckets shouldBe listOf<UShort>(2u, 3u)
    }
 
    private suspend fun init(enablePreferences: Boolean = false) {

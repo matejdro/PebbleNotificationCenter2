@@ -118,4 +118,8 @@
     <string name="preference_hide_from_history_description">When enabled, notifications matched by this rule will not be shown on
         the history page
     </string>
+    <string name="preference_priority">Priority</string>
+    <string name="preference_priority_description">Notifications with higher priority will appear first.\n\nCan be between 0-100
+        (inclusive).
+    </string>
 </resources>

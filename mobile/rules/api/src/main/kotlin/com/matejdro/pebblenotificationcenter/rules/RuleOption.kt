@@ -3,6 +3,7 @@ package com.matejdro.pebblenotificationcenter.rules
 import com.matejdro.pebblenotificationcenter.rules.keys.BooleanPreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.EnumPreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.IntListPreferenceKeyWithDefault
+import com.matejdro.pebblenotificationcenter.rules.keys.IntPreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.NullableStringPreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.StringListPreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.StringPairSetPreferenceKeyWithDefault
@@ -41,6 +42,7 @@ object RuleOption {
       emptySet()
    )
    val hideFromHistory = BooleanPreferenceKeyWithDefault("hide_from_history", false)
+   val priority = IntPreferenceKeyWithDefault("priority", 50)
 
    val titleFont = EnumPreferenceKeyWithDefault("font_title", PebbleFont.GOTHIC_24_BOLD)
    val subtitleFont = EnumPreferenceKeyWithDefault("font_subtitle", PebbleFont.GOTHIC_14_BOLD)
