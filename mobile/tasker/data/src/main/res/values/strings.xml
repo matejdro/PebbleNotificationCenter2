@@ -7,7 +7,7 @@
         Tasker.
     </string>
     <string name="running_tasker_action">Running Tasker Action</string>
-    <string name="error_tasker_zero_timeout">Catapult\'s Tasker actions only work reliably when the \'Timeout\' on the Tasker\'s
+    <string name="error_tasker_zero_timeout">NC\'s Tasker actions only work reliably when the \'Timeout\' on the Tasker\'s
         action is set to more than 0.
     </string>
     <string name="explanation_for_special_use_action">Tasker plugin service that executes the app\'s actions from Tasker</string>
