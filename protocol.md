@@ -150,6 +150,10 @@ Sent from the watch when it wants to close. Phone app will open the last app, cl
   * 0 = OFF
   * 1 = ON
 
+### Reload all notifications (packet 14)
+
+Sent from the watch to re-show all hidden notifications
+
 # Buckets
 
 Watch can store up to 15 of them, up to 255 bytes each.    

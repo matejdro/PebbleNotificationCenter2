@@ -13,6 +13,7 @@ import com.matejdro.pebble.bluetooth.common.util.requireUint
 import com.matejdro.pebble.bluetooth.common.util.writeUShort
 import com.matejdro.pebblenotificationcenter.notification.ActionHandler
 import com.matejdro.pebblenotificationcenter.notification.NotificationRepository
+import com.matejdro.pebblenotificationcenter.notification.NotificationServiceController
 import com.matejdro.pebblenotificationcenter.notification.SubmenuActionHandler
 import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
 import com.matejdro.pebblenotificationcenter.rules.keys.set
@@ -48,6 +49,7 @@ class WatchappConnectionImpl(
    private val watch: WatchIdentifier,
    private val preferenceStore: DataStore<Preferences>,
    private val watchMetadata: WatchMetadata,
+   private val serviceController: NotificationServiceController,
 ) : WatchAppConnection {
 
    private var reInitRequestJob: Job? = null
@@ -92,6 +94,11 @@ class WatchappConnectionImpl(
 
          10u -> {
             processSettingSetPacket(data)
+         }
+
+         14u -> {
+            serviceController.reloadAllNotifications()
+            ReceiveResult.Ack
          }
 
          else -> {

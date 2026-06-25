@@ -90,18 +90,29 @@ class NotificationService : NotificationListenerService() {
       coroutineScope.launch {
          mutex.withLock {
             notificationProcessor.onNotificationsCleared()
-            for (sbn in activeNotifications) {
-               val parsed = parseNotification(sbn)
-               if (parsed != null) {
-                  notificationProcessor.onNotificationPosted(parsed, suppressVibration = true)
-               } else {
-                  logcat { "Notification ${sbn.key} has no text. Skipping..." }
-               }
-            }
          }
+
+         reloadAllNotifications()
       }
 
       controlListenerHintsAndOpenOnReconnect()
+   }
+
+   suspend fun reloadAllNotifications() {
+      mutex.withLock {
+         for (sbn in activeNotifications) {
+            if (notificationProcessor.getNotificationByKey(sbn.key) != null) {
+               continue
+            }
+
+            val parsed = parseNotification(sbn)
+            if (parsed != null) {
+               notificationProcessor.onNotificationPosted(parsed, suppressVibration = true)
+            } else {
+               logcat { "Notification ${sbn.key} has no text. Skipping..." }
+            }
+         }
+      }
    }
 
    override fun onNotificationPosted(sbn: StatusBarNotification) {

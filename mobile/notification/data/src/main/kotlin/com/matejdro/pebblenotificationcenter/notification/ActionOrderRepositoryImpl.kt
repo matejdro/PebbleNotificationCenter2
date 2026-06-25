@@ -46,7 +46,6 @@ class ActionOrderRepositoryImpl(
          .onEach { list ->
             if (!checkedForDefaultItems) {
                val anyMissing = defaultOrder.any { !list.contains(it) }
-               println("anyMissing: $anyMissing")
                if (anyMissing) {
                   insertDefaultItems()
                }

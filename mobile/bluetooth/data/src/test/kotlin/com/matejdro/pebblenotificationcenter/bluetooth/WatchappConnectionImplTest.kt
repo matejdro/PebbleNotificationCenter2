@@ -8,6 +8,7 @@ import com.matejdro.pebble.bluetooth.WatchMetadata
 import com.matejdro.pebble.bluetooth.common.PacketQueue
 import com.matejdro.pebble.bluetooth.common.test.FakePebbleSender
 import com.matejdro.pebble.bluetooth.common.test.sentData
+import com.matejdro.pebblenotificationcenter.FakeNotificationServiceController
 import com.matejdro.pebblenotificationcenter.bluetooth.api.WATCHAPP_UUID
 import com.matejdro.pebblenotificationcenter.common.test.InMemoryDataStore
 import com.matejdro.pebblenotificationcenter.notification.FakeActionHandler
@@ -55,6 +56,7 @@ class WatchappConnectionImplTest {
    private val packetQueue = PacketQueue(sender, watch, WATCHAPP_UUID)
 
    private val globalPreferences = InMemoryDataStore(emptyPreferences())
+   private val serviceController = FakeNotificationServiceController()
 
    private val watchMetadata = WatchMetadata()
 
@@ -79,6 +81,7 @@ class WatchappConnectionImplTest {
       watch,
       globalPreferences,
       watchMetadata,
+      serviceController,
    )
 
    @Test
@@ -505,6 +508,21 @@ class WatchappConnectionImplTest {
       runCurrent()
 
       bucketSyncWatchLoop.lastActiveBuckets shouldBe listOf(4u.toUByte(), 5u.toUByte())
+   }
+
+   @Test
+   fun `Reload notification upon receiving that command`() = scope.runTest {
+      receiveStandardHelloPacket(bufferSize = 123u)
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(14u),
+         )
+      )
+      runCurrent()
+
+      serviceController.allNotificationsReloaded shouldBe true
+      result shouldBe ReceiveResult.Ack
    }
 
    private suspend fun receiveStandardHelloPacket(

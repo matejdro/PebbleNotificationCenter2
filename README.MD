@@ -144,6 +144,8 @@ In this case, you can select `Show image` action, which will show the image on t
 
 This notification will hide the notification from the watch, while keeping it on the phone. If notification is updated or re-notified on the phone, it will re-appear on the watch.
 
+If you have hidden a notification accidentally, you can bring back all hidden notifications from settings (Double click BACK -> `Restore hidden notifs`).
+
 ## On the phone
 
 ### Mute / Hide an app

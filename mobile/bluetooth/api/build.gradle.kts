@@ -13,5 +13,4 @@ dependencies {
    testFixturesApi(projects.bucketsync.api)
    testFixturesApi(projects.notification.api)
    testFixturesApi(libs.pebblekit.api)
-   testFixturesImplementation(libs.kotlin.coroutines)
 }

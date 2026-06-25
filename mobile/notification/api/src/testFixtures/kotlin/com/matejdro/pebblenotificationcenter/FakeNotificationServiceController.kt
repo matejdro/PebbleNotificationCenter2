@@ -13,6 +13,7 @@ class FakeNotificationServiceController : NotificationServiceController {
    var lastTriggeredIntent: Any? = null
    var lastTriggeredReplyAction: NativeAction? = null
    var lastSnooze: Pair<String, Duration>? = null
+   var allNotificationsReloaded: Boolean = false
 
    override fun cancelNotification(key: String): Boolean {
       lastCancelledNotification = key
@@ -44,5 +45,9 @@ class FakeNotificationServiceController : NotificationServiceController {
    ): Boolean {
       lastTriggeredReplyAction = NativeAction(text, pendingIntent, remoteInputKey)
       return returnValue
+   }
+
+   override suspend fun reloadAllNotifications() {
+      allNotificationsReloaded = true
    }
 }

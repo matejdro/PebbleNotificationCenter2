@@ -9,4 +9,6 @@ interface NotificationServiceController {
    fun triggerAction(pendingIntent: Any): Boolean
    fun triggerReplyAction(pendingIntent: Any, remoteInputKey: String, text: String): Boolean
    fun getNotificationChannels(pkg: String): List<LightNotificationChannel>
+
+   suspend fun reloadAllNotifications()
 }

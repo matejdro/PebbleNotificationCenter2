@@ -91,4 +91,10 @@ class NotificationServiceControllerImpl : NotificationServiceController {
          emptyList()
       }
    }
+
+   override suspend fun reloadAllNotifications() {
+      val service = NotificationService.instance ?: return
+
+      service.reloadAllNotifications()
+   }
 }

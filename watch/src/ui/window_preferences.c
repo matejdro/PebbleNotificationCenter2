@@ -8,7 +8,8 @@
 static CustomStatusBarLayer* status_bar = NULL;
 
 static SimpleMenuItem section_muting[2] = {};
-static SimpleMenuSection sections[1] = {};
+static SimpleMenuItem section_notifications[1] = {};
+static SimpleMenuSection sections[2] = {};
 static SimpleMenuLayer* menu_layer = NULL;
 
 static uint8_t preferences[1];
@@ -39,6 +40,16 @@ static void toggle_watch_mute()
 static void toggle_phone_mute()
 {
     set_preference(1, !(preferences[0] & 0x02));
+}
+
+static void reset_hidden()
+{
+    bluetooth_register_sending_finish(sending_finish);
+    const bool result = send_reload_notifications();
+    if (!result)
+    {
+        vibes_double_pulse();
+    }
 }
 
 static void update_data()
@@ -99,14 +110,19 @@ static void window_load(Window* window)
     sections[0].title = "Muting";
     sections[0].items = section_muting;
     sections[0].num_items = 2;
+    sections[1].title = "Notifications";
+    sections[1].items = section_notifications;
+    sections[1].num_items = 1;
 
     section_muting[0].title = "Mute watch";
     section_muting[0].callback = toggle_watch_mute;
     section_muting[1].title = "Mute phone";
     section_muting[1].callback = toggle_phone_mute;
+    section_notifications[0].title = "Restore hidden notifs";
+    section_notifications[0].callback = reset_hidden;
     update_data();
 
-    menu_layer = simple_menu_layer_create(main_content_bounds, window, sections, 1, NULL);
+    menu_layer = simple_menu_layer_create(main_content_bounds, window, sections, 2, NULL);
     layer_add_child(window_layer, simple_menu_layer_get_layer(menu_layer));
 }
 
