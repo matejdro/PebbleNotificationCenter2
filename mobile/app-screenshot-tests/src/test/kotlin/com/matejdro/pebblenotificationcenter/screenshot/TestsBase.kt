@@ -96,7 +96,8 @@ abstract class TestsBase {
       }
       paparazzi.unsafeUpdateConfig(
          PIXEL_5.copy(
-            nightMode = NightMode.NIGHT
+            nightMode = NightMode.NIGHT,
+            screenHeight = if (tall) 10_000 else PIXEL_5.screenHeight
          )
       )
       paparazzi.snapshot("${previewName}_night") {
