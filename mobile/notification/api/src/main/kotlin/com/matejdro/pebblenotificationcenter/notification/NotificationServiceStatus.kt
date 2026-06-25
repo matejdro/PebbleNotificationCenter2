@@ -7,6 +7,8 @@ interface NotificationServiceStatus {
    fun isEnabled(): Boolean
 
    fun isPermissionGranted(): Boolean
+   fun isPermissionGrantedLegacy(): Boolean
 
    fun requestNotificationAccess()
+   fun requestLegacyNotificationAccess()
 }

@@ -13,10 +13,15 @@
     <string name="rules">Rules</string>
     <string name="history">History</string>
     <string name="permission_notification_access_title">Notification Access</string>
+    <string name="permission_notification_access_legacy_title">Notification Access (Fallback)</string>
     <string name="permission_notification_access_companion_description">Needed to forward notifications from the other apps.
     </string>
     <string name="permission_notification_access_companion_instructions">On the following screen, select anything.
         It does not need to be a Pebble.
+    </string>
+    <string name="permission_notification_access_legacy_explicit_description">(Only use this if above grant does not
+        work)\n\nNeeded to forward notifications from the other
+        apps.
     </string>
     <string name="permission_notification_access_legacy_description">Needed to forward notifications from the other
         apps.

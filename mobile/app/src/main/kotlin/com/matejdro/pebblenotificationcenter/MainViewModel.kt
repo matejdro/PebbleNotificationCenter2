@@ -2,6 +2,7 @@ package com.matejdro.pebblenotificationcenter
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.lifecycle.ViewModel
@@ -30,9 +31,16 @@ class MainViewModel(
 
    init {
       viewModelScope.launch {
+         val currentPrefs = preferences.data.first()
+         val notificationPermissionGranted = if (currentPrefs[useLegacyPermissionCheck] == true) {
+            notificationServiceStatus.isPermissionGrantedLegacy()
+         } else {
+            notificationServiceStatus.isPermissionGranted()
+         }
+
          _startingScreens.value = if (
-            notificationServiceStatus.isPermissionGranted() &&
-            preferences.data.first()[onboardingShownVersion] == LATEST_VERSION &&
+            notificationPermissionGranted &&
+            currentPrefs[onboardingShownVersion] == LATEST_VERSION &&
             pebbleAndroidAppPicker.getCurrentlySelectedApp() != null
          ) {
             listOf(HomeScreenKey, RuleListScreenKey)
@@ -54,3 +62,4 @@ class MainViewModel(
 
 private const val LATEST_VERSION = 1
 private val onboardingShownVersion = intPreferencesKey("onboarding_shown_version")
+private val useLegacyPermissionCheck = booleanPreferencesKey("use_legacy_permission")

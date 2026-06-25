@@ -146,8 +146,9 @@ private fun ColumnScope.OnboardingScrollContent(
    }
    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       NotificationAccessPermissionCompanion(serviceStatus)
+      NotificationAccessPermissionLegacy(serviceStatus, sayLegacy = true)
    } else {
-      NotificationAccessPermissionLegacy(serviceStatus)
+      NotificationAccessPermissionLegacy(serviceStatus, sayLegacy = false)
    }
 
    PebblekitPermission(pebbleAndroidAppPicker)
@@ -258,11 +259,12 @@ private fun NotificationAccessPermissionCompanion(
 @Composable
 private fun NotificationAccessPermissionLegacy(
    serviceStatus: NotificationServiceStatus,
+   sayLegacy: Boolean,
 ) {
    var permissionGranted by remember { mutableStateOf(serviceStatus.isPermissionGranted()) }
 
    LifecycleResumeEffect(serviceStatus) {
-      permissionGranted = serviceStatus.isPermissionGranted()
+      permissionGranted = serviceStatus.isPermissionGrantedLegacy()
 
       onPauseOrDispose { }
    }
@@ -272,13 +274,30 @@ private fun NotificationAccessPermissionLegacy(
          Modifier.padding(8.dp),
          verticalArrangement = Arrangement.spacedBy(8.dp)
       ) {
-         Text(stringResource(R.string.permission_notification_access_title), style = MaterialTheme.typography.headlineSmall)
-         Text(stringResource(R.string.permission_notification_access_legacy_description))
+         Text(
+            stringResource(
+               if (sayLegacy) {
+                  R.string.permission_notification_access_legacy_title
+               } else {
+                  R.string.permission_notification_access_title
+               }
+            ),
+            style = MaterialTheme.typography.headlineSmall
+         )
+         Text(
+            stringResource(
+               if (sayLegacy) {
+                  R.string.permission_notification_access_legacy_explicit_description
+               } else {
+                  R.string.permission_notification_access_legacy_description
+               }
+            )
+         )
 
          if (permissionGranted) {
             Text("✅")
          } else {
-            Button(onClick = { serviceStatus.requestNotificationAccess() }) { Text(stringResource(grant)) }
+            Button(onClick = { serviceStatus.requestLegacyNotificationAccess() }) { Text(stringResource(grant)) }
          }
       }
    }
@@ -391,7 +410,12 @@ private val FAKE_SERVICE_STATUS = object : NotificationServiceStatus {
       return false
    }
 
+   override fun isPermissionGrantedLegacy(): Boolean {
+      return false
+   }
+
    override fun requestNotificationAccess() {}
+   override fun requestLegacyNotificationAccess() {}
 }
 
 private val FAKE_APP_PICKER = object : PebbleAndroidAppPicker {
