@@ -13,4 +13,6 @@ object GlobalPreferenceKeys {
    val showMessagingStyleChronologically = BooleanPreferenceKeyWithDefault("show_messaging_style_chronologically", false)
 
    val notifyOnReconnect = BooleanPreferenceKeyWithDefault("notify_on_reconnect", true)
+
+   val scrollWrapAround = BooleanPreferenceKeyWithDefault("wrap_around_scroll", true)
 }

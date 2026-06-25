@@ -3,6 +3,7 @@
 #include "commons/connection/bucket_sync.h"
 #include "connection/notification_details_fetcher.h"
 #include "connection/packets.h"
+#include "data/preferences.h"
 #include "ui/window_status.h"
 #include "ui/window_notification/data_loading.h"
 #include "ui/window_notification/window_notification.h"
@@ -17,6 +18,7 @@ int main(void)
     window_notification_data_app_started();
     bucket_sync_init();
     notification_details_fetcher_init();
+    reload_preferences();
 
     send_watch_welcome();
 

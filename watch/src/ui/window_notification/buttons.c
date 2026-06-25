@@ -103,6 +103,21 @@ static void button_up_multi(const ClickRecognizerRef recognizer, void* context)
         return;
     }
 
+    switch_to_previous_notification();
+}
+
+static void button_down_multi(const ClickRecognizerRef recognizer, void* context)
+{
+    if (window_notification_data.menu_displayed)
+    {
+        return;
+    }
+
+    switch_to_next_notification();
+}
+
+void switch_to_previous_notification(void)
+{
     if (window_notification_data.currently_selected_bucket_index > 0)
     {
         window_notification_data_select_bucket_on_index(window_notification_data.currently_selected_bucket_index - 1);
@@ -113,13 +128,8 @@ static void button_up_multi(const ClickRecognizerRef recognizer, void* context)
     }
 }
 
-static void button_down_multi(const ClickRecognizerRef recognizer, void* context)
+void switch_to_next_notification(void)
 {
-    if (window_notification_data.menu_displayed)
-    {
-        return;
-    }
-
     if (window_notification_data.currently_selected_bucket_index < window_notification_data.bucket_count - 1)
     {
         window_notification_data_select_bucket_on_index(window_notification_data.currently_selected_bucket_index + 1);

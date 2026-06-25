@@ -8,6 +8,7 @@
 #include "commons/connection/bucket_sync.h"
 #include "connection/notification_details_fetcher.h"
 #include "connection/packets.h"
+#include "data/preferences.h"
 #include "ui/window_status.h"
 
 static BucketList* buckets;
@@ -247,6 +248,7 @@ static void on_bucket_updated(const BucketMetadata bucket_metadata, void* contex
     if (bucket_metadata.id == 1)
     {
         // Settings update
+        reload_preferences();
         idle_handler_register_timers();
         return;
     }

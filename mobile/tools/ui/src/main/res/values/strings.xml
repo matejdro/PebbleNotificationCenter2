@@ -17,4 +17,8 @@
     <string name="setting_notify_on_reconnect_description">If phone received any non-muted notifications during watch disconnect,
         it will show them on the watch after it reconnects
     </string>
+    <string name="setting_wrap_around">Wrap around scroll</string>
+    <string name="setting_wrap_around_description">When enabled, pressing DOWN button on the bottom of the notification will
+        scroll to the top instead of moving to the next notification
+    </string>
 </resources>

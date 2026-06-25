@@ -239,6 +239,17 @@ private fun ToolsScreenContent(
          }
 
          item(span = { GridItemSpan(maxLineSpan) }) {
+            SwitchPreference(
+               state.preferences[GlobalPreferenceKeys.scrollWrapAround],
+               onValueChange = {
+                  updatePreference(GlobalPreferenceKeys.scrollWrapAround, it)
+               },
+               title = { Text(stringResource(R.string.setting_wrap_around)) },
+               summary = { Text(stringResource(R.string.setting_wrap_around_description)) }
+            )
+         }
+
+         item(span = { GridItemSpan(maxLineSpan) }) {
             Text(
                stringResource(R.string.version, state.versionName),
                Modifier
@@ -267,7 +278,7 @@ private fun ToolButton(onClick: () -> Unit, icon: Int, text: Int) {
 
 @FullScreenPreviews
 @Composable
-@ShowkaseComposable(group = "test")
+@ShowkaseComposable(group = "test", tags = ["tall"])
 internal fun ToolsScreenPreview() {
    PreviewTheme {
       ToolsScreenContent(

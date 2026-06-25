@@ -4,6 +4,7 @@
 #include "commons/bytes.h"
 #include "commons/connection/bucket_sync.h"
 #include "connection/packets.h"
+#include "data/preferences.h"
 
 const uint32_t PERIODIC_VIBRATION_PERIOD_MS = 10000;
 static const uint32_t PERIODIC_VIBRATION_SEGMENTS[] = {50};
@@ -79,15 +80,11 @@ void idle_handler_register_timers()
     {
         if (launch_reason() == APP_LAUNCH_PHONE)
         {
-            uint8_t config[3];
-            if (bucket_sync_load_bucket(1, config))
-            {
-                const uint32_t duration = read_uint16_from_byte_array(config, 1) * 1000;
+            const uint32_t duration = preferences.auto_close_timeout * 1000;
 
-                if (duration != 0)
-                {
-                    auto_close_timer = app_timer_register(duration, send_close_me, NULL);
-                }
+            if (duration != 0)
+            {
+                auto_close_timer = app_timer_register(duration, send_close_me, NULL);
             }
         }
 

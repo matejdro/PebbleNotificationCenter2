@@ -90,7 +90,9 @@ If an indicator is filled with black color, it indicates the currently selected 
 ### Buttons
 
 * Single click / hold DOWN - Scroll text down (wraps on click)
+  * Can be changed in settings to switch to the next notification when already on the bottom instead of wrapping
 * Single click / hold UP - Scroll text up (wraps on click)
+  * Can be changed in settings to switch to the previous notification when already on the top instead of wrapping
 * Double click UP - Switch to previous notification (wraps around)
 * Double click DOWN - Switch to next notification (wraps around)
 * Click SELECT - Open actions menu

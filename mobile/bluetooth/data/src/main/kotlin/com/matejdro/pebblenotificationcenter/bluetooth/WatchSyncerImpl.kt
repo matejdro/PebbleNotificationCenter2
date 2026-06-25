@@ -144,7 +144,7 @@ class WatchSyncerImpl(
       )
    }
 
-   @Suppress("MissingUseCall") // Buffer does not need to be closed
+   @Suppress("MissingUseCall", "MagicNumber") // Buffer does not need to be closed, protocol constants
    private fun syncPreferences() {
       defaultScope.launch {
          preferenceStore.data.debounce(50.milliseconds).collect { preferences ->
@@ -154,6 +154,9 @@ class WatchSyncerImpl(
             }
             if (preferences[GlobalPreferenceKeys.mutePhone]) {
                flags = flags or 0x02
+            }
+            if (!preferences[GlobalPreferenceKeys.scrollWrapAround]) {
+               flags = flags or 0x04
             }
 
             val autoClose = preferences[GlobalPreferenceKeys.autoCloseSeconds]

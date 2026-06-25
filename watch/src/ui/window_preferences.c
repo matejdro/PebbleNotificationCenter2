@@ -3,6 +3,7 @@
 #include "commons/connection/bluetooth.h"
 #include "commons/connection/bucket_sync.h"
 #include "connection/packets.h"
+#include "data/preferences.h"
 #include "layers/status_bar.h"
 
 static CustomStatusBarLayer* status_bar = NULL;
@@ -11,8 +12,6 @@ static SimpleMenuItem section_muting[2] = {};
 static SimpleMenuItem section_notifications[1] = {};
 static SimpleMenuSection sections[2] = {};
 static SimpleMenuLayer* menu_layer = NULL;
-
-static uint8_t preferences[1];
 
 static void sending_finish(const bool success)
 {
@@ -34,12 +33,12 @@ static void set_preference(const uint8_t id, const bool value)
 
 static void toggle_watch_mute()
 {
-    set_preference(0, !(preferences[0] & 0x01));
+    set_preference(0, !preferences.watch_muted);
 }
 
 static void toggle_phone_mute()
 {
-    set_preference(1, !(preferences[0] & 0x02));
+    set_preference(1, !preferences.phone_muted);
 }
 
 static void reset_hidden()
@@ -54,12 +53,11 @@ static void reset_hidden()
 
 static void update_data()
 {
-    const bool bucket_exists = bucket_sync_load_bucket(1, preferences);
-    if (!bucket_exists)
-    {
-        return;
-    }
-    if ((preferences[0] & 0x01) != 0)
+    reload_preferences();
+    APP_LOG(APP_LOG_LEVEL_INFO, "Update data %d", preferences.watch_muted);
+
+
+    if (preferences.watch_muted)
     {
         section_muting[0].subtitle = "currently ON";
     }
@@ -68,7 +66,7 @@ static void update_data()
         section_muting[0].subtitle = "currently OFF";
     }
 
-    if ((preferences[0] & 0x02) != 0)
+    if (preferences.phone_muted)
     {
         section_muting[1].subtitle = "currently ON";
     }

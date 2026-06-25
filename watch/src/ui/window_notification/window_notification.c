@@ -9,6 +9,7 @@
 #include "../layers/dots.h"
 #include "../layers/status_bar.h"
 #include "commons/math.h"
+#include "data/preferences.h"
 
 const int16_t HORIZONTAL_TEXT_PADDING = 2;
 const int16_t MID_TEXT_VERTICAL_PADDING = 4;
@@ -210,18 +211,13 @@ void window_notification_show()
     window_set_window_handlers(
         window,
         (WindowHandlers)
-    {
-        .
-        load = window_load,
-        .
-        unload = window_unload,
-        .
-        appear = window_appear,
-        .
-        disappear = window_disappear,
-    }
-    )
-    ;
+        {
+            .load = window_load,
+            .unload = window_unload,
+            .appear = window_appear,
+            .disappear = window_disappear,
+        }
+    );
 
     window_stack_push(window, true);
 }
@@ -243,16 +239,42 @@ void window_notification_ui_on_bucket_list_updated()
 void window_notification_ui_scroll_by(const int16_t amount, const bool repeating)
 {
     const int16_t current_position = scroll_layer_get_content_offset(scroll_layer).y;
-    const int16_t max_scroll = scroll_layer_get_content_size(scroll_layer).h -
-        layer_get_bounds(scroll_layer_get_layer(scroll_layer)).size.h;
+    const int16_t scroll_content_height = scroll_layer_get_content_size(scroll_layer).h;
+    const int16_t scroll_layer_height = layer_get_bounds(scroll_layer_get_layer(scroll_layer)).size.h;
+    int16_t max_scroll;
+    if (scroll_content_height > scroll_layer_height)
+    {
+        max_scroll = scroll_content_height - scroll_layer_height;
+    }
+    else
+    {
+        max_scroll = 0;
+    }
+
+    APP_LOG(APP_LOG_LEVEL_INFO, "Max scroll %d %d %d %d", max_scroll, current_position,
+            scroll_layer_get_content_size(scroll_layer).h, layer_get_bounds(scroll_layer_get_layer(scroll_layer)).size.h);
 
     if (amount > 0 && !repeating && current_position == 0)
     {
-        scroll_layer_set_content_offset(scroll_layer, GPoint(0, -max_scroll), true);
+        if (preferences.no_scroll_wrap)
+        {
+            switch_to_previous_notification();
+        }
+        else
+        {
+            scroll_layer_set_content_offset(scroll_layer, GPoint(0, -max_scroll), true);
+        }
     }
     else if (amount < 0 && !repeating && current_position == -max_scroll)
     {
-        scroll_layer_set_content_offset(scroll_layer, GPointZero, true);
+        if (preferences.no_scroll_wrap)
+        {
+            switch_to_next_notification();
+        }
+        else
+        {
+            scroll_layer_set_content_offset(scroll_layer, GPointZero, true);
+        }
     }
     else
     {
