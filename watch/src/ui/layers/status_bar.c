@@ -4,7 +4,15 @@
 #include "commons/connection/bucket_sync.h"
 #include "connection/notification_details_fetcher.h"
 
-static const int STATUS_BAR_HEIGHT = 16;
+// The status bar grows to fit the clock font. The "large font" mode (toggled from the phone's Tools menu and
+// delivered via bucket 1 flag 0x10) uses GOTHIC_18 instead of GOTHIC_14 so the clock is easier to read.
+#define STATUS_BAR_HEIGHT_SMALL 16
+#define STATUS_BAR_HEIGHT_LARGE 22
+#define CLOCK_WIDTH_SMALL 48
+#define CLOCK_WIDTH_LARGE 62
+#define CLOCK_FONT_SMALL FONT_KEY_GOTHIC_14
+#define CLOCK_FONT_LARGE FONT_KEY_GOTHIC_18
+#define ICON_AREA_WIDTH 14
 
 // Emery (and presumably future Core devices with larger displays) have a pretty big corner radius. And since there's
 // more display real estate, we can afford to make some padding on the right
@@ -14,8 +22,24 @@ static const int STATUS_BAR_HEIGHT = 16;
 #define CORNER_PADDING 0
 #endif
 
-#define CLOCK_WIDTH 48
-static const int STATUS_BAR_RIGHT_WIDTH = CLOCK_WIDTH + 1 + 14 + 1 + CORNER_PADDING;
+// Width consumed on the right side of the bar (clock + 1px gap + status icon + 1px gap + corner padding) for a given
+// clock width. The clock width is stored in the layer's data so both the paint proc and get_left_space agree on it.
+static int status_bar_right_width(const int clock_width)
+{
+    return clock_width + 1 + ICON_AREA_WIDTH + 1 + CORNER_PADDING;
+}
+
+// Reads the "large font" preference from bucket 1 (byte 0, flag 0x10). Falls back to the small font when the bucket
+// has not been synced from the phone yet.
+static bool status_bar_large_font_enabled(void)
+{
+    uint8_t config[3];
+    if (bucket_sync_load_bucket(1, config))
+    {
+        return (config[0] & 0x10) != 0;
+    }
+    return false;
+}
 
 static CustomStatusBarLayer* active_layer;
 static bool listeners_active = false;
@@ -31,12 +55,20 @@ static void update_data();
 
 CustomStatusBarLayer* custom_status_bar_layer_create(const GRect window_frame)
 {
-    Layer* layer = layer_create(GRect(0, 0, window_frame.size.w, STATUS_BAR_HEIGHT));
+    const bool large_font = status_bar_large_font_enabled();
+    const int status_bar_height = large_font ? STATUS_BAR_HEIGHT_LARGE : STATUS_BAR_HEIGHT_SMALL;
+    const int clock_width = large_font ? CLOCK_WIDTH_LARGE : CLOCK_WIDTH_SMALL;
+    const char* clock_font = large_font ? CLOCK_FONT_LARGE : CLOCK_FONT_SMALL;
+
+    // Store the clock width in the layer's data so the paint proc and get_left_space can reconstruct the geometry.
+    Layer* layer = layer_create_with_data(GRect(0, 0, window_frame.size.w, status_bar_height), sizeof(uint8_t));
+    *(uint8_t*)layer_get_data(layer) = (uint8_t)clock_width;
+
     TextLayer* clock_layer = text_layer_create(
-        GRect(window_frame.size.w - CLOCK_WIDTH - CORNER_PADDING - 1, 0, CLOCK_WIDTH - 1, STATUS_BAR_HEIGHT));
+        GRect(window_frame.size.w - clock_width - CORNER_PADDING - 1, 0, clock_width - 1, status_bar_height));
     text_layer_set_background_color(clock_layer, GColorClear);
     text_layer_set_text_color(clock_layer, GColorWhite);
-    text_layer_set_font(clock_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+    text_layer_set_font(clock_layer, fonts_get_system_font(clock_font));
     text_layer_set_text_alignment(clock_layer, GTextAlignmentRight);
 
     layer_add_child(layer, text_layer_get_layer(clock_layer));
@@ -65,19 +97,25 @@ static void custom_status_bar_paint(Layer* layer, GContext* ctx)
     graphics_fill_rect(ctx, layer_get_frame(layer), 0, GCornerNone);
 
     const GRect whole_status_size = layer_get_bounds(layer);
+    const int bar_height = whole_status_size.size.h;
+    const uint8_t clock_width = *(uint8_t*)layer_get_data(layer);
 
-    const uint16_t icon_x = whole_status_size.size.w - CLOCK_WIDTH - 1 - 14 - CORNER_PADDING;
+    const uint16_t icon_x = whole_status_size.size.w - clock_width - 1 - ICON_AREA_WIDTH - CORNER_PADDING;
+    // Vertically center the indicators within the bar (matches the original 16px-tall layout where the 13px and 10px
+    // icons sat at y=1 and y=3 respectively).
+    const int large_icon_y = (bar_height - 13) / 2;
+    const int small_icon_y = (bar_height - 10) / 2;
     if (sending_error != APP_MSG_OK)
     {
-        graphics_draw_bitmap_in_rect(ctx, indicator_error, GRect(icon_x + 3, 3, 9, 10));
+        graphics_draw_bitmap_in_rect(ctx, indicator_error, GRect(icon_x + 3, small_icon_y, 9, 10));
     }
     else if (!is_phone_connected)
     {
-        graphics_draw_bitmap_in_rect(ctx, indicator_disconnected, GRect(icon_x, 1, 14, 13));
+        graphics_draw_bitmap_in_rect(ctx, indicator_disconnected, GRect(icon_x, large_icon_y, 14, 13));
     }
     else if (is_currently_sending_data || bucket_sync_is_currently_syncing || notification_details_fetcher_is_fetching())
     {
-        graphics_draw_bitmap_in_rect(ctx, indicator_busy, GRect(icon_x + 3, 3, 9, 10));
+        graphics_draw_bitmap_in_rect(ctx, indicator_busy, GRect(icon_x + 3, small_icon_y, 9, 10));
     }
 }
 
@@ -171,6 +209,7 @@ static void update_data()
 GRect custom_status_bar_get_left_space(CustomStatusBarLayer* layer)
 {
     const GRect whole_status_size = layer_get_bounds(layer->layer);
+    const uint8_t clock_width = *(uint8_t*)layer_get_data(layer->layer);
 
     return (GRect)
     {
@@ -181,7 +220,7 @@ GRect custom_status_bar_get_left_space(CustomStatusBarLayer* layer)
         },
         .
         size = {
-            .w = whole_status_size.size.w - STATUS_BAR_RIGHT_WIDTH - CORNER_PADDING,
+            .w = whole_status_size.size.w - status_bar_right_width(clock_width) - CORNER_PADDING,
             .h = whole_status_size.size.h
         }
     };

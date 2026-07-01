@@ -261,6 +261,17 @@ private fun ToolsScreenContent(
          }
 
          item(span = { GridItemSpan(maxLineSpan) }) {
+            SwitchPreference(
+               state.preferences[GlobalPreferenceKeys.largeStatusBarFont],
+               onValueChange = {
+                  updatePreference(GlobalPreferenceKeys.largeStatusBarFont, it)
+               },
+               title = { Text(stringResource(R.string.setting_large_status_bar_font)) },
+               summary = { Text(stringResource(R.string.setting_large_status_bar_font_description)) }
+            )
+         }
+
+         item(span = { GridItemSpan(maxLineSpan) }) {
             Text(
                stringResource(R.string.version, state.versionName),
                Modifier

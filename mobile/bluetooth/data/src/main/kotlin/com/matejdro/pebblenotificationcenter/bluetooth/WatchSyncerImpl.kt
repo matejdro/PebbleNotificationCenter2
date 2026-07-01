@@ -162,6 +162,9 @@ class WatchSyncerImpl(
             if (preferences[GlobalPreferenceKeys.turnOnBacklight]) {
                flags = flags or 0x08
             }
+            if (preferences[GlobalPreferenceKeys.largeStatusBarFont]) {
+               flags = flags or 0x10
+            }
 
             val autoClose = preferences[GlobalPreferenceKeys.autoCloseSeconds]
 

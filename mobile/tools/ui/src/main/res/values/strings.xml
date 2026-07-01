@@ -25,4 +25,8 @@
     <string name="setting_turn_on_backlight_description">When enabled, watch will automatically turn on the backlight every time
         it vibrates for a new notification.
     </string>
+    <string name="setting_large_status_bar_font">Large status bar font</string>
+    <string name="setting_large_status_bar_font_description">Use a larger font for the clock in the watch status bar so the
+        time is easier to read. Takes effect the next time a screen is opened on the watch.
+    </string>
 </resources>

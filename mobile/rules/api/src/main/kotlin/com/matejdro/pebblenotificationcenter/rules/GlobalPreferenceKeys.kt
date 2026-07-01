@@ -17,4 +17,6 @@ object GlobalPreferenceKeys {
    val scrollWrapAround = BooleanPreferenceKeyWithDefault("wrap_around_scroll", true)
 
    val turnOnBacklight = BooleanPreferenceKeyWithDefault("turn_on_backlight", false)
+
+   val largeStatusBarFont = BooleanPreferenceKeyWithDefault("large_status_bar_font", false)
 }
