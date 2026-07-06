@@ -188,6 +188,7 @@ jobs:
       - name: Compile Unit Tests
         run: "./gradlew compileDebugUnitTestSources compileReleaseUnitTestSources"
         working-directory: mobile
+        if: "${{ env.BUILD_MOBILE == 'true' }}"
       - name: Lint
         run: "./gradlew lintRelease runDebugDetekt assertModuleGraph buildHealth detectTooManyFiles :bucketsync:data:verifyDebugDatabaseMigration reportMerge --continue"
         working-directory: mobile
