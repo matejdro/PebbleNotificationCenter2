@@ -22,6 +22,7 @@ int main(void)
 
     send_watch_welcome();
 
+
     const BucketList* buckets = bucket_sync_get_bucket_list();
 
     if (is_any_notification_bucket_active(buckets))
