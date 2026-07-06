@@ -55,6 +55,30 @@ class NotificationParserTest {
    }
 
    @Test
+   fun parseNotificationWithLongTitleMergesTitleIntoBodyAndKeepsConversationTitle() {
+      // A title longer than the subtitle limit is dropped from the subtitle and prepended to the body. The raw
+      // title is kept in conversationTitle so a rule with "hide subtitle" can strip it back out of the body.
+      val longTitle = "Group Chat: Alice, Bob, Carol"
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle(longTitle)
+         .setContentText("Alice: Hello")
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "",
+         "$longTitle\nAlice: Hello",
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
+         conversationTitle = longTitle,
+      )
+   }
+
+   @Test
    fun parseNotificationWithoutTitle() {
       val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setContentText("Description")
@@ -314,6 +338,7 @@ class NotificationParserTest {
          "A very very long long title title\nDescription",
          Instant.ofEpochMilli(0L),
          channel = testChannelOrNull(),
+         conversationTitle = "A very very long long title title",
       )
    }
 

@@ -80,12 +80,7 @@ class NotificationProcessor(
          pauseStatusBeforeInsert
       )
 
-      val regexesToReplace = settings[RuleOption.regexReplacements]
-      val regexReplacedParsedNotification = parsedNotification.copy(
-         title = replaceRegexes(parsedNotification.title, regexesToReplace),
-         subtitle = replaceRegexes(parsedNotification.subtitle, regexesToReplace),
-         body = replaceRegexes(parsedNotification.body, regexesToReplace),
-      )
+      val regexReplacedParsedNotification = applyTextRules(parsedNotification, settings)
 
       val initialProcessedNotification = ProcessedNotification(
          regexReplacedParsedNotification,
@@ -114,6 +109,38 @@ class NotificationProcessor(
       insertIntoHistory(settings, regexReplacedParsedNotification, affectedRules, hideReason, muteReason)
       notifications[bucketId] = processedNotification
       notificationIdsByKeys[parsedNotification.key] = bucketId
+   }
+
+   /**
+    * Applies a rule's text transforms to a notification: regex replacements, and (when "hide subtitle" is on)
+    * blanking the subtitle and stripping the conversation/group title that the parser merged into the body.
+    */
+   private fun applyTextRules(parsed: ParsedNotification, settings: Preferences): ParsedNotification {
+      val regexesToReplace = settings[RuleOption.regexReplacements]
+      val hideSubtitle = settings[RuleOption.hideSubtitle]
+      val body = if (hideSubtitle) {
+         removeConversationTitle(body = parsed.body, conversationTitle = parsed.conversationTitle)
+      } else {
+         parsed.body
+      }
+      return parsed.copy(
+         title = replaceRegexes(parsed.title, regexesToReplace),
+         subtitle = if (hideSubtitle) "" else replaceRegexes(parsed.subtitle, regexesToReplace),
+         body = replaceRegexes(body, regexesToReplace),
+      )
+   }
+
+   /**
+    * Removes the conversation/group title from the body. The parser prepends a too-long title to the body as its
+    * own line, so we handle both "title\nactual body" and a body that is only the title.
+    */
+   private fun removeConversationTitle(body: String, conversationTitle: String): String {
+      if (conversationTitle.isBlank()) return body
+      return when {
+         body == conversationTitle -> ""
+         body.startsWith("$conversationTitle\n") -> body.removePrefix("$conversationTitle\n")
+         else -> body
+      }
    }
 
    private fun shouldHide(

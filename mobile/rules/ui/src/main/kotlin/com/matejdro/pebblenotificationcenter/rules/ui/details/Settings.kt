@@ -113,6 +113,13 @@ internal fun ColumnScope.Settings(
          fontNames,
       )
 
+      SwitchPreference(
+         value = preferences[RuleOption.hideSubtitle],
+         onValueChange = { updatePreference(RuleOption.hideSubtitle, it) },
+         title = { Text(stringResource(R.string.setting_hide_subtitle)) },
+         summary = { Text(stringResource(R.string.setting_hide_subtitle_description)) }
+      )
+
       RegexReplacementSetPreference(navigator, updatePreference, preferences)
 
       SwitchPreference(
