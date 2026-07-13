@@ -5,13 +5,13 @@
 #include "connection/notification_details_fetcher.h"
 
 // The status bar grows to fit the clock font. The "large font" mode (toggled from the phone's Tools menu and
-// delivered via bucket 1 flag 0x10) uses GOTHIC_18 instead of GOTHIC_14 so the clock is easier to read.
+// delivered via bucket 1 flag 0x10) uses GOTHIC_24_BOLD instead of GOTHIC_14 so the clock is easier to read.
 #define STATUS_BAR_HEIGHT_SMALL 16
-#define STATUS_BAR_HEIGHT_LARGE 22
+#define STATUS_BAR_HEIGHT_LARGE 30
 #define CLOCK_WIDTH_SMALL 48
-#define CLOCK_WIDTH_LARGE 62
+#define CLOCK_WIDTH_LARGE 86
 #define CLOCK_FONT_SMALL FONT_KEY_GOTHIC_14
-#define CLOCK_FONT_LARGE FONT_KEY_GOTHIC_18
+#define CLOCK_FONT_LARGE FONT_KEY_GOTHIC_24_BOLD
 #define ICON_AREA_WIDTH 14
 
 // Emery (and presumably future Core devices with larger displays) have a pretty big corner radius. And since there's
