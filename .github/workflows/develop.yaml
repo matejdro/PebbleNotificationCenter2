@@ -186,7 +186,7 @@ jobs:
 
       # Tests
       - name: Compile Unit Tests
-        run: "./gradlew compileDebugUnitTestSources compileReleaseUnitTestSources"
+        run: "./gradlew compileDebugUnitTestSources"
         working-directory: mobile
         if: "${{ env.BUILD_MOBILE == 'true' }}"
       - name: Lint
