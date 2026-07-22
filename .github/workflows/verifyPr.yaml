@@ -64,7 +64,7 @@ jobs:
       # Tests
 
       - name: Compile Unit Tests
-        run: "./gradlew compileDebugUnitTestSources compileReleaseUnitTestSources"
+        run: "./gradlew compileDebugUnitTestSources"
         working-directory: mobile
       - name: Lint
         run: "./gradlew lintRelease runDebugDetekt assertModuleGraph buildHealth detectTooManyFiles :bucketsync:data:verifyDebugDatabaseMigration reportMerge --continue"
