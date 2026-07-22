@@ -17,7 +17,7 @@ apply(plugin = "dev.detekt")
 
 if (isAndroidProject()) {
    commonAndroid {
-      lint {
+      lint.apply {
          lintConfig = file("$rootDir/config/android-lint.xml")
          abortOnError = true
 
