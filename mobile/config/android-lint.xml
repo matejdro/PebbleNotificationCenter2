@@ -42,4 +42,7 @@ Ignore unknown issue id to allow us to configure issues in this file  that
 
     <!-- We do not even have the internet permission, so this does not apply to us -->
     <issue id="DefaultCleartextTraffic" severity="ignore" />
+
+    <!-- We have query all apps enabled, so this is a non-issue  -->
+    <issue id="QueryPermissionsNeeded" severity="ignore" />
 </lint>
