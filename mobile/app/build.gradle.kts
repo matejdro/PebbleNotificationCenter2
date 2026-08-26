@@ -16,7 +16,7 @@ android {
 
    defaultConfig {
       applicationId = "com.matejdro.pebblenotificationcenter2"
-      targetSdk = 33
+      targetSdk = 37
       versionCode = 1
       versionName = "1.0.0"
    }

@@ -21,9 +21,6 @@ Ignore unknown issue id to allow us to configure issues in this file  that
     <!-- Do not allow builds to pass with autoboxing -->
     <issue id="AutoboxingStateCreation" severity="error" />
 
-    <!-- We decide when we update target SDK, not lint -->
-    <issue id="OldTargetApi" severity="ignore" />
-
     <!-- Permission checks very often happen in different place than method calls, making this more false positive than not -->
     <issue id="MissingPermission" severity="ignore" />
 
