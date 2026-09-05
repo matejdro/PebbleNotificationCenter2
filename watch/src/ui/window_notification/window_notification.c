@@ -24,6 +24,7 @@ NotificationWindowData window_notification_data = {
     .title_font = 0,
     .subtitle_font = 0,
     .body_font = 0,
+    .color = 0,
     .currently_selected_bucket = 0,
     .currently_selected_bucket_index = 0,
     .bucket_count = 0,
@@ -116,11 +117,32 @@ void window_notification_ui_redraw_scroller_content()
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 static void scroll_content_paint(Layer* layer, GContext* ctx)
 {
-    graphics_context_set_text_color(ctx, GColorBlack);
     const GRect bounds = layer_get_bounds(layer);
+
+#ifdef PBL_COLOR
+    if (window_notification_data.color != 0)
+    {
+        const GColor banner_color = (GColor8) {.argb = window_notification_data.color};
+
+        graphics_context_set_fill_color(ctx, banner_color);
+        graphics_fill_rect(
+            ctx,
+            GRect(0, 0, bounds.size.w, body.bounds.origin.y),
+            0,
+            GCornerNone
+        );
+        graphics_context_set_text_color(ctx, gcolor_legible_over(banner_color));
+    }
+    else
+#endif
+    {
+        graphics_context_set_text_color(ctx, GColorBlack);
+    }
 
     graphics_draw_text(ctx, title.text, title.font, title.bounds, GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
     graphics_draw_text(ctx, subtitle.text, subtitle.font, subtitle.bounds, GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
+
+    graphics_context_set_text_color(ctx, GColorBlack);
     graphics_draw_text(ctx, body.text, body.font, body.bounds, GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
     if (window_notification_data.icon != NULL)
     {

@@ -34,6 +34,7 @@ typedef struct
     uint8_t subtitle_font;
     char subtitle_text[21];
     uint8_t body_font;
+    uint8_t color;
     // Include + 40 for the date and the null character
     char body_text[MAX_BODY_TEXT_SIZE + 40];
     GBitmap* icon;

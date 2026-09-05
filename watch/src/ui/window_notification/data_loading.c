@@ -15,6 +15,8 @@ static BucketList* buckets;
 
 static const uint32_t STORAGE_BUCKET_FLAGS_ID_MIN = 3000;
 
+static uint8_t get_bucket_flags(const uint8_t id);
+
 static void apply_date_to_body()
 {
     const time_t current_unix_time = time(NULL);
@@ -70,6 +72,7 @@ static void reload_data_for_current_bucket()
         strcpy(window_notification_data.title_text, "");
         strcpy(window_notification_data.subtitle_text, "");
         strcpy(window_notification_data.body_text, "");
+        window_notification_data.color = 0;
     }
     else
     {
@@ -82,6 +85,8 @@ static void reload_data_for_current_bucket()
         window_notification_data.title_font = bucket_data[position++];
         window_notification_data.subtitle_font = bucket_data[position++];
         window_notification_data.body_font = bucket_data[position++];
+
+        window_notification_data.color = bucket_data[position++];
 
         strcpy(window_notification_data.title_text, (char*)&bucket_data[position]);
         position += strlen(window_notification_data.title_text) + 1;

@@ -70,6 +70,8 @@ class WatchSyncerImpl(
       buffer.writeUByte(preferences[RuleOption.subtitleFont].ordinal.toUByte())
       buffer.writeUByte(preferences[RuleOption.bodyFont].ordinal.toUByte())
 
+      buffer.writeUByte(notificationData.color.toPebbleColor())
+
       buffer.write(
          utf8Encoder.encodeSizeLimited(
             notificationData.title,
@@ -180,6 +182,24 @@ class WatchSyncerImpl(
          }
       }
    }
+}
+
+@Suppress("MagicNumber") // Pebble GColor8 packs 2 bits each of alpha, red, green and blue
+private fun Int.toPebbleColor(): UByte {
+   if (this == 0) {
+      return 0u
+   }
+
+   val red = (this shr 16) and 0xff
+   val green = (this shr 8) and 0xff
+   val blue = this and 0xff
+
+   return (
+      0xc0 or
+         ((red shr 6) shl 4) or
+         ((green shr 6) shl 2) or
+         (blue shr 6)
+   ).toUByte()
 }
 
 private const val MAX_TITLE_TEXT_LENGTH = 20
