@@ -12,8 +12,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.work.Configuration
 import androidx.work.WorkManager
-import coil3.ImageLoader
-import coil3.SingletonImageLoader
 import com.matejdro.pebble.common.crashreport.CrashWindowThemeProvider
 import com.matejdro.pebble.common.logging.TinyLogKermitWriter
 import com.matejdro.pebble.common.logging.TinyLogLogcatLogger
@@ -25,7 +23,6 @@ import com.matejdro.pebblenotificationcenter.notifications.NotificationChannelMa
 import com.matejdro.pebblenotificationcenter.ui.theme.NotificationCenterTheme
 import dev.zacsweers.metro.createGraphFactory
 import dispatch.core.DefaultDispatcherProvider
-import dispatch.core.defaultDispatcher
 import kotlinx.coroutines.launch
 import logcat.AndroidLogcatLogger
 import logcat.LogPriority
@@ -65,14 +62,6 @@ open class NotificationCenterApplication : Application(), NavigationInjectingApp
             }
          }
       )
-
-      SingletonImageLoader.setSafe {
-         ImageLoader.Builder(this)
-            // Load Coil cache on the background thread
-            // See https://github.com/coil-kt/coil/issues/1878
-            .interceptorCoroutineContext(applicationGraph.getDefaultCoroutineScope().defaultDispatcher)
-            .build()
-      }
 
       setupLogging()
       enableStrictMode()

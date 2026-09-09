@@ -141,7 +141,6 @@ dependencies {
    implementation(libs.androidx.lifecycle.viewModel.compose)
    implementation(libs.androidx.navigation3)
    implementation(libs.androidx.workManager)
-   implementation(libs.coil)
    implementation(libs.dispatch)
    implementation(libs.kermit)
    implementation(libs.kotlin.coroutines)
