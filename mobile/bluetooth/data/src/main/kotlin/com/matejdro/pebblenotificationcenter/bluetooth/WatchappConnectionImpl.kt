@@ -77,8 +77,7 @@ class WatchappConnectionImpl(
             if (watchMetadata.watchBufferSize > 0) {
                notificationDetailsPusher.pushNotificationDetails(
                   bucketId = data.requireUint(1u).toInt(),
-                  maxPacketSize = watchMetadata.watchBufferSize,
-                  colorWatch = watchMetadata.colorWatch
+                  maxPacketSize = watchMetadata.watchBufferSize
                )
             }
 

@@ -11,7 +11,7 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 interface DrawableExtractor {
-   fun convertIconDrawableToBitmapBytes(drawable: Drawable, width: Int, height: Int, colorWatch: Boolean): ByteArray
+   fun convertIconDrawableToBitmapBytes(drawable: Drawable, width: Int, height: Int): ByteArray
    fun convertIconToBitmapBytes(icon: Icon, fill: Boolean): ByteArray
 }
 
@@ -25,7 +25,6 @@ class DrawableExtractorImpl(
       drawable: Drawable,
       width: Int,
       height: Int,
-      colorWatch: Boolean,
    ): ByteArray {
       val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
       val canvas = Canvas(bitmap)
@@ -36,13 +35,7 @@ class DrawableExtractorImpl(
       val finalImage = ImagePixels(bitmap)
          .useAlphaAsValues()
 
-      return if (colorWatch) {
-         finalImage
-            .dither(toColorScreen = true)
-            .encodeColorImageIntoBytes()
-      } else {
-         finalImage.encodeMonochromeImageIntoBytes()
-      }
+      return finalImage.encodeMonochromeImageIntoBytes()
    }
 
    override fun convertIconToBitmapBytes(icon: Icon, fill: Boolean): ByteArray {

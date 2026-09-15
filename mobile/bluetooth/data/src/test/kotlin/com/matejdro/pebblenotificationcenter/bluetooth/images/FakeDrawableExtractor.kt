@@ -7,7 +7,7 @@ class FakeDrawableExtractor : DrawableExtractor {
    private val outputMap = mutableMapOf<Any, ByteArray>()
    var wasFilled: Boolean? = null
 
-   fun registerOutput(drawable: Drawable, width: Int, height: Int, colorWatch: Boolean, output: ByteArray) {
+   fun registerOutput(drawable: Drawable, width: Int, height: Int, output: ByteArray, colorWatch: Boolean? = null) {
       outputMap[DrawableExtractorRequest(drawable, width, height, colorWatch)] = output
    }
 
@@ -19,11 +19,10 @@ class FakeDrawableExtractor : DrawableExtractor {
       drawable: Drawable,
       width: Int,
       height: Int,
-      colorWatch: Boolean,
    ): ByteArray {
-      return outputMap[DrawableExtractorRequest(drawable, width, height, colorWatch)]
+      return outputMap[DrawableExtractorRequest(drawable, width, height, null)]
          ?: error(
-            "Output of drawable=$drawable, width=$width, height=$height, colorWatch=$colorWatch does not exist." +
+            "Output of drawable=$drawable, width=$width, height=$height, colorWatch=null does not exist." +
                " Existing fakes: ${outputMap.keys}"
          )
    }
@@ -37,6 +36,6 @@ class FakeDrawableExtractor : DrawableExtractor {
       val drawable: Drawable,
       val width: Int,
       val height: Int,
-      val colorWatch: Boolean,
+      val colorWatch: Boolean? = null,
    )
 }

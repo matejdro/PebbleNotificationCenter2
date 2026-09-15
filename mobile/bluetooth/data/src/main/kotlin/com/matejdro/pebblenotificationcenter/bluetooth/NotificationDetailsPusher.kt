@@ -40,7 +40,7 @@ class NotificationDetailsPusherImpl(
    // Magic numbers are a whole point of this function (protocol constants).
    // Use is not required for memory-only Buffer
    @Suppress("MagicNumber", "MissingUseCall")
-   override fun pushNotificationDetails(bucketId: Int, maxPacketSize: Int, colorWatch: Boolean) {
+   override fun pushNotificationDetails(bucketId: Int, maxPacketSize: Int) {
       previousDetailsSendingJob?.cancel()
 
       val notification = notificationRepository.getNotification(bucketId)
@@ -67,8 +67,7 @@ class NotificationDetailsPusherImpl(
                drawableExtractor.convertIconDrawableToBitmapBytes(
                   icon as Drawable,
                   ICON_SIZE_PIXELS,
-                  ICON_SIZE_PIXELS,
-                  colorWatch
+                  ICON_SIZE_PIXELS
                )
             }
             if (iconData != null) {
@@ -146,5 +145,5 @@ private const val MAX_ACTIONS_TEXT_BYTES = 20
 private const val ICON_SIZE_PIXELS = 32
 
 interface NotificationDetailsPusher {
-   fun pushNotificationDetails(bucketId: Int, maxPacketSize: Int, colorWatch: Boolean)
+   fun pushNotificationDetails(bucketId: Int, maxPacketSize: Int)
 }

@@ -119,10 +119,13 @@ static void scroll_content_paint(Layer* layer, GContext* ctx)
 {
     const GRect bounds = layer_get_bounds(layer);
 
+    GColor on_banner_color;
+    GColor banner_color;
+
 #ifdef PBL_COLOR
     if (window_notification_data.color != 0)
     {
-        const GColor banner_color = (GColor8) {.argb = window_notification_data.color};
+        banner_color = (GColor8){.argb = window_notification_data.color};
 
         graphics_context_set_fill_color(ctx, banner_color);
         graphics_fill_rect(
@@ -131,13 +134,16 @@ static void scroll_content_paint(Layer* layer, GContext* ctx)
             0,
             GCornerNone
         );
-        graphics_context_set_text_color(ctx, gcolor_legible_over(banner_color));
+        on_banner_color = gcolor_legible_over(banner_color);
     }
     else
 #endif
     {
-        graphics_context_set_text_color(ctx, GColorBlack);
+        banner_color = GColorWhite;
+        on_banner_color = GColorBlack;
     }
+
+    graphics_context_set_text_color(ctx, on_banner_color);
 
     graphics_draw_text(ctx, title.text, title.font, title.bounds, GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
     graphics_draw_text(ctx, subtitle.text, subtitle.font, subtitle.bounds, GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
@@ -146,6 +152,11 @@ static void scroll_content_paint(Layer* layer, GContext* ctx)
     graphics_draw_text(ctx, body.text, body.font, body.bounds, GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
     if (window_notification_data.icon != NULL)
     {
+        static GColor palette[2];
+        palette[0] = on_banner_color;
+        palette[1] = banner_color;
+
+        gbitmap_set_palette(window_notification_data.icon, palette, false);
         graphics_draw_bitmap_in_rect(
             ctx,
             window_notification_data.icon,

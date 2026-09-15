@@ -67,7 +67,7 @@ class NotificationDetailsPusherImplTest {
             )
          )
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
 
       runCurrent()
 
@@ -111,7 +111,7 @@ class NotificationDetailsPusherImplTest {
             )
          )
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
 
       runCurrent()
 
@@ -155,13 +155,13 @@ class NotificationDetailsPusherImplTest {
 
       sender.pauseSending = true
 
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 0, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 0, maxPacketSize = 100)
       runCurrent()
 
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 1, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 1, maxPacketSize = 100)
       runCurrent()
 
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 2, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 2, maxPacketSize = 100)
       runCurrent()
 
       sender.pauseSending = false
@@ -198,7 +198,7 @@ class NotificationDetailsPusherImplTest {
             )
          ),
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
 
       runCurrent()
 
@@ -251,7 +251,7 @@ class NotificationDetailsPusherImplTest {
             )
          ),
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
 
       runCurrent()
 
@@ -305,7 +305,7 @@ class NotificationDetailsPusherImplTest {
             actions = List(30) { Action.Dismiss(it.toString(), it.toUByte()) }
          ),
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
 
       runCurrent()
 
@@ -316,7 +316,7 @@ class NotificationDetailsPusherImplTest {
    fun `Send blank packet when the notification does not exist`() = scope.runTest {
       setup()
 
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
 
       runCurrent()
 
@@ -356,7 +356,7 @@ class NotificationDetailsPusherImplTest {
             )
          )
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
 
       runCurrent()
 
@@ -393,7 +393,7 @@ class NotificationDetailsPusherImplTest {
             )
          )
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
       runCurrent()
 
       notificationRepository.nextVibration = null
@@ -410,7 +410,7 @@ class NotificationDetailsPusherImplTest {
             )
          )
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 13, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 13, maxPacketSize = 100)
       runCurrent()
 
       sender.pauseSending = false
@@ -440,7 +440,7 @@ class NotificationDetailsPusherImplTest {
                )
             )
          )
-         notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
+         notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
          runCurrent()
 
          notificationRepository.nextVibration = intArrayOf(20, 20, 20, 20)
@@ -457,7 +457,7 @@ class NotificationDetailsPusherImplTest {
                )
             )
          )
-         notificationDetailsPusher.pushNotificationDetails(bucketId = 13, maxPacketSize = 100, colorWatch = false)
+         notificationDetailsPusher.pushNotificationDetails(bucketId = 13, maxPacketSize = 100)
          runCurrent()
 
          sender.pauseSending = false
@@ -500,7 +500,7 @@ class NotificationDetailsPusherImplTest {
          )
       )
 
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
       runCurrent()
 
       notificationRepository.notificationsMarkedAsRead.shouldContainExactly(12)
@@ -523,7 +523,7 @@ class NotificationDetailsPusherImplTest {
             )
          )
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
 
       runCurrent()
 
@@ -571,7 +571,7 @@ class NotificationDetailsPusherImplTest {
             )
          ),
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
 
       runCurrent()
 
@@ -626,7 +626,6 @@ class NotificationDetailsPusherImplTest {
          drawable = fakeDrawable,
          width = 32,
          height = 32,
-         colorWatch = false,
          output = byteArrayOf(1, 2, 3)
       )
 
@@ -646,83 +645,7 @@ class NotificationDetailsPusherImplTest {
             )
          )
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
-
-      runCurrent()
-
-      sender.sentData.shouldContainExactly(
-         mapOf(
-            0u to PebbleDictionaryItem.UInt8(5),
-            1u to PebbleDictionaryItem.Bytes(
-               byteArrayOf(
-                  12, // Notification id
-
-                  0, // No actions in this test
-
-                  0, 3, // 3 Bytes for the image
-                  // Image data
-                  1,
-                  2,
-                  3,
-
-                  // Hello in UTf-8
-                  72,
-                  101,
-                  108,
-                  108,
-                  111
-               )
-            )
-         )
-      )
-   }
-
-   @Test
-   fun `Send a colorful notification icon`() = scope.runTest {
-      val fakeDrawable = object : Drawable() {
-         override fun draw(canvas: Canvas) {
-            throw UnsupportedOperationException()
-         }
-
-         @Deprecated("Deprecated in Java")
-         override fun getOpacity(): Int {
-            throw UnsupportedOperationException()
-         }
-
-         override fun setAlpha(alpha: Int) {
-            throw UnsupportedOperationException()
-         }
-
-         override fun setColorFilter(colorFilter: ColorFilter?) {
-            throw UnsupportedOperationException()
-         }
-      }
-
-      drawableExtractor.registerOutput(
-         drawable = fakeDrawable,
-         width = 32,
-         height = 32,
-         colorWatch = true,
-         output = byteArrayOf(1, 2, 3)
-      )
-
-      setup()
-
-      notificationRepository.putNotification(
-         12,
-         ProcessedNotification(
-            ParsedNotification(
-               "",
-               "",
-               "",
-               "",
-               "Hello",
-               Instant.MIN,
-               iconDrawable = fakeDrawable,
-            )
-         )
-      )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = true)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
 
       runCurrent()
 
@@ -773,7 +696,7 @@ class NotificationDetailsPusherImplTest {
             )
          )
       )
-      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100, colorWatch = false)
+      notificationDetailsPusher.pushNotificationDetails(bucketId = 12, maxPacketSize = 100)
 
       runCurrent()
       watchSenderJob.cancel()

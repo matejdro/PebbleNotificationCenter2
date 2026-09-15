@@ -4,6 +4,7 @@ import android.graphics.Color
 import ar.com.hjg.pngj.ImageInfo
 import ar.com.hjg.pngj.ImageLineByte
 import ar.com.hjg.pngj.PngWriter
+import ar.com.hjg.pngj.chunks.PngChunkPLTE
 import java.io.ByteArrayOutputStream
 
 /**
@@ -15,13 +16,19 @@ fun ImagePixels.encodeMonochromeImageIntoBytes(): ByteArray {
       /* rows = */ height,
       /* bitdepth = */ 1,
       /* alpha = */ false,
-      /* grayscale = */ true,
-      /* indexed = */ false
+      /* grayscale = */ false,
+      /* indexed = */ true
    )
 
    @Suppress("MissingUseCall") // ByteArrayOutputStream does not need to be closed
    val byteStream = ByteArrayOutputStream()
    val pngWriter = PngWriter(byteStream, imageInfo)
+
+   val palette = PngChunkPLTE(imageInfo)
+   palette.nentries = 2
+   palette.setEntry(0, 0, 0, 0)
+   palette.setEntry(1, Byte.MAX_VALUE.toInt(), Byte.MAX_VALUE.toInt(), Byte.MAX_VALUE.toInt())
+   pngWriter.queueChunk(palette)
 
    for (y in 0..<height) {
       val imageLine = ImageLineByte(imageInfo)
