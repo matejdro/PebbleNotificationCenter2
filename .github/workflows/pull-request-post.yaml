@@ -40,6 +40,7 @@ jobs:
           fetch-depth: 0
           path: repo
           persist-credentials: false
+          allow-unsafe-pr-checkout: true # We are not executing any code from the PR, so we should be fine 
       - name: Set git ref
         if: steps.download.outcome == 'success'
         id: git-hash
