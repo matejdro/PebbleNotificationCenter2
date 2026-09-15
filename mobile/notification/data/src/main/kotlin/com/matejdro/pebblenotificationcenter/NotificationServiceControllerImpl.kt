@@ -1,5 +1,6 @@
 package com.matejdro.pebblenotificationcenter
 
+import android.app.ActivityOptions
 import android.app.PendingIntent
 import android.app.RemoteInput
 import android.content.ClipData
@@ -47,7 +48,20 @@ class NotificationServiceControllerImpl : NotificationServiceController {
       pendingIntent as PendingIntent
 
       return try {
-         pendingIntent.send()
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val backgroundStartMode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+               ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
+            } else {
+               @Suppress("DEPRECATION")
+               ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+            }
+
+            val activityOptions = ActivityOptions.makeBasic()
+               .setPendingIntentBackgroundActivityStartMode(backgroundStartMode)
+            pendingIntent.send(activityOptions.toBundle())
+         } else {
+            pendingIntent.send()
+         }
          true
       } catch (_: PendingIntent.CanceledException) {
          logcat { "Pending intent cancelled" }
