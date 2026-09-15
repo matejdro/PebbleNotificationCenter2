@@ -42,7 +42,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
-          java-version: '21'
+          java-version: '21.0.12+101.0.LTS'
           distribution: temurin
           cache: gradle
       - uses: android-actions/setup-android@7c5672355aaa8fde5f97a91aa9a99616d1ace6bc
