@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Build
@@ -31,11 +32,16 @@ import java.time.Instant
 
 class NotificationParserTest {
 
+   private var providedAppColor: Int = 0
+
    private val context = ApplicationProvider.getApplicationContext<Context>()
-   private val notificationParser = NotificationParser(context, { "SMS App" })
+   private val notificationParser = NotificationParser(context, { "SMS App" }, { providedAppColor })
 
    @Test
    fun parseNotificationWithASimpleText() {
+      // This one should be unused
+      providedAppColor = Color.GREEN
+
       val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setContentTitle("Title")
          .setContentText("Description")
@@ -1060,6 +1066,22 @@ class NotificationParserTest {
       nativeActions
          .map { it.remoteInputResultKey }
          .shouldContainExactly(null)
+   }
+
+   @Test
+   fun provideColorFromAppIconWhenColorPropertyIsNotSet() {
+      providedAppColor = Color.GREEN
+
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle("Title")
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
+         .shouldNotBeNull()
+         .color shouldBe Color.GREEN
    }
 
    private fun createDefaultSilentChannel(): Any? {

@@ -25,6 +25,7 @@ import java.time.Instant
 class NotificationParser(
    private val context: Context,
    private val appNameProvider: AppNameProvider,
+   private val appColorProvider: AppColorProvider,
 ) {
    fun parse(
       sbn: StatusBarNotification,
@@ -61,6 +62,12 @@ class NotificationParser(
          subtitle
       }
 
+      val color = if (notification.color != 0) {
+         notification.color
+      } else {
+         appColorProvider.getAppColor(sbn.packageName)
+      }
+
       return ParsedNotification(
          key = sbn.key,
          id = sbn.id,
@@ -84,7 +91,7 @@ class NotificationParser(
          overrideVibrationPattern = parseVibrationPattern(notification),
          iconDrawable = notification.smallIcon?.loadDrawable(context),
          largeImage = largeImage,
-         color = notification.color,
+         color = color,
       )
    }
 

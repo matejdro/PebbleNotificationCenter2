@@ -25,6 +25,7 @@ dependencies {
    api(libs.dispatch)
 
    implementation(libs.androidx.core)
+   implementation(libs.androidx.palette)
    implementation(libs.logcat)
    implementation(libs.kotlin.coroutines)
    implementation(libs.kotlinova.core)
