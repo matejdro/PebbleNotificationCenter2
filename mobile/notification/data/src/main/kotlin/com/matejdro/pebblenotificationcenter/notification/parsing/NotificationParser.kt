@@ -83,7 +83,8 @@ class NotificationParser(
             notification.extras.getBoolean(NotificationConstants.KEY_FORCE_VIBRATE, false),
          overrideVibrationPattern = parseVibrationPattern(notification),
          iconDrawable = notification.smallIcon?.loadDrawable(context),
-         largeImage = largeImage
+         largeImage = largeImage,
+         color = notification.color,
       )
    }
 

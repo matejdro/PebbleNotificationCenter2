@@ -41,6 +41,7 @@ class NotificationParserTest {
          .setContentText("Description")
          .setSmallIcon(0)
          .setShowWhen(false)
+         .setColor(0xFF5865F2.toInt())
          .build()
 
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
@@ -51,6 +52,7 @@ class NotificationParserTest {
          "Description",
          Instant.ofEpochMilli(0L),
          channel = testChannelOrNull(),
+         color = 0xFF5865F2.toInt(),
       )
    }
 

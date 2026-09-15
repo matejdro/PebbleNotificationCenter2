@@ -43,6 +43,10 @@ data class ParsedNotification(
     * when a rule has "hide subtitle" enabled.
     */
    val conversationTitle: String = "",
+   /**
+    * Notification accent color as an ARGB integer. 0 means that no accent color was provided.
+    */
+   val color: Int = 0,
 )
 
 data class NativeAction(

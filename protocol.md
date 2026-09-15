@@ -195,6 +195,7 @@ Bucket data:
 * Title font (uint8)
 * Subtitle font (uint8)
 * Body font (uint8)
+* Notification accent color (uint8, Pebble GColor8 ARGB). Alpha 0 means no accent color
 * Notification title (string, up to 20 bytes + null terminator)
 * Notification subtitle (string, up to 20 bytes + null terminator)
 * Notification text (string, up to 249 bytes, depending on how much space was already taken by the title and the subtitle). No null terminator (end of bucket functions as the end of string)

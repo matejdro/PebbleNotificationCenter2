@@ -9,7 +9,7 @@
 #include "ui/window_notification/window_notification.h"
 #include "utils/bucket_utils.h"
 
-const uint16_t PROTOCOL_VERSION = 8;
+const uint16_t PROTOCOL_VERSION = 9;
 
 int main(void)
 {

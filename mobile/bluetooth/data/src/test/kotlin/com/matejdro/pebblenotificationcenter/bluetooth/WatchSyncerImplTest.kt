@@ -50,7 +50,8 @@ class WatchSyncerImplTest {
             "sTitle",
             "Body",
             // 19:18:25 GMT | Sunday, January 4, 2026
-            Instant.ofEpochSecond(1_767_554_305)
+            Instant.ofEpochSecond(1_767_554_305),
+            color = 0xFF5865F2.toInt(),
          )
       )
 
@@ -71,6 +72,9 @@ class WatchSyncerImplTest {
                   5,
                   1,
                   0,
+
+                  // Pebble ARGB8 notification accent color
+                  0xd7.toByte(),
 
                   // UTF8 Bytes for the title, followed by null terminator
                   84,
@@ -132,6 +136,9 @@ class WatchSyncerImplTest {
                   5,
                   1,
                   0,
+
+                  // Notification accent color (none)
+                  0,
                ) +
 
                   // 17 'a' characters, followed by the ... and null
@@ -140,8 +147,8 @@ class WatchSyncerImplTest {
                   // 17 'b' characters, followed by the ... and null
                   ByteArray(17) { 'b'.code.toByte() } +
                   byteArrayOf(46, 46, 46, 0) +
-                  // 203 'c' characters, followed by the ...
-                  ByteArray(203) { 'c'.code.toByte() } +
+                  // 202 'c' characters, followed by the ...
+                  ByteArray(202) { 'c'.code.toByte() } +
                   byteArrayOf(46, 46, 46)
             )
          )
@@ -181,6 +188,9 @@ class WatchSyncerImplTest {
                   1,
                   0,
 
+                  // Notification accent color (none)
+                  0,
+
                   // UTF8 Bytes for the title, followed by null terminator
                   97,
                   0,
@@ -189,8 +199,8 @@ class WatchSyncerImplTest {
                   98,
                   0,
                ) +
-                  // 241 'c' characters, followed by the ...
-                  ByteArray(241) { 'c'.code.toByte() } +
+                  // 240 'c' characters, followed by the ...
+                  ByteArray(240) { 'c'.code.toByte() } +
                   byteArrayOf(46, 46, 46)
             )
          )
@@ -335,6 +345,9 @@ class WatchSyncerImplTest {
                   1,
                   0,
 
+                  // Notification accent color (none)
+                  0,
+
                   // UTF8 Bytes for the title, followed by null terminator
                   84,
                   105,
@@ -466,6 +479,9 @@ class WatchSyncerImplTest {
                   // Fonts
                   5,
                   1,
+                  0,
+
+                  // Notification accent color (none)
                   0,
 
                   // UTF8 Bytes for the title, followed by null terminator
@@ -700,6 +716,9 @@ class WatchSyncerImplTest {
                   1,
                   0,
 
+                  // Notification accent color (none)
+                  0,
+
                   // UTF8 Bytes for the title, followed by null terminator
                   84,
                   105,
@@ -764,6 +783,9 @@ class WatchSyncerImplTest {
                   // Fonts
                   5,
                   1,
+                  0,
+
+                  // Notification accent color (none)
                   0,
 
                   // UTF8 Bytes for the title, followed by null terminator
@@ -833,6 +855,9 @@ class WatchSyncerImplTest {
                   3,
                   5,
                   1,
+
+                  // Notification accent color (none)
+                  0,
 
                   // UTF8 Bytes for the title, followed by null terminator
                   84,
