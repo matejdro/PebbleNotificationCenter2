@@ -35,3 +35,6 @@
 -dontwarn java.lang.**
 -dontwarn javax.naming.**
 -dontwarn sun.reflect.Reflection
+
+# Strip out kotlin null checks - they are only useful for interfacing with Java and incur a measurable overhead
+-processkotlinnullchecks remove
