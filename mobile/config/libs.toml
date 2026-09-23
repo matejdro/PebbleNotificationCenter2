@@ -50,7 +50,6 @@ tinylog = "2.8.0"
 turbine = "1.2.1"
 unmock-androidJar = "17-robolectric-15733970"
 unmock-plugin = "0.11.0"
-versionCatalogUpdate = "1.1.1"
 
 [libraries]
 accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive", version.ref = "accompanist" }
@@ -154,4 +153,3 @@ unmock-plugin = { module = "com.github.bjoernq:unmockplugin", version.ref = "unm
 detekt = { id = "dev.detekt", version.ref = "detekt" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 paparazzi = { id = "app.cash.paparazzi", version.ref = "paparazzi" }
-versionCatalogUpdate = { id = "nl.littlerobots.version-catalog-update", version.ref = "versionCatalogUpdate" }
