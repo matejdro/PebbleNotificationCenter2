@@ -11,7 +11,7 @@ import util.commonAndroidComponents
 val libs = the<LibrariesForLibs>()
 
 plugins {
-   id("all-modules-commons")
+   id("allModulesCommons")
    id("org.gradle.android.cache-fix")
 }
 

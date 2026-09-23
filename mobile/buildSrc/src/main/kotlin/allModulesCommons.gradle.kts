@@ -7,7 +7,7 @@ val libs = the<LibrariesForLibs>()
 
 plugins {
    id("checks")
-   id("dependency-analysis")
+   id("dependencyAnalysis")
 }
 
 configure<KotlinProjectExtension> {

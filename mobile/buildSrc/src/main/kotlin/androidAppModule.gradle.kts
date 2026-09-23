@@ -8,7 +8,7 @@ val libs = the<LibrariesForLibs>()
 
 plugins {
    id("com.android.application")
-   id("android-module-commons")
+   id("androidCommon")
    id("kotlinova")
    id("com.jraska.module.graph.assertion")
    id("di")

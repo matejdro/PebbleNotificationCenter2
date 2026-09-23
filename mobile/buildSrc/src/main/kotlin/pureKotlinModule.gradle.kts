@@ -7,7 +7,7 @@ val libs = the<LibrariesForLibs>()
 plugins {
    id("org.jetbrains.kotlin.jvm")
 
-   id("all-modules-commons")
+   id("allModulesCommons")
 
    jacoco
 }
