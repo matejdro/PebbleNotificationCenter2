@@ -149,7 +149,8 @@ class NotificationService : NotificationListenerService() {
          channel = getNotificationChannel(sbn),
          ranking = ranking,
          showMessagingStyleChronologically = preferenceStore.data.first()[GlobalPreferenceKeys.showMessagingStyleChronologically],
-         keepNameInSubtitle = ruleResolver.rulesPreferencesFor(sbn)[RuleOption.keepNameInSubtitle]
+         keepNameInSubtitle = ruleResolver.rulesPreferencesFor(sbn)[RuleOption.keepNameInSubtitle],
+         hideSenderInBody = ruleResolver.rulesPreferencesFor(sbn)[RuleOption.hideSenderInBody]
       )
    }
 

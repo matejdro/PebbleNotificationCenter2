@@ -33,11 +33,12 @@ class NotificationParser(
       ranking: NotificationListenerService.Ranking? = null,
       showMessagingStyleChronologically: Boolean = false,
       keepNameInSubtitle: Boolean = false,
+      hideSenderInBody: Boolean = false,
    ): ParsedNotification? {
       val notification = sbn.notification
       val title = appNameProvider.getAppName(sbn.packageName)
 
-      val (imageUri, messagingStyleText) = notification.parseMessagingStyle(showMessagingStyleChronologically)
+      val (imageUri, messagingStyleText) = notification.parseMessagingStyle(showMessagingStyleChronologically, hideSenderInBody)
       val (conversationTitle, subtitle, text) = parseSubtitleAndBody(notification, messagingStyleText, keepNameInSubtitle)
 
       if (subtitle.isBlank() && text.isNullOrBlank()) {
@@ -174,7 +175,10 @@ class NotificationParser(
       return channelId to isSilent
    }
 
-   private fun Notification.parseMessagingStyle(showChronologically: Boolean): Pair<Uri?, String?> {
+   private fun Notification.parseMessagingStyle(
+      showChronologically: Boolean,
+      hideSenderInBody: Boolean = false,
+   ): Pair<Uri?, String?> {
       val messagingStyle = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(this) ?: return (null to null)
 
       val messages = (messagingStyle.messages + messagingStyle.historicMessages).let { unsortedMessages ->
@@ -188,6 +192,15 @@ class NotificationParser(
          return (null to null)
       }
 
+      // A private chat is a one-to-one conversation. Counting distinct senders in the retained messages is NOT reliable:
+      // a 2-member group where only one member appears in the recent messages (or no per-message person is set)
+      // looks identical to a DM. The platform's own signal is MessagingStyle.isGroupConversation()
+      // (EXTRA_IS_GROUP_CONVERSATION), which AOSP uses for exactly this one-to-one vs group decision; well-behaved
+      // apps mark groups via setGroupConversation(true) and pre-P apps are treated as groups when they set a
+      // conversation title, so it is app-agnostic. When not marked as a group, "hide sender in body" drops the
+      // per-line "Name: " prefix (the name stays in the subtitle); group chats keep the prefix unchanged.
+      val isPrivateChat = !messagingStyle.isGroupConversation()
+
       var lastName: CharSequence? = null
       var firstImage: Uri? = null
 
@@ -198,7 +211,7 @@ class NotificationParser(
 
          val personName = message.person?.name ?: messagingStyle.user.name
          val text = message.text?.toString().orEmpty()
-         if (personName != null && lastName != personName) {
+         if (personName != null && lastName != personName && !(hideSenderInBody && isPrivateChat)) {
             "$personName: $text"
          } else {
             text

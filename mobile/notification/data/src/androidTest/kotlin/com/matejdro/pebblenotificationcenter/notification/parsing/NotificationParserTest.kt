@@ -166,6 +166,39 @@ class NotificationParserTest {
    }
 
    @Test
+   fun hideSenderInBodyKeepsPrefixInTwoMemberGroupWithSingleVisibleSender() {
+      // Regression: a 2-member group where only one member appears in the retained messages used to be misread as a
+      // private chat (<= 1 distinct sender) and lose the prefix. The group flag, not the sender count, decides.
+      val alice = Person.Builder().setName("Alice").build()
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setStyle(
+            NotificationCompat.MessagingStyle(Person.Builder().setName("My Duo").build())
+               .setConversationTitle("My Duo")
+               .setGroupConversation(true)
+               .addMessage("Message 1", 1L, alice)
+               .addMessage("Message 2", 2L, alice)
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(
+         notification.toSbn(),
+         createDefaultSilentChannel(),
+         hideSenderInBody = true
+      ) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "My Duo",
+         "Message 2\n" +
+            "Alice: Message 1",
+         Instant.ofEpochMilli(2L),
+         channel = testChannelOrNull(),
+      )
+   }
+
+   @Test
    fun parseMessagingStyleChronologically() {
       val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setStyle(
@@ -274,6 +307,167 @@ class NotificationParserTest {
          "Description",
          Instant.ofEpochMilli(0L),
          channel = testChannelOrNull(),
+      )
+   }
+
+   @Test
+   fun hideSenderInBodyRemovesPrefixFromPrivateChat() {
+      // A single distinct sender (Alice) => private chat; with the option on, no line is prefixed. The name stays in
+      // the subtitle (conversation title).
+      val alice = Person.Builder().setName("Alice").build()
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setStyle(
+            NotificationCompat.MessagingStyle(alice)
+               .setConversationTitle("Alice")
+               .addMessage("Message 1", 1L, alice)
+               .addMessage("Message 2", 2L, alice)
+               .addHistoricMessage(NotificationCompat.MessagingStyle.Message("Message 3", 3L, alice))
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(
+         notification.toSbn(),
+         createDefaultSilentChannel(),
+         hideSenderInBody = true
+      ) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Alice",
+         "Message 3\n" +
+            "Message 2\n" +
+            "Message 1",
+         Instant.ofEpochMilli(3L),
+         channel = testChannelOrNull(),
+      )
+   }
+
+   @Test
+   fun hideSenderInBodyKeepsPrefixInGroupChat() {
+      // Marked as a group conversation => the option must not change the body, even though there are only two
+      // distinct senders here.
+      val alice = Person.Builder().setName("Alice").build()
+      val bob = Person.Builder().setName("Bob").build()
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setStyle(
+            NotificationCompat.MessagingStyle(Person.Builder().setName("Group Chat A").build())
+               .setConversationTitle("Group Chat A")
+               .setGroupConversation(true)
+               .addMessage("Message 2", 2L, alice)
+               .addMessage("Message 3", 3L, bob)
+               .addHistoricMessage(NotificationCompat.MessagingStyle.Message("Message 1", 1L, bob))
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(
+         notification.toSbn(),
+         createDefaultSilentChannel(),
+         hideSenderInBody = true
+      ) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Group Chat A",
+         "Bob: Message 3\n" +
+            "Alice: Message 2\n" +
+            "Bob: Message 1",
+         Instant.ofEpochMilli(3L),
+         channel = testChannelOrNull(),
+      )
+   }
+
+   @Test
+   fun keepPrefixInPrivateChatWhenHidingSenderIsDisabled() {
+      // Regression guard: with the option off, a single sender still gets the prefix on its first line.
+      val alice = Person.Builder().setName("Alice").build()
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setStyle(
+            NotificationCompat.MessagingStyle(alice)
+               .setConversationTitle("Alice")
+               .addMessage("Message 1", 1L, alice)
+               .addMessage("Message 2", 2L, alice)
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel()) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Alice",
+         "Message 2\n" +
+            "Alice: Message 1",
+         Instant.ofEpochMilli(2L),
+         channel = testChannelOrNull(),
+      )
+   }
+
+   @Test
+   fun hideSenderInBodyDropsPrefixForNullPersonUsingUserName() {
+      // Messages without an explicit person fall back to the style's user name; in a private chat they are still
+      // not prefixed when the option is on.
+      val alice = Person.Builder().setName("Alice").build()
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setStyle(
+            NotificationCompat.MessagingStyle(alice)
+               .setConversationTitle("Alice")
+               .addMessage("Message 1", 1L, null as Person?)
+               .addMessage("Message 2", 2L, alice)
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(
+         notification.toSbn(),
+         createDefaultSilentChannel(),
+         hideSenderInBody = true
+      ) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "Alice",
+         "Message 2\n" +
+            "Message 1",
+         Instant.ofEpochMilli(2L),
+         channel = testChannelOrNull(),
+      )
+   }
+
+   @Test
+   fun hideSenderInBodyDoesNotTouchSubtitleOrConversationTitle() {
+      // The option only affects the body; a long conversation title is still merged into the body and kept in
+      // conversationTitle exactly as before.
+      val longTitle = "A very very long long title title"
+      val alice = Person.Builder().setName("Alice").build()
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setStyle(
+            NotificationCompat.MessagingStyle(alice)
+               .setConversationTitle(longTitle)
+               .addMessage("Message 1", 1L, alice)
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(
+         notification.toSbn(),
+         createDefaultSilentChannel(),
+         hideSenderInBody = true
+      ) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         "",
+         "$longTitle\nMessage 1",
+         Instant.ofEpochMilli(1L),
+         channel = testChannelOrNull(),
+         conversationTitle = longTitle,
       )
    }
 

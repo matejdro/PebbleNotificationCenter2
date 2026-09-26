@@ -56,6 +56,11 @@ object RuleOption {
    // trailing dots instead of being moved into the message body.
    val keepNameInSubtitle = BooleanPreferenceKeyWithDefault("keep_name_in_subtitle", false)
 
+   // When enabled, the sender's name is NOT prepended to each message line of the body in private chats
+   // (single participant); group chats keep the "Name: text" prefix so every speaker stays identifiable.
+   // The name remains visible in the subtitle.
+   val hideSenderInBody = BooleanPreferenceKeyWithDefault("hide_sender_in_body", false)
+
    val autoAppPause = BooleanPreferenceKeyWithDefault("auto_app_pause", false)
    val autoConversationPause = BooleanPreferenceKeyWithDefault("auto_conversation_pause", false)
 

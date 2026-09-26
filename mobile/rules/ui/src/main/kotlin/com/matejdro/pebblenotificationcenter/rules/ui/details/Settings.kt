@@ -127,6 +127,13 @@ internal fun ColumnScope.Settings(
          summary = { Text(stringResource(R.string.setting_keep_name_in_subtitle_description)) }
       )
 
+      SwitchPreference(
+         value = preferences[RuleOption.hideSenderInBody],
+         onValueChange = { updatePreference(RuleOption.hideSenderInBody, it) },
+         title = { Text(stringResource(R.string.setting_hide_sender_in_body)) },
+         summary = { Text(stringResource(R.string.setting_hide_sender_in_body_description)) }
+      )
+
       RegexReplacementSetPreference(navigator, updatePreference, preferences)
 
       SwitchPreference(

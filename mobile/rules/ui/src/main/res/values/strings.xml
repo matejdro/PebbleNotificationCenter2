@@ -107,6 +107,11 @@
 <string name="setting_keep_name_in_subtitle_description">When enabled, a sender or group name that is too long for the
         subtitle stays there and is truncated with "…" instead of being moved into the message body.
     </string>
+    <string name="setting_hide_sender_in_body">Hide sender in message body</string>
+    <string name="setting_hide_sender_in_body_description">When enabled, in private chats the sender\'s name is not repeated
+        before each message in the body — it stays only in the subtitle. In group chats the name is still kept in the body
+        so every speaker stays identifiable.
+    </string>
     <string name="setting_periodic_vibration">Periodic vibration</string>
     <string name="setting_periodic_vibration_description">When enabled, after notification vibrates for the first time, it will
         also make a periodic short buzz. \n\nPressing any button will stop this until the next notification with this enabled is

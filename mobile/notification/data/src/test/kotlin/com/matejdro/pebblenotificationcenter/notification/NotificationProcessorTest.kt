@@ -208,6 +208,55 @@ class NotificationProcessorTest {
    }
 
    @Test
+   fun `It should forward the parsed notification unchanged when hiding sender in body is enabled`() = runTest {
+      // The parser already strips the per-line sender prefix from a private chat's body; the processor must simply
+      // forward that final text, keeping the name only in the subtitle.
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.hideSenderInBody setTo true,
+      )
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "Alice",
+         "ciao",
+         Instant.ofEpochSecond(1_767_554_305),
+      )
+
+      processor.onNotificationPosted(notification)
+
+      val synced = watchSyncer.syncedNotifications.first().systemData
+      assertSoftly(synced) {
+         subtitle shouldBe "Alice"
+         body shouldBe "ciao"
+      }
+   }
+
+   @Test
+   fun `It should forward the parsed notification with prefixed body unchanged when hiding sender in body is absent`() = runTest {
+      // With the option off (default) the parser keeps the "Name: " prefix even for a single sender; the processor
+      // forwards the body verbatim.
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "Alice",
+         "Alice: ciao",
+         Instant.ofEpochSecond(1_767_554_305),
+      )
+
+      processor.onNotificationPosted(notification)
+
+      val synced = watchSyncer.syncedNotifications.first().systemData
+      assertSoftly(synced) {
+         subtitle shouldBe "Alice"
+         body shouldBe "Alice: ciao"
+      }
+   }
+
+   @Test
    fun `It should forward notification deletions to the watch syncer`() = runTest {
       val notification = ParsedNotification(
          "key",
