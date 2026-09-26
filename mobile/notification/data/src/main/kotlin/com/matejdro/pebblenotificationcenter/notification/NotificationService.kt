@@ -17,6 +17,8 @@ import com.matejdro.pebblenotificationcenter.rules.keys.get
 import dev.zacsweers.metro.Inject
 import dispatch.core.DefaultCoroutineScope
 import io.rebble.pebblekit2.client.PebbleInfoRetriever
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -25,8 +27,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import logcat.logcat
 import si.inova.kotlinova.core.reporting.ErrorReporter
 import kotlin.time.Duration.Companion.milliseconds
@@ -59,7 +59,7 @@ class NotificationService : NotificationListenerService() {
    @Inject
    private lateinit var ruleResolver: RuleResolver
 
-   private val mutex = Mutex()
+   private val eventsChannel = Channel<NotificationServiceEvent>(Channel.BUFFERED)
 
    private var bound = false
 
@@ -73,6 +73,8 @@ class NotificationService : NotificationListenerService() {
       instance = this
 
       super.onCreate()
+
+      processEvents()
    }
 
    override fun onDestroy() {
@@ -92,15 +94,9 @@ class NotificationService : NotificationListenerService() {
       }
       bound = true
 
-      coroutineScope.launch {
-         mutex.withLock {
-            notificationProcessor.onNotificationsCleared()
-         }
-
-         reloadAllNotifications()
-      }
-
       controlListenerHintsAndOpenOnReconnect()
+      eventsChannel.trySend(NotificationServiceEvent.AllDismissed)
+      eventsChannel.trySend(NotificationServiceEvent.ReloadRequest)
    }
 
    override fun onListenerDisconnected() {
@@ -109,35 +105,28 @@ class NotificationService : NotificationListenerService() {
       super.onListenerDisconnected()
    }
 
-   suspend fun reloadAllNotifications() {
-      mutex.withLock {
-         for (sbn in activeNotifications) {
-            if (notificationProcessor.getNotificationByKey(sbn.key) != null) {
-               continue
-            }
+   fun triggerReload() {
+      eventsChannel.trySend(NotificationServiceEvent.ReloadRequest)
+   }
 
-            val parsed = parseNotification(sbn)
-            if (parsed != null) {
-               notificationProcessor.onNotificationPosted(parsed, suppressVibration = true)
-            } else {
-               logcat { "Notification ${sbn.key} has no text. Skipping..." }
-            }
+   private suspend fun reloadAllNotifications() {
+      for (sbn in activeNotifications) {
+         if (notificationProcessor.getNotificationByKey(sbn.key) != null) {
+            continue
+         }
+
+         val parsed = parseNotification(sbn)
+         if (parsed != null) {
+            notificationProcessor.onNotificationPosted(parsed, suppressVibration = true)
+         } else {
+            logcat { "Notification ${sbn.key} has no text. Skipping..." }
          }
       }
    }
 
    override fun onNotificationPosted(sbn: StatusBarNotification) {
       logcat { "Notification ${sbn.key} posted" }
-      coroutineScope.launch {
-         mutex.withLock {
-            val parsed = parseNotification(sbn)
-            if (parsed == null) {
-               logcat { "Notification ${sbn.key} has no text. Skipping..." }
-               return@launch
-            }
-            notificationProcessor.onNotificationPosted(parsed)
-         }
-      }
+      eventsChannel.trySend(NotificationServiceEvent.Posted(sbn))
    }
 
    private suspend fun parseNotification(sbn: StatusBarNotification): ParsedNotification? {
@@ -157,9 +146,34 @@ class NotificationService : NotificationListenerService() {
    override fun onNotificationRemoved(sbn: StatusBarNotification) {
       logcat { "Notification ${sbn.key} removed" }
 
+      eventsChannel.trySend(NotificationServiceEvent.Dismissed(sbn))
+   }
+
+   private fun processEvents() {
       coroutineScope.launch {
-         mutex.withLock {
-            notificationProcessor.onNotificationDismissed(sbn.key)
+         eventsChannel.consumeEach { event ->
+            when (event) {
+               is NotificationServiceEvent.Posted -> {
+                  val parsed = parseNotification(event.sbn)
+                  if (parsed == null) {
+                     logcat { "Notification ${event.sbn.key} has no text. Skipping..." }
+                     return@consumeEach
+                  }
+                  notificationProcessor.onNotificationPosted(parsed)
+               }
+
+               is NotificationServiceEvent.Dismissed -> {
+                  notificationProcessor.onNotificationDismissed(event.sbn.key)
+               }
+
+               NotificationServiceEvent.AllDismissed -> {
+                  notificationProcessor.onNotificationsCleared()
+               }
+
+               NotificationServiceEvent.ReloadRequest -> {
+                  reloadAllNotifications()
+               }
+            }
          }
       }
    }
