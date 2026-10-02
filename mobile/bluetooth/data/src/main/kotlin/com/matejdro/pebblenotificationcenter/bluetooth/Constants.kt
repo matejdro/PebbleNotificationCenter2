@@ -1,4 +1,4 @@
 package com.matejdro.pebblenotificationcenter.bluetooth
 
 internal const val BUCKET_DATA_VERSION: UShort = 4u
-internal const val PROTOCOL_VERSION: UShort = 9u
+internal const val PROTOCOL_VERSION: UShort = 10u

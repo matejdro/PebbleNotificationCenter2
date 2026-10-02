@@ -159,7 +159,7 @@ bool send_reload_notifications()
     return true;
 }
 
-bool send_request_image(const uint8_t notification_id, const bool crop)
+bool send_request_image(const uint8_t notification_id, const uint8_t zoom_level, const uint8_t image_index)
 {
     DictionaryIterator* iterator;
     const AppMessageResult res = app_message_outbox_begin(&iterator);
@@ -171,7 +171,8 @@ bool send_request_image(const uint8_t notification_id, const bool crop)
 
     dict_write_uint8(iterator, 0, 15);
     dict_write_uint8(iterator, 1, notification_id);
-    dict_write_uint8(iterator, 2, crop ? 1 : 0);
+    dict_write_uint8(iterator, 2, zoom_level);
+    dict_write_uint8(iterator, 3, image_index);
     bluetooth_app_message_outbox_send();
     return true;
 }

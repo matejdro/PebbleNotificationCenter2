@@ -525,7 +525,7 @@ class WatchappConnectionImplTest {
    }
 
    @Test
-   fun `Send cropped image when requested`() = scope.runTest {
+   fun `Send zoomed image on the watch when requested`() = scope.runTest {
       val icon = Icon.createWithContentUri("content://image")
 
       notificationsRepository.putNotification(
@@ -538,7 +538,7 @@ class WatchappConnectionImplTest {
                "",
                "Hello",
                Instant.MIN,
-               largeImage = icon
+               images = listOf(icon)
             ),
             bucketId = 2
          ),
@@ -550,19 +550,65 @@ class WatchappConnectionImplTest {
          mapOf(
             0u to PebbleDictionaryItem.UInt32(15u),
             1u to PebbleDictionaryItem.UInt32(2u),
-            2u to PebbleDictionaryItem.UInt32(1u),
+            2u to PebbleDictionaryItem.UInt32(3u),
+            3u to PebbleDictionaryItem.UInt32(0u),
          )
       )
       runCurrent()
 
       imageSender.lastSentNotificationId shouldBe 2u
       imageSender.lastSentIcon shouldBe icon
-      imageSender.lastFilled shouldBe true
+      imageSender.lastSentImageIndex shouldBe 0u
+      imageSender.lastSentImageCount shouldBe 1u
+      imageSender.lastSentZoomLevel shouldBe 3u
+      imageSender.lastSentInitialPush shouldBe false
       result shouldBe ReceiveResult.Ack
    }
 
    @Test
-   fun `Send non-cropped image when requested`() = scope.runTest {
+   fun `Send the image matching the requested index when multiple images are present`() = scope.runTest {
+      val firstIcon = Icon.createWithContentUri("content://image/1")
+      val secondIcon = Icon.createWithContentUri("content://image/2")
+
+      notificationsRepository.putNotification(
+         2,
+         ProcessedNotification(
+            ParsedNotification(
+               "keyNotification",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+               images = listOf(firstIcon, secondIcon)
+            ),
+            bucketId = 2
+         ),
+      )
+
+      receiveStandardHelloPacket(bufferSize = 123u)
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(15u),
+            1u to PebbleDictionaryItem.UInt32(2u),
+            2u to PebbleDictionaryItem.UInt32(3u),
+            3u to PebbleDictionaryItem.UInt32(1u),
+         )
+      )
+      runCurrent()
+
+      imageSender.lastSentNotificationId shouldBe 2u
+      imageSender.lastSentIcon shouldBe secondIcon
+      imageSender.lastSentImageIndex shouldBe 1u
+      imageSender.lastSentImageCount shouldBe 2u
+      imageSender.lastSentZoomLevel shouldBe 3u
+      imageSender.lastSentInitialPush shouldBe false
+      result shouldBe ReceiveResult.Ack
+   }
+
+   @Test
+   fun `Nack image request when the zoom level is invalid`() = scope.runTest {
       val icon = Icon.createWithContentUri("content://image")
 
       notificationsRepository.putNotification(
@@ -575,7 +621,43 @@ class WatchappConnectionImplTest {
                "",
                "Hello",
                Instant.MIN,
-               largeImage = icon
+               images = listOf(icon)
+            ),
+            bucketId = 2
+         ),
+      )
+
+      receiveStandardHelloPacket(bufferSize = 123u)
+
+      val result = connection.onPacketReceived(
+         mapOf(
+            0u to PebbleDictionaryItem.UInt32(15u),
+            1u to PebbleDictionaryItem.UInt32(2u),
+            2u to PebbleDictionaryItem.UInt32(5u),
+            3u to PebbleDictionaryItem.UInt32(0u),
+         )
+      )
+      runCurrent()
+
+      result shouldBe ReceiveResult.Nack
+      imageSender.lastSentIcon.shouldBeNull()
+   }
+
+   @Test
+   fun `Nack image request when the image index is out of range`() = scope.runTest {
+      val icon = Icon.createWithContentUri("content://image")
+
+      notificationsRepository.putNotification(
+         2,
+         ProcessedNotification(
+            ParsedNotification(
+               "keyNotification",
+               "",
+               "",
+               "",
+               "Hello",
+               Instant.MIN,
+               images = listOf(icon)
             ),
             bucketId = 2
          ),
@@ -588,14 +670,13 @@ class WatchappConnectionImplTest {
             0u to PebbleDictionaryItem.UInt32(15u),
             1u to PebbleDictionaryItem.UInt32(2u),
             2u to PebbleDictionaryItem.UInt32(0u),
+            3u to PebbleDictionaryItem.UInt32(1u),
          )
       )
       runCurrent()
 
-      imageSender.lastSentNotificationId shouldBe 2u
-      imageSender.lastSentIcon shouldBe icon
-      imageSender.lastFilled shouldBe false
-      result shouldBe ReceiveResult.Ack
+      result shouldBe ReceiveResult.Nack
+      imageSender.lastSentIcon.shouldBeNull()
    }
 
    private suspend fun receiveStandardHelloPacket(

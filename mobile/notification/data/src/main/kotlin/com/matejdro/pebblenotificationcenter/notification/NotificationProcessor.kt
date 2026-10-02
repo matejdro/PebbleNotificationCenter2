@@ -266,7 +266,7 @@ class NotificationProcessor(
             add(Action.Snooze(title = context.getString(R.string.snooze), id = size.toUByte()))
          }
 
-         if (parsedNotification.largeImage != null) {
+         if (parsedNotification.images.any { it != null }) {
             add(Action.ShowImage(title = context.getString(R.string.show_image), id = size.toUByte()))
          }
 
