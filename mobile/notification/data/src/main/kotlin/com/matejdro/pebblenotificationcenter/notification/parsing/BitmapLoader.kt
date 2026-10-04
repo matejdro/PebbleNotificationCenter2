@@ -17,8 +17,8 @@ class BitmapLoaderImpl @Inject constructor(private val context: Context) : Bitma
    override fun getBitmap(icon: Icon): Bitmap? {
       val drawable = icon.loadDrawable(context) ?: return null
       return drawable.toBitmapOrNull(
-         LARGE_BITMAP_WIDTH_SIZE,
-         LARGE_BITMAP_WIDTH_SIZE * drawable.intrinsicHeight / drawable.intrinsicWidth
+         width = LARGE_BITMAP_WIDTH_SIZE,
+         height = LARGE_BITMAP_WIDTH_SIZE * drawable.intrinsicHeight / drawable.intrinsicWidth
       )
    }
 }

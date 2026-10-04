@@ -31,7 +31,7 @@ import java.time.Instant
 class NotificationParserTest {
 
    private var providedAppColor: Int = 0
-   private var providedBitmap: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ALPHA_8)
+   private val providedBitmap: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ALPHA_8)
 
    private val context = ApplicationProvider.getApplicationContext<Context>()
    private val notificationParser = NotificationParser(context, { "SMS App" }, { providedAppColor }, { providedBitmap })
