@@ -39,7 +39,7 @@ class NotificationParser(
       val notification = sbn.notification
       val title = appNameProvider.getAppName(sbn.packageName)
 
-      val (imageUri, messagingStyleText) = notification.parseMessagingStyle(showMessagingStyleChronologically, hideSenderInBody)
+      val (imageUris, messagingStyleText) = notification.parseMessagingStyle(showMessagingStyleChronologically, hideSenderInBody)
       val (conversationTitle, subtitle, text) = parseSubtitleAndBody(notification, messagingStyleText, keepNameInSubtitle)
 
       if (subtitle.isBlank() && text.isNullOrBlank()) {
@@ -54,13 +54,22 @@ class NotificationParser(
          sbn.postTime
       }
 
-      val largeImageIcon = imageUri?.let { Icon.createWithContentUri(it) }
-         ?: BundleCompat.getParcelable<Bitmap>(notification.extras, NotificationCompat.EXTRA_PICTURE, Bitmap::class.java)
-            ?.let { Icon.createWithBitmap(it) }
-         ?: BundleCompat.getParcelable<Icon>(notification.extras, NotificationCompat.EXTRA_PICTURE_ICON, Icon::class.java)
-      val largeImage = largeImageIcon?.let { bitmapLoader.getBitmap(it) }
+      val imageIcons: List<Icon> = if (imageUris.isEmpty()) {
+         listOfNotNull(
+            BundleCompat.getParcelable<Bitmap>(notification.extras, NotificationCompat.EXTRA_PICTURE, Bitmap::class.java)
+               ?.let { Icon.createWithBitmap(it) },
+            BundleCompat.getParcelable<Icon>(notification.extras, NotificationCompat.EXTRA_PICTURE_ICON, Icon::class.java),
+         )
+      } else {
+         imageUris.map { Icon.createWithContentUri(it) }
+      }
+      // Decode eagerly (as soon as the notification is received): some apps only grant
+      // read permission on the image URI for a very short time, so the bitmap must be
+      // loaded now, not later when the image is shown on the watch. A null entry means
+      // that image could not be decoded and the watch shows "impossible to load" for it.
+      val images: List<Any?> = imageIcons.map { bitmapLoader.getBitmap(it) }
 
-      val subtitleWithCameraEmoji = if (!subtitle.contains("\uD83D\uDCF7") && largeImage != null) {
+      val subtitleWithCameraEmoji = if (!subtitle.contains("\uD83D\uDCF7") && images.any { it != null }) {
          "\uD83D\uDCF7 $subtitle"
       } else {
          subtitle
@@ -94,7 +103,7 @@ class NotificationParser(
             notification.extras.getBoolean(NotificationConstants.KEY_FORCE_VIBRATE, false),
          overrideVibrationPattern = parseVibrationPattern(notification),
          iconDrawable = notification.smallIcon?.loadDrawable(context),
-         largeImage = largeImage,
+         images = images,
          color = color,
       )
    }
@@ -180,8 +189,9 @@ class NotificationParser(
    private fun Notification.parseMessagingStyle(
       showChronologically: Boolean,
       hideSenderInBody: Boolean = false,
-   ): Pair<Uri?, String?> {
-      val messagingStyle = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(this) ?: return (null to null)
+   ): Pair<List<Uri>, String?> {
+      val messagingStyle = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(this)
+         ?: return (emptyList<Uri>() to null)
 
       val messages = (messagingStyle.messages + messagingStyle.historicMessages).let { unsortedMessages ->
          if (showChronologically) {
@@ -191,7 +201,7 @@ class NotificationParser(
          }
       }
       if (messages.isEmpty()) {
-         return (null to null)
+         return (emptyList<Uri>() to null)
       }
 
       // A private chat is a one-to-one conversation. Counting distinct senders in the retained messages is NOT reliable:
@@ -204,11 +214,11 @@ class NotificationParser(
       val isPrivateChat = !messagingStyle.isGroupConversation()
 
       var lastName: CharSequence? = null
-      var firstImage: Uri? = null
+      val imageUris = mutableListOf<Uri>()
 
       val text = messages.joinToString("\n") { message ->
-         if (firstImage == null && message.dataMimeType?.startsWith("image/") == true) {
-            firstImage = message.dataUri
+         if (message.dataMimeType?.startsWith("image/") == true) {
+            message.dataUri?.let { imageUris += it }
          }
 
          val personName = message.person?.name ?: messagingStyle.user.name
@@ -222,7 +232,7 @@ class NotificationParser(
          }
       }
 
-      return firstImage to text
+      return imageUris to text
    }
 
    private fun Notification.parseMessagingStyleTimestamp(): Long? {

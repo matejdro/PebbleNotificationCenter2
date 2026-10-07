@@ -236,10 +236,22 @@ class WatchappConnectionImpl(
 
    private suspend fun handleResendImageAction(data: PebbleDictionary): Boolean {
       val notificationId = data.requireUint(1u)
-      val fill = data.requireUint(2u) == 1u
+      val zoomLevel = data.requireUint(2u)
+      if (zoomLevel > 4u) {
+         return false
+      }
+      val index = data.requireUint(3u).toUByte()
       val notification = notificationRepository.getNotification(notificationId.toInt()) ?: return false
-      val image = notification.systemData.largeImage ?: return false
-      imageSender.showImageOnTheWatch(notificationId = notificationId.toUByte(), icon = image, fill = fill)
+      val images = notification.systemData.images
+      val image = images.getOrNull(index.toInt()) ?: return false
+      imageSender.showImageOnTheWatch(
+         notificationId = notificationId.toUByte(),
+         icon = image,
+         imageIndex = index,
+         imageCount = images.size.toUByte(),
+         zoomLevel = zoomLevel.toUByte(),
+         initialPush = false,
+      )
       return true
    }
 

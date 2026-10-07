@@ -22,6 +22,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.matejdro.pebblenotificationcenter.notification.NotificationConstants
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.AssumptionViolatedException
@@ -34,7 +35,7 @@ class NotificationParserTest {
    private val providedBitmap: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ALPHA_8)
 
    private val context = ApplicationProvider.getApplicationContext<Context>()
-   private val notificationParser = NotificationParser(context, { "SMS App" }, { providedAppColor }, { providedBitmap })
+   private val notificationParser = NotificationParser(context, { "SMS App" }, { providedAppColor }, { _ -> providedBitmap })
 
    @Test
    fun parseNotificationWithASimpleText() {
@@ -1243,7 +1244,46 @@ class NotificationParserTest {
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
          .shouldNotBeNull()
          .apply {
-            largeImage shouldBe providedBitmap
+            images.shouldHaveSize(2)
+            images.all { it != null }
+            images[0] shouldBe providedBitmap
+            images[1] shouldBe providedBitmap
+
+            subtitle shouldBe "\uD83D\uDCF7 Group Chat A"
+         }
+   }
+
+   @Test
+   fun parseAllImagesFromMessagingStyle() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setStyle(
+            NotificationCompat.MessagingStyle(Person.Builder().setName("Group Chat A").build())
+               .setConversationTitle("Group Chat A")
+               .addMessage(
+                  NotificationCompat.MessagingStyle.Message("Message 1", 1L, Person.Builder().setName("Alice").build())
+                     .setData("image/png", "content://image/1".toUri())
+               )
+               .addMessage(
+                  NotificationCompat.MessagingStyle.Message("Message 2", 2L, Person.Builder().setName("Alice").build())
+                     .setData("image/jpg", "content://image/2".toUri())
+               )
+               .addMessage(
+                  NotificationCompat.MessagingStyle.Message("Message 3", 3L, Person.Builder().setName("Bob").build())
+                     .setData("image/webp", "content://image/3".toUri())
+               )
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
+         .shouldNotBeNull()
+         .apply {
+            images.shouldHaveSize(3)
+            images.all { it != null }
+            images[0] shouldBe providedBitmap
+            images[1] shouldBe providedBitmap
+            images[2] shouldBe providedBitmap
 
             subtitle shouldBe "\uD83D\uDCF7 Group Chat A"
          }
@@ -1267,7 +1307,8 @@ class NotificationParserTest {
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
          .shouldNotBeNull()
          .apply {
-            largeImage shouldBe providedBitmap
+            images.shouldHaveSize(1)
+            images[0] shouldBe providedBitmap
 
             subtitle shouldBe "\uD83D\uDCF7 Title"
          }
@@ -1299,7 +1340,7 @@ class NotificationParserTest {
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
          .shouldNotBeNull()
          .apply {
-            largeImage shouldBe providedBitmap
+            images.shouldHaveSize(2)
 
             subtitle shouldBe "Group Chat A \uD83D\uDCF7"
          }

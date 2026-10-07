@@ -95,15 +95,27 @@ Sent from the phone after the packet 4
 
 ### Show an image (packet 11)
 
-When user requests an image from the phone, one or more packets 11 will be sent, containing image data.
+When the user requests an image from the phone (the "Show image" action, or a packet 15 to change the zoom level or to view another image of the notification), one or more packets 11 will be sent, containing image data. Each packet carries an 11-byte header, followed by the image data.
 
 * `1` - Data (byte array)
-  * Notification ID (uint8) 
-  * Total size of the image bytes (uint16) 
+  * Notification ID (uint8)
+  * Total size of the image bytes (uint16, size of the PNG data; 0 if the image is unavailable or too large)
   * Flags (uint8)
     * 0x01 - 1 when this is the first packet in the image sequence, 0 otherwise
     * 0x02 - 1 when this is the last packet in the image sequence, 0 otherwise
-  * Image data (bytes, encoded indexed png for color watches or grayscale png for black-and-white watches)
+    * 0x04 - the image source could not be loaded on the phone (e.g. missing permission): no image data is sent, width and height are 0; the watch shows "Impossible to load" and the image still counts in the total
+    * 0x08 - the image could be loaded, but the PNG is too large to be sent at the requested zoom level: no image data is sent, width and height are 0; the watch steps down to the next lower zoom level and re-requests the image
+    * 0x10 - initial push, the sequence is sent in response to the "Show image" action: the watch always accepts it (the only case in which the image window can open without a preceding packet 15); never set on responses to a packet 15
+  * Image index (uint8) - position of this image in the notification's image list (0-based)
+  * Image count (uint8) - total number of images in the notification
+  * Width (uint16) - width in pixels of the image as rendered at the requested zoom level (0 if unavailable or too large)
+  * Height (uint16) - height in pixels of the image as rendered at the requested zoom level (0 if unavailable or too large)
+  * Zoom level (uint8) - the zoom level the image is rendered at, as a multiplier of the image's fit dimensions (fit = the image scaled to fully fit the screen, preserving the aspect ratio, with black bands): 0 = fit (1.0x), 1 = 1.25x, 2 = 1.5x, 3 = 1.75x, 4 = 2.0x
+  * Image data (bytes, encoded indexed png for color watches or grayscale png for black-and-white watches; absent if the image is unavailable or too large)
+
+When zooming, the watch starts at 2x and checks locally, before allocating memory, that the image fits in the free RAM: the declared dimensions from the header (decoded pixels) plus the total PNG size from the header plus a fixed margin, compared against `heap_bytes_free()`. If the check fails, or if the sphone answers with the too-large flag (0x08), the watch re-sends the same packet 15 with the next lower zoom level (1.75x, 1.5x, 1.25x), down to fit; the amount of free RAM is never transmitted to the sphone. Images the sphone cannot load (e.g. missing permissions) are sent with the unavailable flag (0x04) and still count in the total shown to the user.
+
+A first packet 11 is accepted by the watch only if it has the initial-push flag (0x10, a "Show image" push) or if it is the response to a packet 15 that is still pending on the watch. The sphone is request-driven: when the user closes the image window (BACK), the watch sends no cancel packet - it simply stops expecting a response, and any packet 15 responses the sphone completes late are discarded, so the image window never re-opens "out of nothing" on top of the notification list.
 
 ### Request re-init (packet 12)
 
@@ -158,10 +170,11 @@ Sent from the watch to re-show all hidden notifications
 
 ### Re-send image (packet 15)
 
-Sent from the watch to change the crop level of the image
+Sent from the watch to change the zoom level of the image, or to request another image of the notification.
 
 * `1` - id of the seen bucket (uint8)
-* `2` - Whether to send cropped image (1) or non-cropped (0) (uint8)
+* `2` - Zoom level to request: 0 = fit (1.0x), 1 = 1.25x, 2 = 1.5x, 3 = 1.75x, 4 = 2.0x (uint8, as a multiplier of the image's fit dimensions; replaces the old "cropped 0/1")
+* `3` - Image index (uint8) - position of the image to send (0-based)
 
 # Buckets
 
