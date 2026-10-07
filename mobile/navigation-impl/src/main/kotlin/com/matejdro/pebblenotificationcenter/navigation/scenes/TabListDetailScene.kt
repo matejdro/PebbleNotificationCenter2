@@ -126,6 +126,19 @@ class TabListDetailScene(
       val detailEntry: NavEntry<ScreenKey>?,
       val showListDetail: Boolean,
    )
+
+   override fun equals(other: Any?): Boolean {
+      if (this === other) return true
+      if (other !is TabListDetailScene) return false
+
+      if (input != other.input) return false
+
+      return true
+   }
+
+   override fun hashCode(): Int {
+      return input.hashCode()
+   }
 }
 
 @Composable
