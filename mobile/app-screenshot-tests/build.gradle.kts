@@ -11,7 +11,7 @@ android {
 
    testOptions {
       unitTests.all {
-         it.useJUnit()
+         it.useJUnitPlatform()
          it.reports.html.required = false
 
          val numSplits = 3 // How many TestsX classes are there
@@ -57,7 +57,6 @@ dependencyAnalysis {
 
 dependencies {
    implementation(projects.app)
-   testImplementation(libs.junit4)
-   testImplementation(libs.junit4.parameterinjector)
+   testImplementation(libs.junit.params)
    testImplementation(libs.showkase)
 }
