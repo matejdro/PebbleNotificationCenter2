@@ -527,7 +527,7 @@ class ActionHandlerImplTest {
                "",
                "Hello",
                Instant.MIN,
-               largeImage = icon
+               images = listOf(icon)
             ),
             actions = listOf(
                Action.ShowImage(
@@ -542,6 +542,10 @@ class ActionHandlerImplTest {
       handler.handleAction(2, 0) shouldBe true
       imageSender.lastSentNotificationId shouldBe 2u
       imageSender.lastSentIcon shouldBe icon
+      imageSender.lastSentImageIndex shouldBe 0u
+      imageSender.lastSentImageCount shouldBe 1u
+      imageSender.lastSentZoomLevel shouldBe 0u
+      imageSender.lastSentInitialPush shouldBe true
       servicecontroller.lastTriggeredIntent shouldBe null
    }
 

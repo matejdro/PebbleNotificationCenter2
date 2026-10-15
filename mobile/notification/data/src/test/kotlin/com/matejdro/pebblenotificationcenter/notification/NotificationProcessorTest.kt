@@ -1576,7 +1576,7 @@ class NotificationProcessorTest {
          "Body",
          // 19:18:25 GMT | Sunday, January 4, 2026
          Instant.ofEpochSecond(1_767_554_305),
-         largeImage = Icon.createWithContentUri("content://icon")
+         images = listOf(Icon.createWithContentUri("content://icon"))
       )
 
       processor.onNotificationPosted(notification)

@@ -150,8 +150,18 @@ class ActionHandlerImpl(
    }
 
    private suspend fun handleShowImageAction(notification: ProcessedNotification): Boolean {
-      val image = notification.systemData.largeImage ?: return false
-      imageSender.showImageOnTheWatch(notificationId = notification.bucketId.toUByte(), icon = image, fill = false)
+      val images = notification.systemData.images
+      if (images.isEmpty()) {
+         return false
+      }
+      imageSender.showImageOnTheWatch(
+         notificationId = notification.bucketId.toUByte(),
+         icon = images.first(),
+         imageIndex = 0u,
+         imageCount = images.size.toUByte(),
+         zoomLevel = 0u,
+         initialPush = true,
+      )
       return true
    }
 }

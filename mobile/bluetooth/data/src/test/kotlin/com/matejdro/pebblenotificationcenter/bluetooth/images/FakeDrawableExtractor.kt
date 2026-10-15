@@ -3,8 +3,8 @@ package com.matejdro.pebblenotificationcenter.bluetooth.images
 import android.graphics.drawable.Drawable
 
 class FakeDrawableExtractor : DrawableExtractor {
-   private val outputMap = mutableMapOf<Any, ByteArray>()
-   var wasFilled: Boolean? = null
+   private val outputMap = mutableMapOf<Any?, ByteArray>()
+   var wasZoomLevel: Int? = null
 
    fun registerOutput(drawable: Drawable, width: Int, height: Int, output: ByteArray, colorWatch: Boolean? = null) {
       outputMap[DrawableExtractorRequest(drawable, width, height, colorWatch)] = output
@@ -26,9 +26,9 @@ class FakeDrawableExtractor : DrawableExtractor {
          )
    }
 
-   override fun convertIconToBitmapBytes(bitmap: Any, fill: Boolean): ByteArray {
-      wasFilled = fill
-      return outputMap[bitmap] ?: error("Icon $bitmap does not exist. Existing fakes: ${outputMap.keys}")
+   override fun convertIconToBitmapBytes(bitmap: Any?, zoomLevel: Int): ByteArray {
+      wasZoomLevel = zoomLevel
+      return outputMap[bitmap] ?: error("Bitmap $bitmap does not exist. Existing fakes: ${outputMap.keys}")
    }
 
    private data class DrawableExtractorRequest(
