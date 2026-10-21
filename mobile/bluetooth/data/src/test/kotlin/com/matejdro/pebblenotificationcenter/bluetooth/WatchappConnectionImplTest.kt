@@ -538,7 +538,7 @@ class WatchappConnectionImplTest {
                "",
                "Hello",
                Instant.MIN,
-               largeImage = icon
+               images = listOf(icon)
             ),
             bucketId = 2
          ),
@@ -575,7 +575,7 @@ class WatchappConnectionImplTest {
                "",
                "Hello",
                Instant.MIN,
-               largeImage = icon
+               images = listOf(icon)
             ),
             bucketId = 2
          ),

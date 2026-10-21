@@ -76,7 +76,7 @@ class ActionHandlerImpl(
          }
 
          is Action.ShowImage -> {
-            handleShowImageAction(notification)
+            handleShowImageAction(notification, action)
          }
 
          is Action.TaskerTask -> {
@@ -149,9 +149,16 @@ class ActionHandlerImpl(
       return true
    }
 
-   private suspend fun handleShowImageAction(notification: ProcessedNotification): Boolean {
-      val image = notification.systemData.largeImage ?: return false
-      imageSender.showImageOnTheWatch(notificationId = notification.bucketId.toUByte(), icon = image, fill = false)
+   private suspend fun handleShowImageAction(
+      notification: ProcessedNotification,
+      action: Action.ShowImage,
+   ): Boolean {
+      val image = notification.systemData.images.getOrNull(action.imageIndex) ?: return false
+      imageSender.showImageOnTheWatch(
+         notificationId = notification.bucketId.toUByte(),
+         icon = image,
+         fill = false,
+      )
       return true
    }
 }

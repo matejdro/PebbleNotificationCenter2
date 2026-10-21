@@ -16,6 +16,7 @@ import com.matejdro.pebblenotificationcenter.notification.ActionHandler
 import com.matejdro.pebblenotificationcenter.notification.NotificationRepository
 import com.matejdro.pebblenotificationcenter.notification.NotificationServiceController
 import com.matejdro.pebblenotificationcenter.notification.SubmenuActionHandler
+import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
 import com.matejdro.pebblenotificationcenter.rules.keys.set
 import dev.zacsweers.metro.AppScope
@@ -33,6 +34,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import logcat.logcat
 import okio.Buffer
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration.Companion.seconds
 
 @Inject
@@ -55,6 +57,7 @@ class WatchappConnectionImpl(
 ) : WatchAppConnection {
 
    private var reInitRequestJob: Job? = null
+   private val lastShownImageIndices = ConcurrentHashMap<Int, Int>()
 
    init {
       coroutineScope.launch {
@@ -171,10 +174,22 @@ class WatchappConnectionImpl(
    private suspend fun processActionPacket(data: PebbleDictionary): ReceiveResult {
       val menuId = (data[3u] as? PebbleDictionaryItem.UInt32)?.value ?: 0u
       val success = if (menuId == 0u) {
-         actionHandler.handleAction(
-            notificationId = data.requireUint(1u).toInt(),
-            actionIndex = data.requireUint(2u).toInt()
+         val notificationIdInt = data.requireUint(1u).toInt()
+         val actionIdInt = data.requireUint(2u).toInt()
+         val handled = actionHandler.handleAction(
+            notificationId = notificationIdInt,
+            actionIndex = actionIdInt
          )
+
+         if (handled) {
+            val notification = notificationRepository.getNotification(notificationIdInt)
+            val action = notification?.actions?.firstOrNull { it.id == actionIdInt.toUByte() }
+            if (action is Action.ShowImage) {
+               lastShownImageIndices[notificationIdInt] = action.imageIndex
+            }
+         }
+
+         handled
       } else {
          val submenuType = SubmenuType.entries.elementAtOrNull(menuId.toInt() - 1)
          if (submenuType == null) {
@@ -237,9 +252,14 @@ class WatchappConnectionImpl(
    private suspend fun handleResendImageAction(data: PebbleDictionary): Boolean {
       val notificationId = data.requireUint(1u)
       val fill = data.requireUint(2u) == 1u
+      val imageIndex = lastShownImageIndices.getOrDefault(notificationId.toInt(), 0)
       val notification = notificationRepository.getNotification(notificationId.toInt()) ?: return false
-      val image = notification.systemData.largeImage ?: return false
-      imageSender.showImageOnTheWatch(notificationId = notificationId.toUByte(), icon = image, fill = fill)
+      val image = notification.systemData.images.getOrNull(imageIndex) ?: return false
+      imageSender.showImageOnTheWatch(
+         notificationId = notificationId.toUByte(),
+         icon = image,
+         fill = fill,
+      )
       return true
    }
 
