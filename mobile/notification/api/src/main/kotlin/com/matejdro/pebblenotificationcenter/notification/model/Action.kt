@@ -3,6 +3,7 @@ package com.matejdro.pebblenotificationcenter.notification.model
 sealed interface Action {
    val title: String
    val id: UByte
+   val orderKey: String get() = title
 
    data class Dismiss(override val title: String, override val id: UByte) : Action
 
@@ -75,7 +76,9 @@ sealed interface Action {
    data class PauseConversation(override val title: String, override val id: UByte) : Action
 
    data class Snooze(override val title: String, override val id: UByte) : Action
-   data class ShowImage(override val title: String, override val id: UByte) : Action
+   data class ShowImage(override val title: String, override val id: UByte, val imageIndex: Int = 0) : Action {
+      override val orderKey = "Show image"
+   }
 
    data class TaskerTask(override val title: String, override val id: UByte) : Action
 

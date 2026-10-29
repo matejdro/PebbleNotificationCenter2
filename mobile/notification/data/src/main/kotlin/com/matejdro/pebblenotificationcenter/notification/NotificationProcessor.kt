@@ -266,8 +266,9 @@ class NotificationProcessor(
             add(Action.Snooze(title = context.getString(R.string.snooze), id = size.toUByte()))
          }
 
-         if (parsedNotification.largeImage != null) {
-            add(Action.ShowImage(title = context.getString(R.string.show_image), id = size.toUByte()))
+         parsedNotification.images.forEachIndexed { index, _ ->
+            val title = context.getString(R.string.show_image_n, index + 1)
+            add(Action.ShowImage(title = title, id = size.toUByte(), imageIndex = index))
          }
 
          for (taskerTask in settings[RuleOption.taskerTaskActions]) {

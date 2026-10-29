@@ -171,9 +171,11 @@ class WatchappConnectionImpl(
    private suspend fun processActionPacket(data: PebbleDictionary): ReceiveResult {
       val menuId = (data[3u] as? PebbleDictionaryItem.UInt32)?.value ?: 0u
       val success = if (menuId == 0u) {
+         val notificationIdInt = data.requireUint(1u).toInt()
+         val actionIdInt = data.requireUint(2u).toInt()
          actionHandler.handleAction(
-            notificationId = data.requireUint(1u).toInt(),
-            actionIndex = data.requireUint(2u).toInt()
+            notificationId = notificationIdInt,
+            actionIndex = actionIdInt
          )
       } else {
          val submenuType = SubmenuType.entries.elementAtOrNull(menuId.toInt() - 1)
@@ -237,9 +239,14 @@ class WatchappConnectionImpl(
    private suspend fun handleResendImageAction(data: PebbleDictionary): Boolean {
       val notificationId = data.requireUint(1u)
       val fill = data.requireUint(2u) == 1u
+      val imageIndex = actionHandler.lastShownImageIndex(notificationId.toInt())
       val notification = notificationRepository.getNotification(notificationId.toInt()) ?: return false
-      val image = notification.systemData.largeImage ?: return false
-      imageSender.showImageOnTheWatch(notificationId = notificationId.toUByte(), icon = image, fill = fill)
+      val image = notification.systemData.images.getOrNull(imageIndex) ?: return false
+      imageSender.showImageOnTheWatch(
+         notificationId = notificationId.toUByte(),
+         icon = image,
+         fill = fill,
+      )
       return true
    }
 

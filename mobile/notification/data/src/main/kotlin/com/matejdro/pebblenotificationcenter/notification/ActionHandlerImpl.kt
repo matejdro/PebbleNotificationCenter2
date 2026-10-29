@@ -16,6 +16,7 @@ import com.matejdro.pebblenotificationcenter.tasker.TaskerTaskStarter
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import logcat.logcat
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration.Companion.minutes
 
 @ContributesBinding(WatchappConnectionScope::class)
@@ -30,6 +31,12 @@ class ActionHandlerImpl(
    private val imageSender: ImageSender,
    private val taskerTaskStarter: TaskerTaskStarter,
 ) : ActionHandler {
+
+   private val lastShownImageIndices = ConcurrentHashMap<Int, Int>()
+
+   override fun lastShownImageIndex(notificationId: Int): Int =
+      lastShownImageIndices.getOrDefault(notificationId, 0)
+
    override suspend fun handleAction(notificationId: Int, actionId: Int): Boolean {
       val notification = notificationRepository.getNotification(notificationId)
       if (notification == null) {
@@ -76,7 +83,7 @@ class ActionHandlerImpl(
          }
 
          is Action.ShowImage -> {
-            handleShowImageAction(notification)
+            handleShowImageAction(notification, action)
          }
 
          is Action.TaskerTask -> {
@@ -149,9 +156,17 @@ class ActionHandlerImpl(
       return true
    }
 
-   private suspend fun handleShowImageAction(notification: ProcessedNotification): Boolean {
-      val image = notification.systemData.largeImage ?: return false
-      imageSender.showImageOnTheWatch(notificationId = notification.bucketId.toUByte(), icon = image, fill = false)
+   private suspend fun handleShowImageAction(
+      notification: ProcessedNotification,
+      action: Action.ShowImage,
+   ): Boolean {
+      val image = notification.systemData.images.getOrNull(action.imageIndex) ?: return false
+      imageSender.showImageOnTheWatch(
+         notificationId = notification.bucketId.toUByte(),
+         icon = image,
+         fill = false,
+      )
+      lastShownImageIndices[notification.bucketId] = action.imageIndex
       return true
    }
 }

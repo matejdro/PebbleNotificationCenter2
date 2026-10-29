@@ -81,6 +81,7 @@ class NotificationProcessorTest {
       context.resources.putString(R.string.app_suffix) { "${it.elementAt(0)} (App)" }
       context.resources.putString(R.string.snooze, "Snooze")
       context.resources.putString(R.string.show_image, "Show image")
+      context.resources.putString(R.string.show_image_n) { "Show image ${it[0]}" }
       context.resources.putString(R.string.hide_from_watch, "Hide from watch")
 
       runBlocking {
@@ -1576,13 +1577,13 @@ class NotificationProcessorTest {
          "Body",
          // 19:18:25 GMT | Sunday, January 4, 2026
          Instant.ofEpochSecond(1_767_554_305),
-         largeImage = Icon.createWithContentUri("content://icon")
+         images = listOf(Icon.createWithContentUri("content://icon"))
       )
 
       processor.onNotificationPosted(notification)
 
       processor.getNotification(1)?.actions.orEmpty().zeroIds().shouldContain(
-         Action.ShowImage("Show image", 0u),
+         Action.ShowImage("Show image 1", 0u, imageIndex = 0),
       )
    }
 

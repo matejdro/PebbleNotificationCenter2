@@ -85,7 +85,7 @@ class ActionOrderRepositoryImpl(
       val orderList = getList().first()
       val unknownIndexOrder = orderList.indexOf(otherActionsEntry) + 1
 
-      val unknownElements = list.map { it.title } - orderList
+      val unknownElements = list.map { it.orderKey } - orderList
       val updatedOrderList = if (unknownElements.isNotEmpty()) {
          preferenceStore.edit { prefs ->
             val existing = prefs[GlobalPreferenceKeys.actionOrder]
@@ -101,7 +101,7 @@ class ActionOrderRepositoryImpl(
       }
 
       return list.sortedWith { first, second ->
-         updatedOrderList.indexOf(first.title).compareTo(updatedOrderList.indexOf(second.title))
+         updatedOrderList.indexOf(first.orderKey).compareTo(updatedOrderList.indexOf(second.orderKey))
       }
    }
 }

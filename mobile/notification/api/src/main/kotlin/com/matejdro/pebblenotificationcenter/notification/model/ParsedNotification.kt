@@ -33,8 +33,8 @@ data class ParsedNotification(
    // I don't want to change it, so for now we can just use Any and upcast it
    val iconDrawable: Any? = null,
 
-   // Android type of this is android.graphics.Bitmap
-   val largeImage: Any? = null,
+   // Android type of each entry is android.graphics.Bitmap; images that could not be decoded eagerly are omitted
+   val images: List<Any> = emptyList(),
    val id: Int = 0,
    val tag: String? = null,
    /**

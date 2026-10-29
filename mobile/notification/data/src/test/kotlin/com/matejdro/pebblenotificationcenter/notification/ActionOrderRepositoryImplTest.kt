@@ -29,6 +29,7 @@ class ActionOrderRepositoryImplTest {
       context.resources.putString(R.string.other_actions, "Other actions")
       context.resources.putString(R.string.snooze, "Snooze")
       context.resources.putString(R.string.show_image, "Show image")
+      context.resources.putString(R.string.show_image_n) { "Show image ${it[0]}" }
       context.resources.putString(R.string.hide_from_watch, "Hide from watch")
 
       repo = ActionOrderRepositoryImpl(context, preferenceStore)
