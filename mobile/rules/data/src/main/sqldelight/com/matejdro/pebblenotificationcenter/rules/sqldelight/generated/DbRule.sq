@@ -49,3 +49,10 @@ reorderDownwards {
     SET sortOrder = :toIndex
     WHERE id = :id;
 }
+
+deleteAllRules:
+    DELETE FROM dbRule;
+
+insertRuleWithId {
+    INSERT INTO dbRule (id, name, sortOrder) VALUES (:id, :name, :sortOrder);
+}

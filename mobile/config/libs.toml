@@ -111,6 +111,7 @@ kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.
 kotlin-plugin-compose = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 kotlin-plugin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
 kotlin-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlin-serializationRuntime" }
+kotlin-serializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlin-serializationRuntime" }
 kotlinova-compose = { module = "si.inova.kotlinova:compose", version.ref = "kotlinova" }
 kotlinova-core = { module = "si.inova.kotlinova:core", version.ref = "kotlinova" }
 kotlinova-core-test = { module = "si.inova.kotlinova:core-test", version.ref = "kotlinova" }

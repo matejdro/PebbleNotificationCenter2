@@ -334,6 +334,95 @@ class RulesRepositoryImplTest {
    }
 
    @Test
+   fun `Import rules replaces the list preserving IDs and renumbering sortOrder`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         repo.insert("Rule B")
+         runCurrent()
+
+         val importedRules = listOf(
+            RuleMetadata(1, "Default Settings"),
+            RuleMetadata(40, "Imported A"),
+            RuleMetadata(25, "Imported B"),
+         )
+         repo.importRules(importedRules)
+         runCurrent()
+
+         expectMostRecentItem() shouldBeSuccessWithData listOf(
+            RuleMetadata(1, "Default Settings"),
+            RuleMetadata(40, "Imported A"),
+            RuleMetadata(25, "Imported B"),
+         )
+      }
+   }
+
+   @Test
+   fun `Create missing default rule at the top on import`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         val importedRules = listOf(
+            RuleMetadata(40, "Imported A"),
+            RuleMetadata(25, "Imported B"),
+         )
+         repo.importRules(importedRules)
+         runCurrent()
+
+         expectMostRecentItem() shouldBeSuccessWithData listOf(
+            RuleMetadata(1, "Default Settings"),
+            RuleMetadata(40, "Imported A"),
+            RuleMetadata(25, "Imported B"),
+         )
+      }
+   }
+
+   @Test
+   fun `Move default rule to the top on import`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         val importedRules = listOf(
+            RuleMetadata(40, "Imported A"),
+            RuleMetadata(1, "Default Settings"),
+            RuleMetadata(25, "Imported B"),
+         )
+         repo.importRules(importedRules)
+         runCurrent()
+
+         expectMostRecentItem() shouldBeSuccessWithData listOf(
+            RuleMetadata(1, "Default Settings"),
+            RuleMetadata(40, "Imported A"),
+            RuleMetadata(25, "Imported B"),
+         )
+      }
+   }
+
+   @Test
+   fun `Disallow importing duplicate rule IDs`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+         cancelAndIgnoreRemainingEvents()
+      }
+
+      assertThrows<IllegalArgumentException> {
+         repo.importRules(listOf(RuleMetadata(5, "Rule A"), RuleMetadata(5, "Rule B")))
+      }
+   }
+
+   @Test
+   fun `Disallow importing non-positive rule IDs`() = scope.runTest {
+      assertThrows<IllegalArgumentException> {
+         repo.importRules(listOf(RuleMetadata(0, "Rule A")))
+      }
+
+      assertThrows<IllegalArgumentException> {
+         repo.importRules(listOf(RuleMetadata(-1, "Rule B")))
+      }
+   }
+
+   @Test
    fun `Copy rule and its preferences`() = scope.runTest {
       repo.getAll().test {
          runCurrent()

@@ -2,6 +2,8 @@ package com.matejdro.pebblenotificationcenter.tools.ui
 
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -20,14 +22,20 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -72,6 +80,12 @@ class ToolsScreen(
    override fun Content(key: ToolsScreenKey) {
       val stateOutcome = viewModel.appVersion.collectAsStateWithLifecycle()
       val logSaveStatus = viewModel.logSave.collectAsStateWithLifecycleAndBlinkingPrevention().value
+      val settingsExportStatus = viewModel.settingsExport.collectAsStateWithLifecycleAndBlinkingPrevention().value
+      val settingsImportStatus = viewModel.settingsImport.collectAsStateWithLifecycleAndBlinkingPrevention().value
+
+      val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+         uri?.let(viewModel::importSettings)
+      }
 
       ProgressErrorSuccessScaffold(
          stateOutcome::value,
@@ -82,9 +96,14 @@ class ToolsScreen(
          ToolsScreenContent(
             state = state,
             loggingTransmissionState = logSaveStatus,
+            settingsExportState = settingsExportStatus,
+            settingsImportState = settingsImportStatus,
             openPermissions = { navigator.navigateTo(OnboardingKey) },
             startLogSaving = viewModel::getLogs,
             notifyLogIntentSent = viewModel::resetLog,
+            startSettingsExport = viewModel::exportSettings,
+            notifySettingsExportIntentSent = viewModel::resetSettingsExport,
+            startImportFilePicker = { importLauncher.launch(arrayOf("application/zip")) },
             openActionOrderDialog = {
                navigator.navigateTo(ActionOrderListScreenKey)
             },
@@ -101,12 +120,50 @@ class ToolsScreen(
 private fun ToolsScreenContent(
    state: ToolsState,
    loggingTransmissionState: Outcome<Uri?>?,
+   settingsExportState: Outcome<Uri?>?,
+   settingsImportState: Outcome<Unit>?,
    openPermissions: () -> Unit,
    startLogSaving: () -> Unit,
    notifyLogIntentSent: () -> Unit,
+   startSettingsExport: () -> Unit,
+   notifySettingsExportIntentSent: () -> Unit,
+   startImportFilePicker: () -> Unit,
    openActionOrderDialog: () -> Unit,
    updatePreference: (PreferenceKeyWithDefault<*>, Any?) -> Unit,
 ) {
+   var showImportConfirm by remember { mutableStateOf(false) }
+
+   if (showImportConfirm) {
+      AlertDialog(
+         onDismissRequest = { showImportConfirm = false },
+         title = {
+            Text(stringResource(R.string.import_settings_confirm_title))
+         },
+         text = {
+            Text(stringResource(R.string.import_settings_confirm_text))
+         },
+         confirmButton = {
+            TextButton(
+               onClick = {
+                  showImportConfirm = false
+                  startImportFilePicker()
+               },
+            ) {
+               Text(stringResource(sharedR.string.ok))
+            }
+         },
+         dismissButton = {
+            TextButton(
+               onClick = {
+                  showImportConfirm = false
+               },
+            ) {
+               Text(stringResource(sharedR.string.cancel))
+            }
+         },
+      )
+   }
+
    CompositionLocalProvider(
       LocalPreferenceTheme provides preferenceTheme(
          verticalSpacing = 0.dp,
@@ -153,6 +210,45 @@ private fun ToolsScreenContent(
                   }
                }
             }
+         }
+
+         item {
+            ErrorAlertDialog(settingsExportState)
+
+            if (settingsExportState is Outcome.Progress<*>) {
+               CircularProgressIndicator(
+                  Modifier
+                     .size(60.dp)
+                     .wrapContentWidth()
+               )
+            } else {
+               ToolButton(onClick = startSettingsExport, icon = R.drawable.settings_export, text = R.string.export_settings)
+
+               val context = LocalContext.current
+               SideEffect {
+                  settingsExportState?.data?.let { targetUri ->
+                     val activityIntent = Intent(Intent.ACTION_SEND)
+                     activityIntent.putExtra(Intent.EXTRA_STREAM, targetUri)
+                     activityIntent.setType("application/zip")
+
+                     activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                     activityIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+                     context.startActivity(Intent.createChooser(activityIntent, null))
+                     notifySettingsExportIntentSent()
+                  }
+               }
+            }
+         }
+
+         item {
+            ErrorAlertDialog(settingsImportState, errorText = { stringResource(R.string.import_settings_failed) })
+
+            ToolButton(
+               onClick = { showImportConfirm = true },
+               icon = R.drawable.settings_import,
+               text = R.string.import_settings,
+            )
          }
 
          item(span = { GridItemSpan(maxLineSpan) }) {
@@ -317,9 +413,14 @@ internal fun ToolsScreenPreview() {
       ToolsScreenContent(
          state = ToolsState("1.0.0-alpha07", emptyPreferences()),
          loggingTransmissionState = Outcome.Success(null),
+         settingsExportState = Outcome.Success(null),
+         settingsImportState = Outcome.Success(Unit),
          openPermissions = {},
          startLogSaving = {},
          notifyLogIntentSent = {},
+         startSettingsExport = {},
+         notifySettingsExportIntentSent = {},
+         startImportFilePicker = {},
          openActionOrderDialog = {},
          updatePreference = { _, _ -> },
       )

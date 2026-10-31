@@ -1,3 +1,4 @@
 <paths>
     <cache-path name="logs" path="logs/" />
+    <cache-path name="settings_export" path="settings_export/" />
 </paths>

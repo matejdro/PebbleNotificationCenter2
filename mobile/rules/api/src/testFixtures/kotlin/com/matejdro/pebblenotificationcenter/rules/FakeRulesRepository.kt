@@ -89,4 +89,17 @@ class FakeRulesRepository : RulesRepository {
 
       return newRuleId
    }
+
+   override suspend fun importRules(rules: List<RuleMetadata>) {
+      require(rules.all { it.id > 0 }) { "Rule ids must be positive, but were: ${rules.map { it.id }}" }
+      require(rules.distinctBy { it.id }.size == rules.size) { "Rule ids must be unique, but were: ${rules.map { it.id }}" }
+
+      val ordered = if (rules.any { it.id == RULE_ID_DEFAULT_SETTINGS }) {
+         rules.filter { it.id == RULE_ID_DEFAULT_SETTINGS } + rules.filter { it.id != RULE_ID_DEFAULT_SETTINGS }
+      } else {
+         listOf(RuleMetadata(RULE_ID_DEFAULT_SETTINGS, "Default Settings")) + rules
+      }
+
+      this.rules.update { ordered }
+   }
 }
