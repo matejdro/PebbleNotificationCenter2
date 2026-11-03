@@ -44,6 +44,8 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
@@ -164,7 +166,8 @@ class ToolsViewModel(
          val rules = rulesRepository.getAll().firstSuccessOrThrow()
 
          val exportFolder = File(context.cacheDir, "settings_export").apply { mkdirs() }
-         val settingsZipFile = File(exportFolder, "settings_export.zip")
+         val dateStamp = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+         val settingsZipFile = File(exportFolder, "pnc2_export_$dateStamp.zip")
 
          // DataStore files are written atomically, so copying one mid-write may snapshot the previous state
          val globalPreferencesFile = context.preferencesDataStoreFile(GLOBAL_PREFERENCES_DATASTORE_NAME)
