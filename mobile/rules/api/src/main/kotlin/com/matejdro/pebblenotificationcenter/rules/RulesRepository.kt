@@ -16,15 +16,15 @@ interface RulesRepository {
    suspend fun reorder(id: Int, toIndex: Int)
 
    /**
-    * Replaces the whole rule list with [rules], in the given display order.
+    * Replaces the whole rule list with [rules], in the given display order, keeping the given
+    * ids and ensuring the default rule (id [RULE_ID_DEFAULT_SETTINGS]) is present and first.
     *
-    * Rule ids are used verbatim: they also name the per-rule DataStore files. After the call the
-    * rule list equals the given list, with the default rule (id [RULE_ID_DEFAULT_SETTINGS])
-    * guaranteed present and first, and with `sortOrder` renumbered `0..N-1` from list position.
+    * [rulePreferences] replaces the corresponding rules' preferences stores; stores of rules
+    * that no longer exist are reset to empty (same as [delete]).
     *
-    * @throws IllegalArgumentException if any rule id is not positive or if ids are duplicated.
+    * @throws IllegalArgumentException if a rule id is not positive or ids are duplicated.
     */
-   suspend fun importRules(rules: List<RuleMetadata>)
+   suspend fun importRules(rules: List<RuleMetadata>, rulePreferences: Map<Int, Preferences> = emptyMap())
 
    fun getRulePreferences(id: Int): Flow<Preferences>
 

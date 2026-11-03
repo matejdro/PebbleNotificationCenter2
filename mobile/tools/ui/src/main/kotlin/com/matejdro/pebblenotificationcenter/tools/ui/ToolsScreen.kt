@@ -52,10 +52,12 @@ import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
 import com.matejdro.pebblenotificationcenter.rules.keys.PreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.get
 import com.matejdro.pebblenotificationcenter.tools.ui.dialogs.ActionOrderListScreenKey
+import com.matejdro.pebblenotificationcenter.tools.ui.errors.InvalidImportFileException
 import com.matejdro.pebblenotificationcenter.ui.components.ErrorAlertDialog
 import com.matejdro.pebblenotificationcenter.ui.components.ProgressErrorSuccessScaffold
 import com.matejdro.pebblenotificationcenter.ui.debugging.FullScreenPreviews
 import com.matejdro.pebblenotificationcenter.ui.debugging.PreviewTheme
+import com.matejdro.pebblenotificationcenter.ui.errors.commonUserFriendlyMessage
 import me.zhanghai.compose.preference.LocalPreferenceTheme
 import me.zhanghai.compose.preference.Preference
 import me.zhanghai.compose.preference.SwitchPreference
@@ -242,7 +244,16 @@ private fun ToolsScreenContent(
          }
 
          item {
-            ErrorAlertDialog(settingsImportState, errorText = { stringResource(R.string.import_settings_failed) })
+            ErrorAlertDialog(
+               settingsImportState,
+               errorText = { exception ->
+                  if (exception is InvalidImportFileException) {
+                     stringResource(R.string.import_settings_invalid_file)
+                  } else {
+                     exception.commonUserFriendlyMessage()
+                  }
+               }
+            )
 
             ToolButton(
                onClick = { showImportConfirm = true },

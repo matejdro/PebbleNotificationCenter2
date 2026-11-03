@@ -5,6 +5,8 @@ import android.net.Uri
 import androidx.compose.runtime.Stable
 import androidx.core.content.FileProvider
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStoreFile
@@ -16,16 +18,23 @@ import com.matejdro.pebblenotificationcenter.rules.RuleMetadata
 import com.matejdro.pebblenotificationcenter.rules.RulesRepository
 import com.matejdro.pebblenotificationcenter.rules.keys.PreferenceKeyWithDefault
 import com.matejdro.pebblenotificationcenter.rules.keys.set
-import com.matejdro.pebblenotificationcenter.tools.ui.settings.ProcessKiller
+import com.matejdro.pebblenotificationcenter.tools.ui.errors.InvalidImportFileException
 import com.matejdro.pebblenotificationcenter.tools.ui.settings.RULES_JSON_NAME
 import com.matejdro.pebblenotificationcenter.tools.ui.settings.Entry
 import com.matejdro.pebblenotificationcenter.tools.ui.settings.ExportedRuleJson
 import com.matejdro.pebblenotificationcenter.tools.ui.settings.SettingsCodec
 import dev.zacsweers.metro.Inject
 import dispatch.core.withDefault
+import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.SerializationException
 import si.inova.kotlinova.core.outcome.CoroutineResourceManager
 import si.inova.kotlinova.core.outcome.Outcome
 import si.inova.kotlinova.core.outcome.firstSuccessOrThrow
@@ -34,6 +43,7 @@ import si.inova.kotlinova.navigation.services.SingleScreenViewModel
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
@@ -48,7 +58,6 @@ class ToolsViewModel(
    private val fileLoggingController: FileLoggingController,
    private val preferenceStore: DataStore<Preferences>,
    private val rulesRepository: RulesRepository,
-   private val processKiller: ProcessKiller,
 ) : SingleScreenViewModel<ToolsScreenKey>(resources.scope) {
    private val _uiState = MutableStateFlow<Outcome<ToolsState>>(Outcome.Progress())
    val appVersion: StateFlow<Outcome<ToolsState>>
@@ -193,84 +202,107 @@ class ToolsViewModel(
 
       withDefault {
          val exported = readSettingsExport(uri)
-         rulesRepository.importRules(exported.rules.map { rule -> RuleMetadata(rule.id, rule.name) })
+         rulesRepository.importRules(
+            exported.rules.map { rule -> RuleMetadata(rule.id, rule.name) },
+            exported.rulePreferences
+         )
 
-         val globalPreferencesFile = context.preferencesDataStoreFile(GLOBAL_PREFERENCES_DATASTORE_NAME)
-         exported.globalFileBytes?.let { bytes -> writeDataStoreFile(bytes, globalPreferencesFile) }
-
-         for ((ruleId, bytes) in exported.ruleFileBytes) {
-            writeDataStoreFile(bytes, context.preferencesDataStoreFile(ruleId.toString()))
-         }
-
-         deleteStaleRuleDataStoreFiles(exported.ruleFileBytes.keys)
+         exported.globalPreferences?.let { imported -> preferenceStore.updateData { imported } }
       }
 
       emit(Outcome.Success(Unit))
-      processKiller.kill()
    }
 
    private data class SettingsExportData(
       val rules: List<ExportedRuleJson>,
-      val globalFileBytes: ByteArray?,
-      val ruleFileBytes: Map<Int, ByteArray>,
+      val globalPreferences: Preferences?,
+      val rulePreferences: Map<Int, Preferences>,
    )
 
-   private fun readSettingsExport(uri: Uri): SettingsExportData {
+   @Suppress("ThrowsCount")
+   private suspend fun readSettingsExport(uri: Uri): SettingsExportData {
       var rulesJsonText: String? = null
-      var globalFileBytes: ByteArray? = null
-      val ruleFileBytes = HashMap<Int, ByteArray>()
+      var globalFile: Pair<String, ByteArray>? = null
+      val ruleFiles = HashMap<Int, Pair<String, ByteArray>>()
 
       val zipInputStream = context.contentResolver.openInputStream(uri)?.buffered()
-         ?: throw IllegalArgumentException("Cannot open settings export: $uri")
-      ZipInputStream(zipInputStream).use { archive ->
-         var entry = archive.nextEntry
-         while (entry != null) {
-            when (val classified = SettingsCodec.classifyEntry(entry.name)) {
-               Entry.RulesJson -> rulesJsonText = archive.readBytes().decodeToString()
-               Entry.GlobalDataStore -> globalFileBytes = archive.readBytes()
-               is Entry.RuleDataStore -> ruleFileBytes[classified.ruleId] = archive.readBytes()
-               Entry.Ignored -> Unit
-            }
+         ?: throw InvalidImportFileException("Cannot read the selected file")
+      try {
+         ZipInputStream(zipInputStream).use { archive ->
+            var entry = archive.nextEntry
+            while (entry != null) {
+               when (val classified = SettingsCodec.classifyEntry(entry.name)) {
+                  Entry.RulesJson -> rulesJsonText = archive.readBytes().decodeToString()
+                  Entry.GlobalDataStore -> globalFile = entry.name to archive.readBytes()
+                  is Entry.RuleDataStore -> ruleFiles[classified.ruleId] = entry.name to archive.readBytes()
+                  Entry.Ignored -> Unit
+               }
 
-            archive.closeEntry()
-            entry = archive.nextEntry
+               archive.closeEntry()
+               entry = archive.nextEntry
+            }
          }
+      } catch (e: IOException) {
+         throw InvalidImportFileException("Cannot open settings export: not a valid zip archive", e)
+      } catch (e: IllegalArgumentException) {
+         throw InvalidImportFileException("Invalid settings export entry name", e)
       }
 
       val rulesJson = rulesJsonText
-         ?: throw IllegalArgumentException("Missing rules.json in settings export")
+         ?: throw InvalidImportFileException("Missing rules.json in settings export")
 
-      return SettingsExportData(
-         rules = SettingsCodec.decodeRules(rulesJson),
-         globalFileBytes = globalFileBytes,
-         ruleFileBytes = ruleFileBytes,
-      )
-   }
+      val rules = try {
+         SettingsCodec.decodeRules(rulesJson)
+      } catch (e: SerializationException) {
+         throw InvalidImportFileException("Cannot decode rules.json", e)
+      } catch (e: IllegalArgumentException) {
+         throw InvalidImportFileException("Cannot decode rules.json", e)
+      }
 
-   private fun writeDataStoreFile(bytes: ByteArray, file: File) {
-      val tempFile = File(file.parentFile, file.name + ".tmp")
-      tempFile.writeBytes(bytes)
+      val tempFolder = File(context.cacheDir, "settings_import").apply { mkdirs() }
+      val tempScope = CoroutineScope(coroutineContext + SupervisorJob())
+      val corruptionHandler = ReplaceFileCorruptionHandler<Preferences> { throw CorruptImportFileException() }
 
-      if (!tempFile.renameTo(file)) {
-         tempFile.delete()
-         file.writeBytes(bytes)
+      try {
+         val globalPreferences = globalFile?.let { (name, bytes) ->
+            decodeSettingsDataStoreFile(File(tempFolder, name), bytes, tempScope, corruptionHandler)
+         }
+
+         val rulePreferences = ruleFiles.mapValues { entry ->
+            val (name, bytes) = entry.value
+            decodeSettingsDataStoreFile(File(tempFolder, name), bytes, tempScope, corruptionHandler)
+         }
+
+         return SettingsExportData(
+            rules = rules,
+            globalPreferences = globalPreferences,
+            rulePreferences = rulePreferences,
+         )
+      } finally {
+         tempScope.cancel()
+         tempFolder.deleteRecursively()
       }
    }
 
-   private fun deleteStaleRuleDataStoreFiles(keptRuleIds: Set<Int>) {
-      val datastoreFolder = File(context.filesDir, "datastore")
+   private suspend fun decodeSettingsDataStoreFile(
+      file: File,
+      bytes: ByteArray,
+      scope: CoroutineScope,
+      corruptionHandler: ReplaceFileCorruptionHandler<Preferences>,
+   ): Preferences {
+      file.writeBytes(bytes)
 
-      datastoreFolder.listFiles().orEmpty()
-         .filter { file -> file.name.endsWith(".preferences_pb") || file.name.endsWith(".preferences_pb.tmp") }
-         .forEach { file ->
-            val ruleId = file.name
-               .removeSuffix(".tmp")
-               .removeSuffix(".preferences_pb")
-               .toIntOrNull()
-            if (ruleId != null && ruleId !in keptRuleIds) {
-               file.delete()
-            }
-         }
+      return try {
+         PreferenceDataStoreFactory.create(
+            corruptionHandler = corruptionHandler,
+            scope = scope,
+            produceFile = { file },
+         ).data.first()
+      } catch (e: CancellationException) {
+         throw e
+      } catch (e: Exception) {
+         throw InvalidImportFileException("Corrupt or invalid settings data file: ${file.name}", e)
+      }
    }
 
    fun <T> updatePreference(key: PreferenceKeyWithDefault<T>, value: T) = resources.launchWithExceptionReporting {
@@ -280,6 +312,8 @@ class ToolsViewModel(
       }
    }
 }
+
+private class CorruptImportFileException : Exception("Corrupt or invalid settings data file")
 
 data class ToolsState(
    val versionName: String,

@@ -90,7 +90,10 @@ class FakeRulesRepository : RulesRepository {
       return newRuleId
    }
 
-   override suspend fun importRules(rules: List<RuleMetadata>) {
+   override suspend fun importRules(
+      rules: List<RuleMetadata>,
+      rulePreferences: Map<Int, Preferences>,
+   ) {
       require(rules.all { it.id > 0 }) { "Rule ids must be positive, but were: ${rules.map { it.id }}" }
       require(rules.distinctBy { it.id }.size == rules.size) { "Rule ids must be unique, but were: ${rules.map { it.id }}" }
 
@@ -101,5 +104,16 @@ class FakeRulesRepository : RulesRepository {
       }
 
       this.rules.update { ordered }
+
+       val existingKeys = preferences.keys.toSet()
+
+       for ((ruleId, imported) in rulePreferences) {
+          preferences.getOrPut(ruleId) { MutableStateFlow(emptyPreferences()) }.value = imported
+       }
+
+       val importedIds = ordered.map { it.id }.toSet()
+       (existingKeys - importedIds).forEach { id ->
+          preferences[id]?.value = emptyPreferences()
+       }
    }
 }

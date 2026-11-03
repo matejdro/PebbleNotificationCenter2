@@ -85,7 +85,10 @@ class RulesRepositoryImpl(
       }
    }
 
-   override suspend fun importRules(rules: List<RuleMetadata>) = withDefault<Unit> {
+   override suspend fun importRules(
+      rules: List<RuleMetadata>,
+      rulePreferences: Map<Int, Preferences>,
+   ) = withDefault<Unit> {
       require(rules.all { it.id > 0 }) { "Rule ids must be positive, but were: ${rules.map { it.id }}" }
       require(rules.distinctBy { it.id }.size == rules.size) { "Rule ids must be unique, but were: ${rules.map { it.id }}" }
 
@@ -95,11 +98,22 @@ class RulesRepositoryImpl(
          listOf(RuleMetadata(RULE_ID_DEFAULT_SETTINGS, "Default Settings")) + rules
       }
 
+      val existingRuleIds = queries.selectAll().executeAsList().map { it.id.toInt() }.toSet()
+
       queries.transaction {
          queries.deleteAllRules()
          ordered.forEachIndexed { index, rule ->
             queries.insertRuleWithId(rule.id.toLong(), rule.name, index.toLong())
          }
+      }
+
+      for ((ruleId, imported) in rulePreferences) {
+         getDataStore(ruleId).updateData { imported }
+      }
+
+      val importedIds = ordered.map { it.id }.toSet()
+      for (staleId in existingRuleIds - importedIds) {
+         getDataStore(staleId).updateData { emptyPreferences() }
       }
    }
 

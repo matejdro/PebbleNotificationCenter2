@@ -1,9 +1,11 @@
 package com.matejdro.pebblenotificationcenter.rules
 
+import androidx.datastore.preferences.core.emptyPreferences
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import app.cash.turbine.test
 import com.matejdro.pebblenotificationcenter.rules.keys.get
+import com.matejdro.pebblenotificationcenter.rules.keys.set
 import com.matejdro.pebblenotificationcenter.rules.keys.setTo
 import com.matejdro.pebblenotificationcenter.rules.sqldelight.generated.Database
 import com.matejdro.pebblenotificationcenter.rules.sqldelight.generated.DbRuleQueries
@@ -419,6 +421,64 @@ class RulesRepositoryImplTest {
 
       assertThrows<IllegalArgumentException> {
          repo.importRules(listOf(RuleMetadata(-1, "Rule B")))
+      }
+   }
+
+   @Test
+   fun `Import replaces the per-rule preferences`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         runCurrent()
+
+         repo.updateRulePreferences(
+            1,
+            RuleOption.conditionAppPackage setTo "package.default",
+         )
+         repo.updateRulePreferences(
+            2,
+            RuleOption.conditionAppPackage setTo "package.A",
+         )
+         runCurrent()
+
+         val importedPreferences = emptyPreferences().toMutablePreferences().apply {
+            set(RuleOption.conditionAppPackage, "imported.A")
+         }
+         repo.importRules(
+            listOf(
+               RuleMetadata(1, "Default Settings"),
+               RuleMetadata(40, "Imported A"),
+            ),
+            mapOf(40 to importedPreferences),
+         )
+         runCurrent()
+
+         repo.getRulePreferences(40).first()[RuleOption.conditionAppPackage] shouldBe "imported.A"
+         repo.getRulePreferences(1).first()[RuleOption.conditionAppPackage] shouldBe "package.default"
+         cancelAndIgnoreRemainingEvents()
+      }
+   }
+
+   @Test
+   fun `Import resets the preferences of removed rules to empty`() = scope.runTest {
+      repo.getAll().test {
+         runCurrent()
+
+         repo.insert("Rule A")
+         runCurrent()
+
+         repo.updateRulePreferences(
+            2,
+            RuleOption.conditionAppPackage setTo "package.A",
+         )
+         runCurrent()
+
+         repo.importRules(listOf(RuleMetadata(1, "Default Settings"), RuleMetadata(40, "Imported A")))
+         runCurrent()
+
+         repo.getRulePreferences(2).first().asMap().shouldBeEmpty()
+         cancelAndIgnoreRemainingEvents()
       }
    }
 

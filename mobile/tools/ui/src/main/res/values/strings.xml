@@ -6,8 +6,8 @@
     <string name="export_settings">Export settings</string>
     <string name="import_settings">Import settings</string>
     <string name="import_settings_confirm_title">Import settings?</string>
-    <string name="import_settings_confirm_text">This will replace all rules and settings with the contents of the selected file, and the app will close.\n\nYou will need to open the app again to use the imported settings.\n\nExport your current settings first if you want to keep a copy.</string>
-    <string name="import_settings_failed">Settings import failed</string>
+    <string name="import_settings_confirm_text">This will replace all rules and settings with the contents of the selected file.\n\nExport your current settings first if you want to keep a copy.</string>
+    <string name="import_settings_invalid_file">This file is not a valid Notification Center Export</string>
     <string name="setting_action_order">Action order</string>
     <string name="setting_action_order_description">Change order of the actions</string>
     <string name="setting_auto_close">Auto close</string>
