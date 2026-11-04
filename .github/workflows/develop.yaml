@@ -128,7 +128,7 @@ jobs:
       - name: Downgrade python to 3.13
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.14"
+          python-version: "3.15"
         if: "${{ env.BUILD_WATCH == 'true' }}"
         # Sometimes SDK installation exits with exit code 1, but still succeeds.
         # We can just ignore failures here, as watchapp build will fail anyway even if the SDK is faulty
