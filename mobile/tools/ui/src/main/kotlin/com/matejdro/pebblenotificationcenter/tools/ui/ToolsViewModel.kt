@@ -5,9 +5,8 @@ import android.net.Uri
 import androidx.compose.runtime.Stable
 import androidx.core.content.FileProvider
 import androidx.datastore.core.DataStore
-import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.PreferencesSerializer
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.matejdro.pebble.common.logging.FileLoggingController
@@ -25,21 +24,18 @@ import com.matejdro.pebblenotificationcenter.tools.ui.settings.ExportedRuleJson
 import com.matejdro.pebblenotificationcenter.tools.ui.settings.SettingsCodec
 import dev.zacsweers.metro.Inject
 import dispatch.core.withDefault
-import kotlin.coroutines.coroutineContext
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
+import okio.buffer
+import okio.source
 import si.inova.kotlinova.core.outcome.CoroutineResourceManager
 import si.inova.kotlinova.core.outcome.Outcome
 import si.inova.kotlinova.core.outcome.firstSuccessOrThrow
 import si.inova.kotlinova.navigation.services.ContributesScopedService
 import si.inova.kotlinova.navigation.services.SingleScreenViewModel
+import java.io.EOFException
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -47,6 +43,7 @@ import java.io.IOException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.zip.ZipEntry
+import java.util.zip.ZipException
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
@@ -245,8 +242,10 @@ class ToolsViewModel(
                entry = archive.nextEntry
             }
          }
-      } catch (e: IOException) {
+      } catch (e: ZipException) {
          throw InvalidImportFileException("Cannot open settings export: not a valid zip archive", e)
+      } catch (e: EOFException) {
+         throw InvalidImportFileException("Settings export file is truncated", e)
       } catch (e: IllegalArgumentException) {
          throw InvalidImportFileException("Invalid settings export entry name", e)
       }
@@ -262,50 +261,26 @@ class ToolsViewModel(
          throw InvalidImportFileException("Cannot decode rules.json", e)
       }
 
-      val tempFolder = File(context.cacheDir, "settings_import").apply { mkdirs() }
-      val tempScope = CoroutineScope(coroutineContext + SupervisorJob())
-      val corruptionHandler = ReplaceFileCorruptionHandler<Preferences> { throw CorruptImportFileException() }
-
-      try {
-         val globalPreferences = globalFile?.let { (name, bytes) ->
-            decodeSettingsDataStoreFile(File(tempFolder, name), bytes, tempScope, corruptionHandler)
-         }
-
-         val rulePreferences = ruleFiles.mapValues { entry ->
-            val (name, bytes) = entry.value
-            decodeSettingsDataStoreFile(File(tempFolder, name), bytes, tempScope, corruptionHandler)
-         }
-
-         return SettingsExportData(
-            rules = rules,
-            globalPreferences = globalPreferences,
-            rulePreferences = rulePreferences,
-         )
-      } finally {
-         tempScope.cancel()
-         tempFolder.deleteRecursively()
+      val globalPreferences = globalFile?.let { (name, bytes) ->
+         decodeSettingsDataStoreFile(name, bytes)
       }
+
+      val rulePreferences = ruleFiles.mapValues { entry ->
+         val (name, bytes) = entry.value
+         decodeSettingsDataStoreFile(name, bytes)
+      }
+
+      return SettingsExportData(
+         rules = rules,
+         globalPreferences = globalPreferences,
+         rulePreferences = rulePreferences,
+      )
    }
 
-   private suspend fun decodeSettingsDataStoreFile(
-      file: File,
-      bytes: ByteArray,
-      scope: CoroutineScope,
-      corruptionHandler: ReplaceFileCorruptionHandler<Preferences>,
-   ): Preferences {
-      file.writeBytes(bytes)
-
-      return try {
-         PreferenceDataStoreFactory.create(
-            corruptionHandler = corruptionHandler,
-            scope = scope,
-            produceFile = { file },
-         ).data.first()
-      } catch (e: CancellationException) {
-         throw e
-      } catch (e: Exception) {
-         throw InvalidImportFileException("Corrupt or invalid settings data file: ${file.name}", e)
-      }
+   private suspend fun decodeSettingsDataStoreFile(name: String, bytes: ByteArray): Preferences = try {
+      PreferencesSerializer.readFrom(bytes.inputStream().source().buffer())
+   } catch (e: IOException) {
+      throw InvalidImportFileException("Corrupt or invalid settings data file: $name", e)
    }
 
    fun <T> updatePreference(key: PreferenceKeyWithDefault<T>, value: T) = resources.launchWithExceptionReporting {
@@ -315,8 +290,6 @@ class ToolsViewModel(
       }
    }
 }
-
-private class CorruptImportFileException : Exception("Corrupt or invalid settings data file")
 
 data class ToolsState(
    val versionName: String,
