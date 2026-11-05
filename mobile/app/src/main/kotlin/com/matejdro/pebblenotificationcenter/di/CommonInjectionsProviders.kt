@@ -13,6 +13,7 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.matejdro.pebblenotificationcenter.Database
 import com.matejdro.pebblenotificationcenter.common.di.AndroidVersion
+import com.matejdro.pebblenotificationcenter.rules.GLOBAL_PREFERENCES_DATASTORE_NAME
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
@@ -51,7 +52,7 @@ interface CommonInjectionsProviders {
    @SingleIn(AppScope::class)
    fun provideDefaultPreferences(context: Context, ioCoroutineScope: IOCoroutineScope): DataStore<Preferences> {
       return PreferenceDataStoreFactory.create(scope = ioCoroutineScope) {
-         context.preferencesDataStoreFile("preferences")
+         context.preferencesDataStoreFile(GLOBAL_PREFERENCES_DATASTORE_NAME)
       }
    }
 

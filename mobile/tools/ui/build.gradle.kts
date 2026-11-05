@@ -24,8 +24,11 @@ dependencies {
 
    implementation(projects.commonCompose)
    implementation(projects.sharedResources)
+   implementation(libs.androidx.activity.compose)
    implementation(libs.androidx.core)
    implementation(libs.androidx.datastore.preferences)
+   implementation(libs.kotlin.serializationJson)
+   implementation(libs.okio)
    implementation(libs.composePreference)
    implementation(libs.dispatch)
 }

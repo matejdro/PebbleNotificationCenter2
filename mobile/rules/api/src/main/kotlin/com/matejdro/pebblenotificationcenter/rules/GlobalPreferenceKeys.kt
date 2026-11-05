@@ -22,3 +22,5 @@ object GlobalPreferenceKeys {
 
    val muteScreenOn = BooleanPreferenceKeyWithDefault("mute_screen_on", false)
 }
+
+const val GLOBAL_PREFERENCES_DATASTORE_NAME = "preferences"
