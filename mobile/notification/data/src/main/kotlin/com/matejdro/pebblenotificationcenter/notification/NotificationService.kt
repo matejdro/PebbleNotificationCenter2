@@ -16,6 +16,7 @@ import com.matejdro.pebblenotificationcenter.rules.RuleOption
 import com.matejdro.pebblenotificationcenter.rules.keys.get
 import dev.zacsweers.metro.Inject
 import dispatch.core.DefaultCoroutineScope
+import dispatch.core.withDefault
 import io.rebble.pebblekit2.client.PebbleInfoRetriever
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
@@ -94,7 +95,9 @@ class NotificationService : NotificationListenerService() {
       }
       bound = true
 
-      controlListenerHintsAndOpenOnReconnect()
+      coroutineScope.launch {
+         controlListenerHintsAndOpenOnReconnect()
+      }
       eventsChannel.trySend(NotificationServiceEvent.AllDismissed)
       eventsChannel.trySend(NotificationServiceEvent.ReloadRequest)
    }
@@ -199,7 +202,7 @@ class NotificationService : NotificationListenerService() {
          null
       }
 
-   private fun controlListenerHintsAndOpenOnReconnect() {
+   private suspend fun controlListenerHintsAndOpenOnReconnect() = withDefault {
       val anyWatchConnected = pebbleInfoRetriever.getConnectedWatches().map { it.isNotEmpty() }.distinctUntilChanged()
 
       controlListenerHints(anyWatchConnected)
