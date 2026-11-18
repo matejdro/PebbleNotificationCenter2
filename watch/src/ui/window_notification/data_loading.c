@@ -349,7 +349,7 @@ void window_notification_data_receive_show_submenu(const uint8_t* data, const si
 
     const uint8_t menu_id = data[1];
     const uint8_t num_actions = data[2];
-    size_t position = 2;
+    size_t position = 3;
     window_notification_data.num_submenu_actions = num_actions;
     for (int i = 0; i < num_actions; i++)
     {
