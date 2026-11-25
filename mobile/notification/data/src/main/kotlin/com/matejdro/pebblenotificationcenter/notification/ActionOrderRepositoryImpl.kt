@@ -52,7 +52,7 @@ class ActionOrderRepositoryImpl(
                checkedForDefaultItems = true
             }
          }
-         .map { it.toList() }
+         .map { it.toList().distinct() }
          .filter { it.isNotEmpty() }
    }
 
